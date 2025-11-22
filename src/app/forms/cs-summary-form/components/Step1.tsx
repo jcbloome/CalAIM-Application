@@ -131,7 +131,7 @@ export default function Step1() {
               name="memberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Medi-Cal Number</FormLabel>
+                  <FormLabel>Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -144,7 +144,7 @@ export default function Step1() {
               name="confirmMemberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Medi-Cal Number</FormLabel>
+                  <FormLabel>Confirm Number</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>

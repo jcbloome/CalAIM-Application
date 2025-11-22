@@ -34,8 +34,8 @@ export default function PrintableFreedomOfChoiceWaiverPage() {
   
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none">
+      <div className="container mx-auto py-8 px-4 print:p-0">
+        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none print:p-0">
           <div className="flex justify-between items-start mb-8 print:hidden">
             <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">
@@ -58,7 +58,7 @@ export default function PrintableFreedomOfChoiceWaiverPage() {
             <div className="space-y-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
                   <Field label="Member Name" />
-                  <Field label="Medi-Cal Number" />
+                  <Field label="Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)" />
                 </div>
 
                 <div className="prose prose-sm max-w-none text-gray-700 space-y-4">

@@ -35,8 +35,8 @@ function PrintableCsSummaryFormContent() {
                   <Field label="Last Name" />
                   <Field label="Date of Birth (MM/DD/YYYY)" />
                   <Field label="Age" />
-                  <Field label="Medi-Cal Number" />
-                  <Field label="Confirm Medi-Cal Number" />
+                  <Field label="Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)" />
+                  <Field label="Confirm Number" />
                   <Field label="Medical Record Number (MRN)" />
                   <Field label="Confirm Medical Record Number" />
                   <Field label="Preferred Language" />
@@ -220,8 +220,8 @@ export default function PrintableCsSummaryForm() {
   
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none">
+      <div className="container mx-auto py-8 px-4 print:p-0">
+        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none print:p-0">
           <div className="flex justify-between items-start mb-8 print:hidden">
             <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">

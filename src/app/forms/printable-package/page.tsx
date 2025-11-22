@@ -116,8 +116,8 @@ export default function ApplicationSubmissionPage() {
                                 <Input id="memberFullName" placeholder="Jane Smith" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="mediCalNumber">Member's Medi-Cal Number</Label>
-                                <Input id="mediCalNumber" placeholder="987654321A" />
+                                <Label htmlFor="mediCalNumber">Member's Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)</Label>
+                                <Input id="mediCalNumber" placeholder="987654321A or MRN" />
                             </div>
                         </div>
                          <div className="space-y-2">

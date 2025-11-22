@@ -34,8 +34,8 @@ export default function PrintableLiabilityWaiverPage() {
   
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none">
+      <div className="container mx-auto py-8 px-4 print:p-0">
+        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none print:p-0">
           <div className="flex justify-between items-start mb-8 print:hidden">
              <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">
@@ -58,7 +58,7 @@ export default function PrintableLiabilityWaiverPage() {
             <div className="space-y-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
                   <Field label="Member Name" />
-                  <Field label="Medi-Cal Number" />
+                  <Field label="Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)" />
                 </div>
 
                 <div className="prose prose-sm max-w-none text-gray-700 space-y-4">
@@ -72,7 +72,6 @@ export default function PrintableLiabilityWaiverPage() {
                     <p><strong>Severability.</strong> If any provision of this Agreement is held to be invalid or unenforceable by a court of competent jurisdiction, the remainder of this Agreement shall not be affected and shall remain in full force and effect.</p>
                     <p><strong>Entire Agreement.</strong> This Agreement constitutes the entire agreement between the parties and supersedes all prior or contemporaneous agreements, understandings, and negotiations, both oral and written.</p>
                     <p><strong>Acknowledgment.</strong> Resident acknowledges that they have read this Agreement in its entirety and understands its content. Resident is aware that this is a release of liability and a contract of indemnity, and they sign it of their own free will.</p>
-                    <p><strong>Electronic Signature.</strong> Each party agrees that the electronic signatures, whether digital or encrypted, of the parties included in this Agreement are intended to authenticate this writing and to have the same force and effect as manual signatures.</p>
                 </div>
               
               <div>
