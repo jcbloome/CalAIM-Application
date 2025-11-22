@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { LogOut, User } from 'lucide-react';
@@ -50,7 +51,7 @@ export function Header() {
             <Link href="/applications">My Applications</Link>
           </Button>
            <Button variant="ghost" asChild>
-            <Link href="/forms/printable-package">Printable Forms & Documents</Link>
+            <Link href="/forms/printable-package">Printable Forms</Link>
           </Button>
           <Button variant="ghost" asChild>
             <Link href="#">FAQ</Link>
