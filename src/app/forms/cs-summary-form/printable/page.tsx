@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 const Field = ({ label, className = '' }: { label: string; className?: string }) => (
   <div className={`pt-4 ${className}`}>
@@ -34,7 +35,12 @@ export default function PrintableCsSummaryForm() {
       <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="bg-white p-8 sm:p-12 shadow-lg rounded-lg print:shadow-none">
           <div className="flex justify-between items-start mb-8 print:hidden">
-            <h1 className="text-3xl font-bold text-gray-900">Printable CS Summary Form</h1>
+            <Button variant="outline" asChild>
+                <Link href="/forms/printable-package">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Return to Printable Forms
+                </Link>
+            </Button>
             <Button onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Print Form
