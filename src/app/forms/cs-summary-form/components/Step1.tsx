@@ -18,11 +18,18 @@ export default function Step1() {
   const dob = watch('memberDob');
 
   useEffect(() => {
-    if (dob) {
-      const age = new Date().getFullYear() - new Date(dob).getFullYear();
+    const dobValue = watch('memberDob');
+    if (dobValue) {
+      const today = new Date();
+      const birthDate = new Date(dobValue);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
       setValue('memberAge', age, { shouldValidate: true });
     }
-  }, [dob, setValue]);
+  }, [dob, setValue, watch]);
 
   return (
     <div className="space-y-6">
@@ -102,7 +109,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input placeholder="Auto-calculated" {...field} type="number" readOnly className="bg-muted" />
+                    <Input placeholder="Auto-calculated" {...field} value={field.value ?? ""} type="number" readOnly className="bg-muted" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

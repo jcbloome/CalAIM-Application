@@ -21,6 +21,7 @@ const formSchema = z.object({
   memberFirstName: z.string().min(1, 'First name is required'),
   memberLastName: z.string().min(1, 'Last name is required'),
   memberDob: z.date({ required_error: 'Date of birth is required' }),
+  memberAge: z.number().optional(),
   memberMediCalNum: z.string().min(1, 'Medi-Cal number is required'),
   confirmMemberMediCalNum: z.string(),
   memberMrn: z.string().min(1, 'MRN is required'),
@@ -99,6 +100,22 @@ export default function CsSummaryFormPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       eligibilityCriteria: [],
+      memberPhone: '',
+      memberEmail: '',
+      bestContactName: '',
+      bestContactRelationship: '',
+      bestContactPhone: '',
+      bestContactEmail: '',
+      bestContactLanguage: '',
+      repName: '',
+      repRelationship: '',
+      repPhone: '',
+      repEmail: '',
+      repLanguage: '',
+      customaryAddress: '',
+      customaryCity: '',
+      customaryState: '',
+      customaryZip: '',
     }
   });
 
