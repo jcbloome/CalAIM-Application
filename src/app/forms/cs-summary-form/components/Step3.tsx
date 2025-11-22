@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -10,8 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function Step3() {
-  const { control, watch } = useFormContext();
-  const pathway = watch('pathway');
+  const { control } = useFormContext();
   
   return (
     <div className="space-y-6">
@@ -76,7 +75,6 @@ export default function Step3() {
             )}
           />
 
-          {pathway === 'SNF Transition' && (
             <div className="space-y-4 p-4 border rounded-md">
                 <h3 className="font-semibold text-lg">SNF Transition Eligibility Requirements</h3>
                 <p className="text-sm text-muted-foreground">Enables a current SNF resident to transfer to a RCFE or ARF.</p>
@@ -101,9 +99,7 @@ export default function Step3() {
                     )}
                 />
             </div>
-          )}
           
-          {pathway === 'SNF Diversion' && (
             <div className="space-y-4 p-4 border rounded-md">
                  <h3 className="font-semibold text-lg">SNF Diversion Eligibility Requirements</h3>
                  <p className="text-sm text-muted-foreground">Transition a member who, without this support, would need to reside in a SNF and instead transitions him/her to RCFE or ARF.</p>
@@ -141,7 +137,6 @@ export default function Step3() {
                     )}
                     />
             </div>
-          )}
         </CardContent>
       </Card>
     </div>
