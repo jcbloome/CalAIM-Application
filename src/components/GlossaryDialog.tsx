@@ -11,12 +11,16 @@ import { Button } from './ui/button';
 import { acronyms } from '@/lib/data';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
+import { BookOpen } from 'lucide-react';
 
 export function GlossaryDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link">View Acronym Glossary</Button>
+        <Button variant="link" className="p-0 h-auto">
+            <BookOpen className="mr-2 h-4 w-4" />
+            View Acronym Glossary
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
