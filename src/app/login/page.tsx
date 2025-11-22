@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PawPrint } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -19,6 +20,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const logo = PlaceHolderImages.find(p => p.id === 'calaim-logo');
 
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +50,16 @@ export default function LoginPage() {
     <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="items-center text-center p-6">
-          <PawPrint className="h-12 w-12 text-primary mb-4" />
-          <CardTitle className="text-3xl font-bold text-primary">
+          {logo && (
+            <Image
+              src={logo.imageUrl}
+              alt={logo.description}
+              width={250}
+              height={50}
+              className="object-contain mb-4"
+            />
+          )}
+          <CardTitle className="text-3xl font-bold">
             {isSigningIn ? 'Welcome Back' : 'Create an Account'}
           </CardTitle>
           <CardDescription className="text-base">
