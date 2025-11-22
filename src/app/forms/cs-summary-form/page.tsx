@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, FieldName } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft } from 'lucide-react';
@@ -35,19 +35,19 @@ const formSchema = z.object({
 
   // Step 2
   memberPhone: z.string().optional(),
-  memberEmail: z.string().email().optional(),
+  memberEmail: z.string().email().optional().or(z.literal('')),
   isBestContact: z.boolean().default(false),
   bestContactName: z.string().optional(),
   bestContactRelationship: z.string().optional(),
   bestContactPhone: z.string().optional(),
-  bestContactEmail: z.string().email().optional(),
+  bestContactEmail: z.string().email().optional().or(z.literal('')),
   bestContactLanguage: z.string().optional(),
   hasCapacity: z.enum(['Yes', 'No', 'Unknown']),
   hasLegalRep: z.enum(['Yes', 'No']).optional(),
   repName: z.string().optional(),
   repRelationship: z.string().optional(),
   repPhone: z.string().optional(),
-  repEmail: z.string().email().optional(),
+  repEmail: z.string().email().optional().or(z.literal('')),
   repLanguage: z.string().optional(),
 
   // Step 3
@@ -83,6 +83,27 @@ const formSchema = z.object({
 });
 
 export type FormValues = z.infer<typeof formSchema>;
+
+const stepFields: Record<number, FieldName<FormValues>[]> = {
+  1: [
+    'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'confirmMemberMediCalNum',
+    'memberMrn', 'confirmMemberMrn', 'memberLanguage', 'referrerFirstName', 'referrerLastName',
+    'referrerEmail', 'referrerPhone', 'referrerRelationship'
+  ],
+  2: [
+    'memberPhone', 'memberEmail', 'isBestContact', 'hasCapacity',
+    'bestContactName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
+    'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
+  ],
+  3: [
+    'currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip',
+    'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'healthPlan'
+  ],
+  4: [
+    'pathway', 'eligibilityCriteria', 'ispContactName', 'ispContactAgency', 'ispContactPhone', 'hasPrefRCFE'
+  ],
+};
+
 
 const steps = [
   { id: 1, name: 'Member & Referrer Info' },
@@ -142,7 +163,8 @@ export default function CsSummaryFormPage() {
   const { trigger, handleSubmit } = methods;
 
   const nextStep = async () => {
-    const isValid = await trigger(); // You can pass field names for the current step
+    const fieldsToValidate = stepFields[currentStep];
+    const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       if (currentStep < steps.length) {
         setCurrentStep(currentStep + 1);
