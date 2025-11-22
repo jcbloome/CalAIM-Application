@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -83,7 +84,7 @@ export default function ProgramInfoPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{__html: section.content }}/>
+                            <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{__html: section.content }}/>
                         </CardContent>
                     </Card>
                 ))}
