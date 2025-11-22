@@ -63,10 +63,10 @@ export default function Step4() {
           <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={control} name="ispFirstName" render={({ field }) => (
-                    <FormItem><FormLabel>First Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={control} name="ispLastName" render={({ field }) => (
-                    <FormItem><FormLabel>Last Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,10 +79,10 @@ export default function Step4() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={control} name="ispPhone" render={({ field }) => (
-                    <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={control} name="ispEmail" render={({ field }) => (
-                    <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
           </CardContent>
@@ -157,7 +157,7 @@ export default function Step4() {
             name="hasPrefRCFE"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel>Has a preferred assisted living facility (RCFE) been chosen? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Has a preferred assisted living facility (RCFE) been chosen?</FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
@@ -172,10 +172,10 @@ export default function Step4() {
           <div className="p-4 border rounded-md space-y-4">
               <h3 className="font-medium">Preferred Facility Details</h3>
               <FormField control={control} name="rcfeName" render={({ field }) => (
-                  <FormItem><FormLabel>Facility Name {showRCFEDetails && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Facility Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={control} name="rcfeAddress" render={({ field }) => (
-                  <FormItem><FormLabel>Facility Address {showRCFEDetails && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Facility Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
               )} />
                <FormField control={control} name="rcfeAdminName" render={({ field }) => (
                   <FormItem><FormLabel>Administrator Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>

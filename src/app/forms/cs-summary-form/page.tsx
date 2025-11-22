@@ -19,111 +19,74 @@ import Step3 from './components/Step3';
 import Step4 from './components/Step4';
 import { Header } from '@/components/Header';
 
+// Minimal schema to allow progression
 const formSchema = z.object({
-  // Step 1
-  memberFirstName: z.string().min(1, 'First name is required'),
-  memberLastName: z.string().min(1, 'Last name is required'),
-  memberDob: z.date({ required_error: 'Date of birth is required' }),
-  memberAge: z.number().optional(),
-  memberMediCalNum: z.string().min(1, 'Medi-Cal number is required'),
-  confirmMemberMediCalNum: z.string(),
-  memberMrn: z.string().min(1, 'MRN is required'),
-  confirmMemberMrn: z.string(),
-  memberLanguage: z.string().min(1, 'Preferred language is required'),
-  referrerFirstName: z.string().min(1, 'First name is required'),
-  referrerLastName: z.string().min(1, 'Last name is required'),
-  referrerEmail: z.string().email(),
-  referrerPhone: z.string().min(1, 'Phone number is required'),
-  referrerRelationship: z.string().min(1, 'Relationship is required'),
+  memberFirstName: z.string().optional(),
+  memberLastName: z.string().optional(),
+  memberDob: z.any().optional(),
+  memberAge: z.any().optional(),
+  memberMediCalNum: z.string().optional(),
+  confirmMemberMediCalNum: z.string().optional(),
+  memberMrn: z.string().optional(),
+  confirmMemberMrn: z.string().optional(),
+  memberLanguage: z.string().optional(),
+  referrerFirstName: z.string().optional(),
+  referrerLastName: z.string().optional(),
+  referrerEmail: z.string().optional(),
+  referrerPhone: z.string().optional(),
+  referrerRelationship: z.string().optional(),
   memberPhone: z.string().optional(),
-  memberEmail: z.string().email().optional().or(z.literal('')),
-  isBestContact: z.boolean().default(false),
+  memberEmail: z.string().optional(),
+  isBestContact: z.boolean().optional(),
   bestContactName: z.string().optional(),
   bestContactRelationship: z.string().optional(),
   bestContactPhone: z.string().optional(),
-  bestContactEmail: z.string().email().optional().or(z.literal('')),
+  bestContactEmail: z.string().optional(),
   bestContactLanguage: z.string().optional(),
-  hasCapacity: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'Please select an option for capacity.' }),
-  hasLegalRep: z.enum(['Yes', 'No']).optional(),
+  hasCapacity: z.any().optional(),
+  hasLegalRep: z.any().optional(),
   repName: z.string().optional(),
   repRelationship: z.string().optional(),
   repPhone: z.string().optional(),
-  repEmail: z.string().email().optional().or(z.literal('')),
+  repEmail: z.string().optional(),
   repLanguage: z.string().optional(),
-
-  // Step 2
-  currentLocation: z.string().min(1, 'Current location is required'),
-  currentAddress: z.string().min(1, 'Address is required'),
-  currentCity: z.string().min(1, 'City is required'),
-  currentState: z.string().min(1, 'State is required'),
-  currentZip: z.string().min(1, 'ZIP code is required'),
-  copyAddress: z.boolean().default(false),
+  currentLocation: z.string().optional(),
+  currentAddress: z.string().optional(),
+  currentCity: z.string().optional(),
+  currentState: z.string().optional(),
+  currentZip: z.string().optional(),
+  copyAddress: z.boolean().optional(),
   customaryAddress: z.string().optional(),
   customaryCity: z.string().optional(),
   customaryState: z.string().optional(),
   customaryZip: z.string().optional(),
-
-  // Step 3
-  healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
-  pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
+  healthPlan: z.any().optional(),
+  pathway: z.any().optional(),
   meetsSnfTransitionCriteria: z.boolean().optional(),
   meetsSnfDiversionCriteria: z.boolean().optional(),
   snfDiversionReason: z.string().optional(),
-  
-  // Step 4
-  ispFirstName: z.string().min(1, "ISP First Name is required."),
-  ispLastName: z.string().min(1, "ISP Last Name is required."),
+  ispFirstName: z.string().optional(),
+  ispLastName: z.string().optional(),
   ispRelationship: z.string().optional(),
   ispFacilityName: z.string().optional(),
-  ispPhone: z.string().min(1, "ISP Phone is required."),
-  ispEmail: z.string().email({ message: "Invalid email address." }).min(1, "ISP Email is required."),
-  ispCopyCurrent: z.boolean().default(false),
-  ispCopyCustomary: z.boolean().default(false),
+  ispPhone: z.string().optional(),
+  ispEmail: z.string().optional(),
+  ispCopyCurrent: z.boolean().optional(),
+  ispCopyCustomary: z.boolean().optional(),
   ispAddress: z.string().optional(),
   ispCity: z.string().optional(),
   ispState: z.string().optional(),
-  ispZip: z.string().optional(),
+ispaZip: z.string().optional(),
   ispCounty: z.string().optional(),
-  onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
-  hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: 'Please make a selection.' }),
+  onALWWaitlist: z.any().optional(),
+  hasPrefRCFE: z.any().optional(),
   rcfeName: z.string().optional(),
   rcfeAdminName: z.string().optional(),
   rcfeAdminPhone: z.string().optional(),
-  rcfeAdminEmail: z.string().email().optional().or(z.literal('')),
+  rcfeAdminEmail: z.string().optional(),
   rcfeAddress: z.string().optional(),
-})
-.refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
-  message: "Medi-Cal numbers don't match",
-  path: ["confirmMemberMediCalNum"],
-})
-.refine(data => data.memberMrn === data.confirmMemberMrn, {
-    message: "MRNs don't match",
-    path: ["confirmMemberMrn"],
-})
-.superRefine((data, ctx) => {
-    if (data.pathway === 'SNF Diversion' && !data.meetsSnfDiversionCriteria) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "You must confirm that all SNF Diversion criteria have been met.",
-            path: ['meetsSnfDiversionCriteria'],
-        });
-    }
-    if (data.pathway === 'SNF Transition' && !data.meetsSnfTransitionCriteria) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "You must confirm that all SNF Transition criteria have been met.",
-            path: ['meetsSnfTransitionCriteria'],
-        });
-    }
-    if (data.hasPrefRCFE === 'Yes') {
-        if (!data.rcfeName) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Name is required.", path: ['rcfeName'] });
-        }
-        if (!data.rcfeAddress) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Address is required.", path: ['rcfeAddress'] });
-        }
-    }
 });
+
 
 export type FormValues = z.infer<typeof formSchema>;
 
@@ -159,7 +122,6 @@ function CsSummaryFormComponent() {
       copyAddress: false,
       ispCopyCurrent: false,
       ispCopyCustomary: false,
-      hasLegalRep: 'No',
     },
     mode: 'onChange',
   });

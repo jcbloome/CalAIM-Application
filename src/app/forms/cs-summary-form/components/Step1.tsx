@@ -48,7 +48,7 @@ export default function Step1() {
               name="memberFirstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>First Name</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -62,7 +62,7 @@ export default function Step1() {
               name="memberLastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Last Name</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -78,7 +78,7 @@ export default function Step1() {
                 name="memberDob"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>Date of Birth</FormLabel>
                     <Popover>
                         <PopoverTrigger asChild>
                         <FormControl>
@@ -89,7 +89,7 @@ export default function Step1() {
                                 !field.value && 'text-muted-foreground'
                             )}
                             >
-                            {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                            {field.value ? format(new Date(field.value), 'PPP') : <span>Pick a date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                         </FormControl>
@@ -97,7 +97,7 @@ export default function Step1() {
                         <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                             mode="single"
-                            selected={field.value}
+                            selected={field.value ? new Date(field.value) : undefined}
                             onSelect={field.onChange}
                             captionLayout="dropdown-buttons"
                             fromYear={1900}
@@ -131,7 +131,7 @@ export default function Step1() {
               name="memberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Medi-Cal Number</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -144,7 +144,7 @@ export default function Step1() {
               name="confirmMemberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Confirm Medi-Cal Number</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -159,7 +159,7 @@ export default function Step1() {
               name="memberMrn"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>MRN <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>MRN</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -172,7 +172,7 @@ export default function Step1() {
               name="confirmMemberMrn"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm MRN <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Confirm MRN</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -186,7 +186,7 @@ export default function Step1() {
             name="memberLanguage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preferred Language <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Preferred Language</FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -209,7 +209,7 @@ export default function Step1() {
               name="referrerFirstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>First Name</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
@@ -223,7 +223,7 @@ export default function Step1() {
               name="referrerLastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Last Name</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
@@ -239,7 +239,7 @@ export default function Step1() {
               name="referrerEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input type="email" {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
@@ -253,7 +253,7 @@ export default function Step1() {
               name="referrerPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
                     <Input type="tel" {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -268,7 +268,7 @@ export default function Step1() {
             name="referrerRelationship"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Relationship to Member <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Relationship to Member</FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -363,7 +363,7 @@ export default function Step1() {
                 name="hasCapacity"
                 render={({ field }) => (
                     <FormItem className="space-y-3">
-                    <FormLabel>Does member have capacity to make their own decisions? <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>Does member have capacity to make their own decisions?</FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>

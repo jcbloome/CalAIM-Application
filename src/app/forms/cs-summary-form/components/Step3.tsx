@@ -25,7 +25,7 @@ export default function Step3() {
             name="healthPlan"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Health Plan <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Health Plan</FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Kaiser" /></FormControl><FormLabel className="font-normal">Kaiser Permanente</FormLabel></FormItem>
@@ -51,7 +51,7 @@ export default function Step3() {
             name="pathway"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel>Pathway Selection <span className="text-destructive">*</span></FormLabel>
+                <FormLabel>Pathway Selection</FormLabel>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormItem>
@@ -92,7 +92,7 @@ export default function Step3() {
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for SNF Transition have been met. <span className="text-destructive">*</span></FormLabel>
+                                <FormLabel>All criteria for SNF Transition have been met.</FormLabel>
                             </div>
                             <FormMessage />
                         </FormItem>
@@ -117,7 +117,7 @@ export default function Step3() {
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for SNF Diversion have been met. <span className="text-destructive">*</span></FormLabel>
+                                <FormLabel>All criteria for SNF Diversion have been met.</FormLabel>
                             </div>
                             <FormMessage />
                         </FormItem>

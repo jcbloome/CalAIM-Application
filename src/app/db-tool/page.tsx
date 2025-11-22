@@ -36,7 +36,7 @@ const fakeApplicationTemplate = {
     bestContactEmail: 'best@contact.com',
     bestContactLanguage: 'English',
     hasCapacity: 'Yes' as const,
-    hasLegalRep: 'No' as const, 
+    hasLegalRep: 'Yes' as const, 
     repName: 'Legal Rep',
     repRelationship: 'Lawyer',
     repPhone: '(555) 111-2222',
@@ -58,8 +58,8 @@ const fakeApplicationTemplate = {
     // Step 3: Health Plan & Pathway
     healthPlan: 'Health Net' as const,
     pathway: 'SNF Diversion' as const,
-    meetsSnfTransitionCriteria: false, // Set to false since pathway is Diversion
-    meetsSnfDiversionCriteria: true, // Must be true if pathway is SNF Diversion
+    meetsSnfTransitionCriteria: true,
+    meetsSnfDiversionCriteria: true,
     snfDiversionReason: 'Member requires substantial help with ADLs but can be safely cared for in the community with support.',
     
     // Step 4: ISP & Facility Selection
@@ -77,7 +77,7 @@ const fakeApplicationTemplate = {
     ispZip: '90213',
     ispCounty: 'Los Angeles',
     onALWWaitlist: 'No' as const,
-    hasPrefRCFE: 'Yes' as const, // Must be 'Yes' to satisfy validation
+    hasPrefRCFE: 'Yes' as const,
     rcfeName: 'The Golden Years RCFE',
     rcfeAdminName: 'Admin Person',
     rcfeAdminPhone: '(555) 111-2222',
