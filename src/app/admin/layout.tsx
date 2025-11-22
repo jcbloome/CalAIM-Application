@@ -9,9 +9,10 @@ import {
   FileCheck2,
   PawPrint,
   ShieldAlert,
+  LogOut,
 } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +29,7 @@ const ADMIN_EMAIL = 'jason@carehomefinders.com';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const router = useRouter();
 
   if (isUserLoading) {
@@ -38,14 +40,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!user) {
-    router.push('/login');
+  // If not logged in and not on the login page, redirect to admin login
+  if (!user && pathname !== '/admin/login') {
+    router.push('/admin/login');
     return null;
   }
   
-  const isAuthorized = user.email === ADMIN_EMAIL;
+  // If on the login page, just render children (the login page)
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  const isAuthorized = user?.email === ADMIN_EMAIL;
 
   if (!isAuthorized) {
+    const handleSignOut = async () => {
+      if (auth) await auth.signOut();
+      router.push('/admin/login');
+    }
     return (
       <div className="flex items-center justify-center h-screen bg-muted/40">
         <Card className="w-full max-w-md text-center">
@@ -55,11 +67,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     Access Denied
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
                 <p>You are not authorized to view this page.</p>
-                <Button asChild className="mt-4">
-                    <Link href="/applications">Go to My Applications</Link>
-                </Button>
+                <div className="flex items-center justify-center gap-4">
+                  <Button asChild>
+                      <Link href="/applications">Go to My Applications</Link>
+                  </Button>
+                   <Button variant="outline" onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" /> Log Out
+                  </Button>
+                </div>
             </CardContent>
         </Card>
       </div>
