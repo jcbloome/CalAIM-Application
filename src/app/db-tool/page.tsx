@@ -22,26 +22,26 @@ const fakeApplicationTemplate = {
     memberMrn: 'MRN-TEST-001',
     confirmMemberMrn: 'MRN-TEST-001',
     memberLanguage: 'English',
-    referrerFirstName: 'Jason', // Will be populated by user profile
-    referrerLastName: 'Bloome', // Will be populated by user profile
-    referrerEmail: 'jason.bloome@example.com', // Will be populated by user profile
+    referrerFirstName: 'Jason', // Populated by user profile
+    referrerLastName: 'Bloome', // Populated by user profile
+    referrerEmail: 'jason.bloome@example.com', // Populated by user profile
     referrerPhone: '(555) 123-4567',
     referrerRelationship: 'Social Worker',
     memberPhone: '(555) 987-6543',
     memberEmail: 'test.user@example.com',
-    isBestContact: true, // Set to true to satisfy conditional validation
-    bestContactName: null,
-    bestContactRelationship: null,
-    bestContactPhone: null,
-    bestContactEmail: null,
-    bestContactLanguage: null,
+    isBestContact: false, // Set to false to satisfy conditional validation
+    bestContactName: 'Best Contact',
+    bestContactRelationship: 'Family Member',
+    bestContactPhone: '(555) 555-0000',
+    bestContactEmail: 'best@contact.com',
+    bestContactLanguage: 'English',
     hasCapacity: 'Yes' as const,
-    hasLegalRep: 'No' as const, // Set to 'No' to satisfy conditional validation
-    repName: null,
-    repRelationship: null,
-    repPhone: null,
-    repEmail: null,
-    repLanguage: null,
+    hasLegalRep: 'Yes' as const, // Set to 'Yes' to trigger validation
+    repName: 'Legal Rep',
+    repRelationship: 'Lawyer',
+    repPhone: '(555) 111-1111',
+    repEmail: 'legal@rep.com',
+    repLanguage: 'English',
 
     // Step 2: Location Information
     currentLocation: 'SNF',
@@ -77,7 +77,7 @@ const fakeApplicationTemplate = {
     ispZip: '90213',
     ispCounty: 'Los Angeles',
     onALWWaitlist: 'No' as const,
-    hasPrefRCFE: 'Yes' as const,
+    hasPrefRCFE: 'Yes' as const, // Must be 'Yes' to satisfy validation
     rcfeName: 'The Golden Years RCFE',
     rcfeAdminName: 'Admin Person',
     rcfeAdminPhone: '(555) 111-2222',
@@ -126,8 +126,12 @@ export default function DbToolPage() {
                 referrerEmail: user.email || '',
                 lastUpdated: serverTimestamp(),
             };
+             // Sanitize data: convert undefined to null
+            const sanitizedData = Object.fromEntries(
+                Object.entries(dataToSave).map(([key, value]) => [key, value === undefined ? null : value])
+            );
 
-            await setDoc(docRef, dataToSave);
+            await setDoc(docRef, sanitizedData);
 
             toast({
                 title: 'Success!',
