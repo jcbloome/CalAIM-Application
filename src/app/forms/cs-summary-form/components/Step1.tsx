@@ -211,7 +211,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
+                    <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
                   <FormDescription>e.g., Jane</FormDescription>
                   <FormMessage />
@@ -225,7 +225,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
+                    <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
                   <FormDescription>e.g., Smith</FormDescription>
                   <FormMessage />
@@ -241,7 +241,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input type="email" {...field} value={field.value ?? ''} />
+                    <Input type="email" {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
                   <FormDescription>e.g., jane.smith@example.com</FormDescription>
                   <FormMessage />

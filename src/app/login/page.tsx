@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useAuth, useFirestore } from '@/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,10 +15,15 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function LoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
   const [isSigningIn, setIsSigningIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -26,11 +32,37 @@ export default function LoginPage() {
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    if (!auth || !firestore) {
+      setError("Firebase services are not available.");
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not connect to Firebase. Please try again later.',
+      });
+      return;
+    }
+
     try {
       if (isSigningIn) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Update Firebase Auth profile
+        await updateProfile(user, {
+          displayName: `${firstName} ${lastName}`
+        });
+
+        // Create user document in Firestore
+        const userDocRef = doc(firestore, 'users', user.uid);
+        await setDoc(userDocRef, {
+          id: user.uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: user.email,
+        });
       }
       toast({
         title: `Successfully ${isSigningIn ? 'signed in' : 'signed up'}!`,
@@ -68,6 +100,32 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleAuthAction} className="space-y-4">
+            {!isSigningIn && (
+               <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    required
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                  />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    required
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -87,6 +145,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                minLength={6}
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}

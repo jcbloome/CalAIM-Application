@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, FormProvider, FieldName } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, setDoc, getDoc, serverTimestamp, collection } from 'firebase/firestore';
 
 import Step1 from './components/Step1';
@@ -143,6 +143,15 @@ function CsSummaryFormComponent() {
   const firestore = useFirestore();
   const applicationId = searchParams.get('applicationId');
 
+  const userProfileDocRef = useMemo(() => {
+    if (user && firestore) {
+      return doc(firestore, `users/${user.uid}`);
+    }
+    return null;
+  }, [user, firestore]);
+  
+  const { data: userProfile } = useDoc(userProfileDocRef);
+
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -152,6 +161,15 @@ function CsSummaryFormComponent() {
       ispCopyCustomary: false,
     }
   });
+
+  useEffect(() => {
+    // Pre-fill referrer info from user profile when it loads
+    if (userProfile && !applicationId) { // Only pre-fill for new applications
+      methods.setValue('referrerFirstName', userProfile.firstName, { shouldValidate: true });
+      methods.setValue('referrerLastName', userProfile.lastName, { shouldValidate: true });
+      methods.setValue('referrerEmail', userProfile.email, { shouldValidate: true });
+    }
+  }, [userProfile, methods, applicationId]);
 
   useEffect(() => {
     const fetchApplicationData = async () => {
