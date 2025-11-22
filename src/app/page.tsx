@@ -14,7 +14,7 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <Card className="w-full max-w-lg shadow-2xl">
+        <Card className="w-full max-w-2xl shadow-2xl">
           <CardHeader className="items-center text-center p-6">
             {mascot && (
               <Image
