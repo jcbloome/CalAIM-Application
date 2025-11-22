@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Users,
   LayoutGrid,
@@ -8,8 +8,11 @@ import {
   Activity,
   FileCheck2,
   PawPrint,
+  ShieldAlert,
 } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
+import { useUser } from '@/firebase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const menuItems = [
   { href: '/admin/applications', label: 'Applications', icon: Users },
@@ -18,8 +21,49 @@ const menuItems = [
   { href: '/admin/activity-log', label: 'Activity Log', icon: Activity },
 ];
 
+// Hardcoded admin email
+const ADMIN_EMAIL = 'jason@carehomefinders.com';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+  
+  const isAuthorized = user.email === ADMIN_EMAIL;
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-muted/40">
+        <Card className="w-full max-w-md text-center">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2">
+                    <ShieldAlert className="h-6 w-6 text-destructive" />
+                    Access Denied
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>You are not authorized to view this page.</p>
+                <Button asChild className="mt-4">
+                    <Link href="/applications">Go to My Applications</Link>
+                </Button>
+            </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
