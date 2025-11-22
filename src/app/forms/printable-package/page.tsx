@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Header } from '@/components/Header';
@@ -7,13 +8,13 @@ import { FileText, Printer, ArrowRight, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 const forms = [
-    { name: 'CS Member Summary', icon: FileText },
-    { name: 'Program Information & Acknowledgment', icon: FileText },
-    { name: 'HIPAA Authorization', icon: FileText },
-    { name: 'Liability Waiver', icon: FileText },
-    { name: 'Freedom of Choice Waiver', icon: FileText },
-    { name: 'Declaration of Eligibility (for SNF Diversion only)', icon: FileText },
-    { name: 'LIC 602A - Physician\'s Report', icon: ExternalLink },
+    { name: 'CS Member Summary', icon: FileText, href: '/forms/cs-summary-form/printable' },
+    { name: 'Program Information & Acknowledgment', icon: FileText, href: '/info' },
+    { name: 'HIPAA Authorization', icon: FileText, href: '/forms/hipaa-authorization/printable' },
+    { name: 'Liability Waiver', icon: FileText, href: '/forms/liability-waiver/printable' },
+    { name: 'Freedom of Choice Waiver', icon: FileText, href: '/forms/freedom-of-choice/printable' },
+    { name: 'Declaration of Eligibility (for SNF Diversion only)', icon: FileText, href: '#' },
+    { name: 'LIC 602A - Physician\'s Report', icon: ExternalLink, href: '#' },
 ];
 
 
@@ -68,9 +69,11 @@ export default function ApplicationSubmissionPage() {
                             <div className="space-y-2">
                                 <p className="text-sm text-muted-foreground mb-4">Print individual forms:</p>
                                 {forms.map((form) => (
-                                    <Button key={form.name} variant="outline" className="w-full justify-start text-left bg-background">
+                                    <Button key={form.name} variant="outline" className="w-full justify-start text-left bg-background" asChild>
+                                      <Link href={form.href} target={form.href.startsWith('http') ? '_blank' : '_self'}>
                                         <form.icon className="mr-2 h-4 w-4" />
                                         {form.name}
+                                      </Link>
                                     </Button>
                                 ))}
                                 <div className="pt-4">
