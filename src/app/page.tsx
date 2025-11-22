@@ -1,12 +1,29 @@
+
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
   const wolfMascot = PlaceHolderImages.find(p => p.id === 'wolf-mascot');
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading) {
+      if (user) {
+        router.replace('/applications');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [user, isUserLoading, router]);
 
   return (
     <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
@@ -28,12 +45,7 @@ export default function Home() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center p-6 pt-0">
-          <Button asChild size="lg" className="w-full">
-            <Link href="/info">
-              Let&apos;s Go!
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+           <p>Loading...</p>
         </CardContent>
       </Card>
     </main>

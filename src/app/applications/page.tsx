@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2, MoreVertical } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -15,15 +16,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { applications as mockApplications } from '@/lib/data';
 import type { Application, ApplicationStatus } from '@/lib/definitions';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Header } from '@/components/Header';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 const getBadgeVariant = (status: ApplicationStatus) => {
   switch (status) {
@@ -44,11 +40,13 @@ const ApplicationsTable = ({
   applications,
   onSelectionChange,
   selection,
+  isLoading,
 }: {
   title: string;
   applications: Application[];
   onSelectionChange?: (id: string, isSelected: boolean) => void;
   selection?: string[];
+  isLoading: boolean;
 }) => {
   return (
     <Card>
@@ -67,55 +65,86 @@ const ApplicationsTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {applications.map(app => (
-              <TableRow key={app.id}>
-                {onSelectionChange && (
-                  <TableCell>
-                    <Checkbox
-                      checked={selection?.includes(app.id)}
-                      onCheckedChange={checked => onSelectionChange(app.id, !!checked)}
-                      aria-label={`Select application for ${app.memberName}`}
-                    />
-                  </TableCell>
-                )}
-                <TableCell className="font-medium">{app.memberName}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={getBadgeVariant(app.status)}>
-                    {app.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{app.lastUpdated}</TableCell>
-                <TableCell className="text-right">
-                  {app.status === 'In Progress' || app.status === 'Requires Revision' ? (
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/pathway?applicationId=${app.id}`}>Continue</Link>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/pathway?applicationId=${app.id}`}>View</Link>
-                    </Button>
-                  )}
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={onSelectionChange ? 5 : 4} className="h-24 text-center">
+                  Loading applications...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : applications.length > 0 ? (
+              applications.map(app => (
+                <TableRow key={app.id}>
+                  {onSelectionChange && (
+                    <TableCell>
+                      <Checkbox
+                        checked={selection?.includes(app.id)}
+                        onCheckedChange={checked => onSelectionChange(app.id, !!checked)}
+                        aria-label={`Select application for ${app.memberName}`}
+                      />
+                    </TableCell>
+                  )}
+                  <TableCell className="font-medium">{app.memberName}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={getBadgeVariant(app.status)}>
+                      {app.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{app.lastUpdated}</TableCell>
+                  <TableCell className="text-right">
+                    {app.status === 'In Progress' || app.status === 'Requires Revision' ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/pathway?applicationId=${app.id}`}>Continue</Link>
+                      </Button>
+                    ) : (
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/pathway?applicationId=${app.id}`}>View</Link>
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={onSelectionChange ? 5 : 4} className="h-24 text-center">
+                  No applications found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
-        {applications.length === 0 && (
-          <div className="text-center p-8 text-muted-foreground">No applications found.</div>
-        )}
       </CardContent>
     </Card>
   );
 };
 
 export default function MyApplicationsPage() {
-  const [applications, setApplications] = useState(mockApplications);
-  const [selected, setSelected] = useState<string[]>([]);
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
 
-  const inProgressApps = applications.filter(
+  const applicationsQuery = user ? collection(firestore, `users/${user.uid}/applications`) : null;
+  const { data: applications = [], isLoading: isLoadingApplications } = useCollection<Application>(applicationsQuery);
+
+  const [selected, setSelected] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <p>Loading...</p>
+        </div>
+    );
+  }
+
+  const inProgressApps = (applications || []).filter(
     app => app.status === 'In Progress' || app.status === 'Requires Revision'
   );
-  const completedApps = applications.filter(
+  const completedApps = (applications || []).filter(
     app => app.status === 'Completed & Submitted' || app.status === 'Approved'
   );
 
@@ -126,7 +155,8 @@ export default function MyApplicationsPage() {
   };
   
   const handleDelete = () => {
-    setApplications(apps => apps.filter(app => !selected.includes(app.id)));
+    // Logic to delete from Firebase would go here
+    console.log('Deleting:', selected);
     setSelected([]);
   }
 
@@ -156,10 +186,12 @@ export default function MyApplicationsPage() {
             applications={inProgressApps}
             onSelectionChange={handleSelectionChange}
             selection={selected}
+            isLoading={isLoadingApplications}
           />
           <ApplicationsTable
             title="Completed & Submitted Applications"
             applications={completedApps}
+            isLoading={isLoadingApplications}
           />
         </div>
       </main>
