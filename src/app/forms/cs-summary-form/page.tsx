@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, FormProvider, FieldName } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -139,7 +139,7 @@ function CsSummaryFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const applicationId = searchParams.get('applicationId');
 
@@ -161,6 +161,12 @@ function CsSummaryFormComponent() {
       ispCopyCustomary: false,
     }
   });
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   useEffect(() => {
     // Pre-fill referrer info from user profile when it loads
@@ -246,6 +252,18 @@ function CsSummaryFormComponent() {
       });
     }
   };
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4">Loading user data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const progress = (currentStep / steps.length) * 100;
 
