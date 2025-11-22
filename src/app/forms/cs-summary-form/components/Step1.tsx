@@ -31,7 +31,7 @@ export default function Step1() {
     } else {
       setValue('memberAge', undefined, { shouldValidate: true });
     }
-  }, [dob, setValue, watch]);
+  }, [dob, setValue]);
 
   return (
     <div className="space-y-6">
