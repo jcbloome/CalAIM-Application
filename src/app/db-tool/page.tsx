@@ -29,14 +29,14 @@ const fakeApplicationTemplate = {
     referrerRelationship: 'Social Worker',
     memberPhone: '(555) 987-6543',
     memberEmail: 'test.user@example.com',
-    isBestContact: false,
+    isBestContact: true, // Set to true to satisfy conditional validation
     bestContactName: null,
     bestContactRelationship: null,
     bestContactPhone: null,
     bestContactEmail: null,
     bestContactLanguage: null,
     hasCapacity: 'Yes' as const,
-    hasLegalRep: 'No' as const,
+    hasLegalRep: 'No' as const, // Set to 'No' to satisfy conditional validation
     repName: null,
     repRelationship: null,
     repPhone: null,
@@ -59,7 +59,7 @@ const fakeApplicationTemplate = {
     healthPlan: 'Health Net' as const,
     pathway: 'SNF Diversion' as const,
     meetsSnfTransitionCriteria: null,
-    meetsSnfDiversionCriteria: true,
+    meetsSnfDiversionCriteria: true, // Must be true if pathway is SNF Diversion
     snfDiversionReason: 'Member requires substantial help with ADLs but can be safely cared for in the community with support.',
     
     // Step 4: ISP & Facility Selection
