@@ -2,18 +2,16 @@
 
 import React from 'react';
 import {
-  Info,
-  Heart,
-  Users,
   DollarSign,
   FileText,
   CheckCircle,
   HelpCircle,
+  Users,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { GlossaryDialog } from '@/components/GlossaryDialog';
-import { ProgramInformationContent } from './components/ProgramInformationContent';
+import { PrintableProgramInfo } from './components/PrintableProgramInfo';
 
 export default function ProgramInfoPage() {
 
@@ -64,10 +62,10 @@ export default function ProgramInfoPage() {
                     <CardTitle>Financial & Health Plan Information</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-base max-w-none">
-                    <p><strong>Medicare vs. Medi-Cal:</strong> Medicare is federal insurance for those 65+ or with disabilities, covering doctor visits and hospital stays. Medi-Cal is a state program for low-income individuals. CalAIM is a Medi-Cal program.</p>
-                    <p><strong>Room and Board:</strong> The member pays a "Room and Board" portion, typically based on their Social Security income. Members with income over $1,599/month usually pay $1,420, retaining $179 for personal needs. Those with less may be eligible for a supplement.</p>
-                    <p><strong>Medi-Cal Share of Cost (SOC):</strong> CalAIM participants cannot have a SOC. If your income is over the limit for free Medi-Cal, you may have a SOC, which is like a deductible. This must be eliminated to participate in the program.</p>
-                    <p><strong>Switching Health Plans:</strong> To enroll through Connections, you must be a member of Health Net or Kaiser. You can change your plan by contacting California Health Care Options.</p>
+                    <p><strong>Medicare vs. Medi-Cal:</strong> Medicare is a federal health insurance program primarily for people aged 65 or older and some younger people with disabilities. Medi-Cal is a state and federal program providing health coverage to low-income individuals. CalAIM is a Medi-Cal program.</p>
+                    <p><strong>"Room and Board" Payments:</strong> The member pays a "Room and Board" portion, usually dependent on their social security income. The amount can vary. For members with lower income, a supplement may be available.</p>
+                    <p><strong>Medi-Cal Share of Cost (SOC):</strong> CalAIM participants are not allowed to have a Medi-Cal SOC. A SOC is like a deductible that must be paid before Medi-Cal covers costs. If you have a SOC, it must be eliminated to join the program.</p>
+                    <p><strong>Switching Health Plans:</strong> To enroll in CalAIM through Connections, you must be a member of Health Net or Kaiser. You can change your health plan by contacting California Health Care Options.</p>
                 </CardContent>
             </Card>
             
@@ -84,7 +82,7 @@ export default function ProgramInfoPage() {
                     <p>For members at risk of SNF admission who can be safely cared for in the community. This includes members transferring from home or a hospital.</p>
 
                     <h3 className="font-semibold text-lg mt-4">Individual Service Plan (ISP)</h3>
-                    <p>Connections will conduct an assessment to determine the level of care needed, which sets the payment rate for the assisted living facility.</p>
+                    <p>As part of the application, Connections will conduct an in-person or virtual assessment to determine the level of care needed, which sets the payment rate for the assisted living facility.</p>
                 </CardContent>
             </Card>
 
@@ -94,7 +92,7 @@ export default function ProgramInfoPage() {
                     <CardTitle>What Comes Next?</CardTitle>
                 </CardHeader>
                 <CardContent className="prose prose-base max-w-none">
-                     <p>The CS Member Summary Form comes next with information we need to process the application. After this form is completed, depending on the pathway (Health Plan and SNF Diversion vs. Transition) the application will guide you through the required forms.</p>
+                     <p>The CS Member Summary Form is the next step to gather the information we need to process your application. After you complete this form, the application will guide you through any other required documents based on your selected pathway and health plan.</p>
                 </CardContent>
             </Card>
 
@@ -102,7 +100,7 @@ export default function ProgramInfoPage() {
 
           {/* Content for print view */}
           <div className="hidden print:block">
-            <ProgramInformationContent />
+            <PrintableProgramInfo />
           </div>
         </div>
       </main>

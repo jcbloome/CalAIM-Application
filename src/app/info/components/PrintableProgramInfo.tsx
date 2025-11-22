@@ -14,10 +14,15 @@ const Acronym = ({ term, definition }: { term: string, definition: string }) => 
     </div>
 );
 
-export function ProgramInformationContent() {
+export function PrintableProgramInfo() {
     return (
         <article className="prose prose-lg max-w-none">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10">
+             <div className="text-center mb-10">
+                <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Program Information & Acknowledgment</h1>
+                <p className="mt-2 text-md text-gray-500">A comprehensive guide to the CalAIM Community Support for Assisted Transitions.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10 p-6 bg-gray-50 rounded-lg">
                 <Acronym term="MCP" definition="Managed Care Plan (e.g., your health insurance provider)." />
                 <Acronym term="RCFE" definition="Residential Care Facility for the Elderly." />
                 <Acronym term="ARF" definition="Adult Residential Facility." />
