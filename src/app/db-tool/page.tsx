@@ -12,11 +12,11 @@ import { Database, Loader2 } from 'lucide-react';
 
 // A more complete sample application record to be used as a template
 const fakeApplicationTemplate = {
-    // Step 1
+    // Step 1: Member & Contact Info
     memberFirstName: 'Test',
     memberLastName: 'User',
     memberDob: new Date(1960, 5, 15),
-    memberAge: 64,
+    memberAge: 64, // Auto-calculated, but good to have a value
     memberMediCalNum: '987654321',
     confirmMemberMediCalNum: '987654321',
     memberMrn: 'MRN-TEST-001',
@@ -30,10 +30,20 @@ const fakeApplicationTemplate = {
     memberPhone: '(555) 987-6543',
     memberEmail: 'test.user@example.com',
     isBestContact: false,
+    bestContactName: null,
+    bestContactRelationship: null,
+    bestContactPhone: null,
+    bestContactEmail: null,
+    bestContactLanguage: null,
     hasCapacity: 'Yes' as const,
     hasLegalRep: 'No' as const,
+    repName: null,
+    repRelationship: null,
+    repPhone: null,
+    repEmail: null,
+    repLanguage: null,
 
-    // Step 2
+    // Step 2: Location Information
     currentLocation: 'SNF',
     currentAddress: '123 Skilled Nursing Way',
     currentCity: 'Careville',
@@ -45,17 +55,33 @@ const fakeApplicationTemplate = {
     customaryState: 'CA',
     customaryZip: '90212',
 
-    // Step 3
+    // Step 3: Health Plan & Pathway
     healthPlan: 'Health Net' as const,
     pathway: 'SNF Diversion' as const,
+    meetsSnfTransitionCriteria: null,
     meetsSnfDiversionCriteria: true,
-
-    // Step 4
+    snfDiversionReason: 'Member requires substantial help with ADLs but can be safely cared for in the community with support.',
+    
+    // Step 4: ISP & Facility Selection
     ispFirstName: 'ISP',
     ispLastName: 'Contact',
+    ispRelationship: 'Coordinator',
+    ispFacilityName: 'Community Services Center',
     ispPhone: '(555) 555-5555',
+    ispEmail: 'isp@example.com',
+    ispCopyCurrent: false,
+    ispCopyCustomary: false,
+    ispAddress: '789 Assessment Dr',
+    ispCity: 'Planville',
+    ispState: 'CA',
+    ispZip: '90213',
+    ispCounty: 'Los Angeles',
+    onALWWaitlist: 'No' as const,
     hasPrefRCFE: 'Yes' as const,
     rcfeName: 'The Golden Years RCFE',
+    rcfeAdminName: 'Admin Person',
+    rcfeAdminPhone: '(555) 111-2222',
+    rcfeAdminEmail: 'rcfe-admin@example.com',
     rcfeAddress: '789 Sunshine Ave, Happy Town, CA',
 
     // Other app-level fields
