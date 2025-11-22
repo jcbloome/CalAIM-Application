@@ -20,10 +20,10 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('jcbloome@gmail.com');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('jason');
-  const [lastName, setLastName] = useState('bloome');
+  const [firstName, setFirstName] = useState('Jason');
+  const [lastName, setLastName] = useState('Bloome');
 
   const [isSigningIn, setIsSigningIn] = useState(true);
   const [error, setError] = useState<string | null>(null);

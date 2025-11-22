@@ -23,7 +23,7 @@ const menuItems = [
 ];
 
 // Hardcoded admin email
-const ADMIN_EMAIL = 'jason.bloome@example.com';
+const ADMIN_EMAIL = 'jason@carehomefinders.com';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
