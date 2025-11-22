@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Printer, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const Field = ({ label, className = '' }: { label: string; className?: string }) => (
-  <div className={`pt-2 ${className}`}>
-    <label className="block text-xs font-medium text-gray-700">{label}</label>
-    <div className="mt-1 h-5 border-b border-gray-400"></div>
-  </div>
-);
+const Field = ({ label, className = '', description }: { label: string; className?: string, description?: string }) => (
+    <div className={`pt-2 ${className}`}>
+      <label className="block text-xs font-medium text-gray-700">{label}</label>
+      <div className="mt-1 h-5 border-b border-gray-400"></div>
+      {description && <p className="text-xs text-gray-500 pt-1">{description}</p>}
+    </div>
+  );
 
 const LongField = ({ className = '' }: { className?: string }) => (
   <div className={`pt-2 ${className}`}>
@@ -28,7 +29,7 @@ export default function PrintableDeclarationOfEligibilityPage() {
   return (
     <div className="bg-gray-50 min-h-screen print:bg-white">
       <div className="container mx-auto py-8 px-4 print:p-0">
-        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none print:p-4">
+        <div className="bg-white p-4 sm:p-8 shadow-lg rounded-lg print:shadow-none print:p-4">
           <div className="flex justify-between items-start mb-8 print:hidden">
             <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">
@@ -56,7 +57,10 @@ export default function PrintableDeclarationOfEligibilityPage() {
                             I, <span className="inline-block border-b border-gray-400 w-56"></span>, in the professional capacity as a <span className="inline-block border-b border-gray-400 w-56"></span>, affirm that Member <span className="inline-block border-b border-gray-400 w-56"></span> is currently receiving a medically necessary Skilled Nursing Facility Level of Care (SNF LOC) or meets the minimum criteria for receiving SNF LOC services and, in lieu of entering a facility, is choosing to remain in the community and continue receiving medically necessary SNF LOC services in an assisted living facility for the following reason(s):
                         </p>
                     </div>
-                    <Field label="Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)" />
+                    <Field 
+                        label="Medi-Cal Number or Medical Record Number" 
+                        description="Medi-Cal Number for Health Net, Medical Record Number for Kaiser."
+                    />
 
                     <div className="mt-4">
                         <label className="block text-xs font-medium text-gray-700">1. Please provide a short narrative on why you believe the member is at risk for premature institutionalization and his/her need for the CS:</label>

@@ -131,10 +131,11 @@ export default function Step1() {
               name="memberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)</FormLabel>
+                  <FormLabel>Medi-Cal Number or Medical Record Number</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormDescription>Medi-Cal Number for Health Net, Medical Record Number for Kaiser.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -420,3 +421,5 @@ export default function Step1() {
     </div>
   );
 }
+
+    

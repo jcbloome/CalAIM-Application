@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Printer, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const Field = ({ label, className = '' }: { label: string; className?: string }) => (
-  <div className={`pt-2 ${className}`}>
-    <label className="block text-xs font-medium text-gray-700">{label}</label>
-    <div className="mt-1 h-5 border-b border-gray-400"></div>
-  </div>
-);
+const Field = ({ label, className = '', description }: { label: string; className?: string; description?: string }) => (
+    <div className={`pt-2 ${className}`}>
+      <label className="block text-xs font-medium text-gray-700">{label}</label>
+      <div className="mt-1 h-5 border-b border-gray-400"></div>
+      {description && <p className="text-xs text-gray-500 pt-1">{description}</p>}
+    </div>
+  );
+  
 
 const CheckboxField = ({ label }: { label: string }) => (
     <div className="flex items-center mt-2">
@@ -35,7 +37,10 @@ function PrintableCsSummaryFormContent() {
                   <Field label="Last Name" />
                   <Field label="Date of Birth (MM/DD/YYYY)" />
                   <Field label="Age" />
-                  <Field label="Medi-Cal Number (Health Net) or Medical Record Number (Kaiser)" />
+                  <Field 
+                    label="Medi-Cal Number or Medical Record Number" 
+                    description="Medi-Cal Number for Health Net, Medical Record Number for Kaiser."
+                  />
                   <Field label="Confirm Number" />
                   <Field label="Medical Record Number (MRN)" />
                   <Field label="Confirm Medical Record Number" />
@@ -221,7 +226,7 @@ export default function PrintableCsSummaryForm() {
   return (
     <div className="bg-gray-50 min-h-screen print:bg-white">
       <div className="container mx-auto py-8 px-4 print:p-0">
-        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none print:p-4">
+        <div className="bg-white p-4 sm:p-8 shadow-lg rounded-lg print:shadow-none print:p-4">
           <div className="flex justify-between items-start mb-8 print:hidden">
             <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">
@@ -247,4 +252,5 @@ export default function PrintableCsSummaryForm() {
   );
 }
 
+    
     
