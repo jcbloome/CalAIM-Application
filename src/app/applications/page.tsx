@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ApplicationStatus } from '@/lib/definitions';
 import { Header } from '@/components/Header';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, doc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, deleteDoc, Query } from 'firebase/firestore';
 
 // Define a type for the application data coming from Firestore
 interface ApplicationData {
@@ -132,7 +132,13 @@ export default function MyApplicationsPage() {
   const firestore = useFirestore();
   const router = useRouter();
 
-  const applicationsQuery = user ? collection(firestore, `users/${user.uid}/applications`) : null;
+  const applicationsQuery = useMemo(() => {
+    if (user && firestore) {
+      return collection(firestore, `users/${user.uid}/applications`);
+    }
+    return null;
+  }, [user, firestore]);
+  
   const { data: applications = [], isLoading: isLoadingApplications } = useCollection<ApplicationData>(applicationsQuery);
 
   const [selected, setSelected] = useState<string[]>([]);
