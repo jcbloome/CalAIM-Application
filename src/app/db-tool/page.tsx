@@ -6,25 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc, serverTimestamp, collection } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, collection, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Database, Loader2 } from 'lucide-react';
 
-// A more complete sample application record to be used as a template
+// A complete sample application record that satisfies all validation
 const fakeApplicationTemplate = {
     // Step 1: Member & Contact Info
     memberFirstName: 'Test',
     memberLastName: 'User',
-    memberDob: new Date(1960, 5, 15),
-    memberAge: 64, // Auto-calculated, but good to have a value
+    memberDob: Timestamp.fromDate(new Date(1960, 5, 15)),
+    memberAge: 64,
     memberMediCalNum: '987654321',
     confirmMemberMediCalNum: '987654321',
     memberMrn: 'MRN-TEST-001',
     confirmMemberMrn: 'MRN-TEST-001',
     memberLanguage: 'English',
-    referrerFirstName: '', // Will be populated by user profile
-    referrerLastName: '', // Will be populated by user profile
-    referrerEmail: '', // Will be populated by user profile
+    referrerFirstName: 'Jason', // Will be populated by user profile
+    referrerLastName: 'Bloome', // Will be populated by user profile
+    referrerEmail: 'jason.bloome@example.com', // Will be populated by user profile
     referrerPhone: '(555) 123-4567',
     referrerRelationship: 'Social Worker',
     memberPhone: '(555) 987-6543',
