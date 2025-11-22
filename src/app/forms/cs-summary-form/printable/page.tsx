@@ -23,36 +23,9 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-xl font-semibold text-gray-800 border-b pb-2 mb-4 mt-8">{children}</h2>
 );
 
-
-export default function PrintableCsSummaryForm() {
-
-  const handlePrint = () => {
-    window.print();
-  };
-  
+function PrintableCsSummaryFormContent() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white p-8 sm:p-12 shadow-lg rounded-lg print:shadow-none">
-          <div className="flex justify-between items-start mb-8 print:hidden">
-            <Button variant="outline" asChild>
-                <Link href="/forms/printable-package">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Return to Printable Forms
-                </Link>
-            </Button>
-            <Button onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print Form
-            </Button>
-          </div>
-          
-           <div className="text-center mb-10">
-                <h1 className="text-3xl font-bold text-gray-800 tracking-tight">CS Member Summary</h1>
-                <p className="mt-2 text-md text-gray-500 max-w-2xl mx-auto">This form gathers essential information about the member to determine eligibility for the CalAIM Community Supports program.</p>
-            </div>
-
-          <form>
+    <form>
             <div className="space-y-8">
               <div>
                 <SectionTitle>Member Information</SectionTitle>
@@ -187,6 +160,38 @@ export default function PrintableCsSummaryForm() {
               </div>
             </div>
           </form>
+  )
+}
+
+export default function PrintableCsSummaryForm() {
+
+  const handlePrint = () => {
+    window.print();
+  };
+  
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white p-8 sm:p-12 shadow-lg rounded-lg print:shadow-none">
+          <div className="flex justify-between items-start mb-8 print:hidden">
+            <Button variant="outline" asChild>
+                <Link href="/forms/printable-package">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Return to Printable Forms
+                </Link>
+            </Button>
+            <Button onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Print Form
+            </Button>
+          </div>
+          
+           <div className="text-center mb-10">
+                <h1 className="text-3xl font-bold text-gray-800 tracking-tight">CS Member Summary</h1>
+                <p className="mt-2 text-md text-gray-500 max-w-2xl mx-auto">This form gathers essential information about the member to determine eligibility for the CalAIM Community Supports program.</p>
+            </div>
+
+          <PrintableCsSummaryFormContent />
         </div>
       </div>
     </div>
