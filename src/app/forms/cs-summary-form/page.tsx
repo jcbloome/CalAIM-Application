@@ -66,8 +66,8 @@ const formSchema = z.object({
   // Step 3
   healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
   pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
-  snfTransitionEligibility: z.enum(['Yes', 'No', 'N/A']).optional(),
-  snfDiversionEligibility: z.enum(['Yes', 'No', 'N/A']).optional(),
+  meetsSnfTransitionCriteria: z.boolean().optional(),
+  meetsSnfDiversionCriteria: z.boolean().optional(),
   snfDiversionReason: z.string().optional(),
   
   // Step 4
@@ -116,7 +116,7 @@ const stepFields: Record<number, FieldName<FormValues>[]> = {
     'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip'
   ],
   3: [
-    'healthPlan', 'pathway', 'snfTransitionEligibility', 'snfDiversionEligibility', 'snfDiversionReason'
+    'healthPlan', 'pathway', 'meetsSnfTransitionCriteria', 'meetsSnfDiversionCriteria', 'snfDiversionReason'
   ],
   4: [
     'ispFirstName', 'ispLastName', 'ispRelationship', 'ispFacilityName', 'ispPhone', 'ispEmail',

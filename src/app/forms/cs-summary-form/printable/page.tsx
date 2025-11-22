@@ -133,22 +133,28 @@ function PrintableCsSummaryFormContent() {
                     <CheckboxField label="SNF Diversion" />
                 </div>
                 
-                <h3 className="text-lg font-medium text-gray-800 mt-6">SNF Transition Eligibility</h3>
-                <p className="text-sm text-gray-700 mt-2">Does the member meet all criteria for SNF Transition?</p>
-                <div className="flex gap-8">
-                    <CheckboxField label="Yes" />
-                    <CheckboxField label="No" />
-                    <CheckboxField label="N/A" />
+                <div className="mt-6 space-y-4">
+                    <h3 className="text-lg font-medium text-gray-800">SNF Transition Eligibility Requirements</h3>
+                    <p className="text-sm text-gray-600">Enables a current SNF resident to transfer to a RCFE or ARF.</p>
+                    <ul className="list-decimal pl-6 space-y-2 text-sm text-gray-700">
+                        <li>Has resided in a SNF for at least 60 consecutive days (which can include a combination of Medicare and Medi-Cal days and back and forth from SNF-hospital-SNF); and</li>
+                        <li>Is willing to live in RCFE as an alternative to a SNF; and</li>
+                        <li>Is able to safely reside in RCFE with appropriate and cost-effective supports and services.</li>
+                    </ul>
+                    <CheckboxField label="All criteria for SNF Transition have been met." />
                 </div>
 
-                <h3 className="text-lg font-medium text-gray-800 mt-6">SNF Diversion Eligibility</h3>
-                <p className="text-sm text-gray-700 mt-2">Does the member meet all criteria for SNF Diversion?</p>
-                <div className="flex gap-8">
-                    <CheckboxField label="Yes" />
-                    <CheckboxField label="No" />
-                    <CheckboxField label="N/A" />
+                <div className="mt-6 space-y-4">
+                    <h3 className="text-lg font-medium text-gray-800">SNF Diversion Eligibility Requirements</h3>
+                    <p className="text-sm text-gray-600">Transition a member who, without this support, would need to reside in a SNF and instead transitions him/her to RCFE or ARF.</p>
+                     <ul className="list-decimal pl-6 space-y-2 text-sm text-gray-700">
+                        <li>Interested in remaining in the community; and</li>
+                        <li>Is able to safely reside in RCFE with appropriate and cost-effective supports and services; and</li>
+                        <li>Must be currently at medically necessary SNF level of care: e.g., require substantial help with activities of daily living (help with dressing, bathing, incontinence, etc.) or at risk of premature institutionalization; and meet the criteria to receive those services in RCFE or ARF.</li>
+                    </ul>
+                    <CheckboxField label="All criteria for SNF Diversion have been met." />
+                    <Field label="Reason for SNF Diversion" className="sm:col-span-2" />
                 </div>
-                <Field label="Reason for SNF Diversion" className="sm:col-span-2" />
               </div>
 
               <div>
