@@ -34,8 +34,8 @@ export default function PrintableLiabilityWaiverPage() {
   
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white p-8 sm:p-12 shadow-lg rounded-lg print:shadow-none">
+      <div className="container mx-auto py-8 px-4">
+        <div className="bg-white p-8 shadow-lg rounded-lg print:shadow-none">
           <div className="flex justify-between items-start mb-8 print:hidden">
              <Button variant="outline" asChild>
                 <Link href="/forms/printable-package">
