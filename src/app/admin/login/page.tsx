@@ -2,8 +2,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth, useFirestore } from '@/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,21 +42,24 @@ function AdminLoginHeader() {
 
 export default function AdminLoginPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('jason@carehomefinders.com');
   const [password, setPassword] = useState('fisherman2');
+  const [firstName, setFirstName] = useState('Jason');
+  const [lastName, setLastName] = useState('Bloome');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
     
-    if (!auth) {
+    if (!auth || !firestore) {
       setError("Firebase auth service is not available.");
       toast({
         variant: 'destructive',
@@ -67,16 +71,39 @@ export default function AdminLoginPage() {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: 'Successfully signed in!' });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`
+      });
+
+      const userDocRef = doc(firestore, 'users', user.uid);
+      await setDoc(userDocRef, {
+        id: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email,
+      });
+
+      toast({ title: 'Admin account created successfully!' });
       router.push('/admin/applications');
     } catch (err: any) {
-      setError(err.message);
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Failed',
-        description: err.message,
-      });
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email is already in use. Please sign in.');
+        toast({
+          variant: 'destructive',
+          title: 'Account Exists',
+          description: 'This email is already registered. Try signing in instead.',
+        });
+      } else {
+        setError(err.message);
+        toast({
+          variant: 'destructive',
+          title: 'Authentication Failed',
+          description: err.message,
+        });
+      }
     } finally {
         setIsLoading(false);
     }
@@ -90,14 +117,36 @@ export default function AdminLoginPage() {
         <CardHeader className="items-center text-center p-6">
             <PawPrint className="h-12 w-12 text-primary mb-4" />
           <CardTitle className="text-3xl font-bold">
-            Admin Panel Login
+            Admin Account Setup
           </CardTitle>
           <CardDescription className="text-base">
-            Please sign in to access the administrator tools.
+            Create your administrator account.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleCreateAccount} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                  />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                  />
+                </div>
+              </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -132,9 +181,9 @@ export default function AdminLoginPage() {
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>
               ) : (
-                'Sign In'
+                'Create Admin Account'
               )}
             </Button>
           </form>
