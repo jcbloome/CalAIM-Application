@@ -77,7 +77,7 @@ export default function Step1() {
               control={control}
               name="memberDob"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
