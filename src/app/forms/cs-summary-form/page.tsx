@@ -43,7 +43,7 @@ const formSchema = z.object({
   bestContactPhone: z.string().optional(),
   bestContactEmail: z.string().email().optional().or(z.literal('')),
   bestContactLanguage: z.string().optional(),
-  hasCapacity: z.enum(['Yes', 'No', 'Unknown']),
+  hasCapacity: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'Please select an option for capacity.' }),
   hasLegalRep: z.enum(['Yes', 'No']).optional(),
   repName: z.string().optional(),
   repRelationship: z.string().optional(),
@@ -71,12 +71,12 @@ const formSchema = z.object({
   snfDiversionReason: z.string().optional(),
   
   // Step 4
-  ispFirstName: z.string().optional(),
-  ispLastName: z.string().optional(),
+  ispFirstName: z.string().min(1, "ISP First Name is required."),
+  ispLastName: z.string().min(1, "ISP Last Name is required."),
   ispRelationship: z.string().optional(),
   ispFacilityName: z.string().optional(),
-  ispPhone: z.string().optional(),
-  ispEmail: z.string().email().optional().or(z.literal('')),
+  ispPhone: z.string().min(1, "ISP Phone is required."),
+  ispEmail: z.string().email({ message: "Invalid email address." }).min(1, "ISP Email is required."),
   ispCopyCurrent: z.boolean().default(false),
   ispCopyCustomary: z.boolean().default(false),
   ispAddress: z.string().optional(),
@@ -99,6 +99,30 @@ const formSchema = z.object({
 .refine(data => data.memberMrn === data.confirmMemberMrn, {
     message: "MRNs don't match",
     path: ["confirmMemberMrn"],
+})
+.superRefine((data, ctx) => {
+    if (data.pathway === 'SNF Diversion' && !data.meetsSnfDiversionCriteria) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "You must confirm that all SNF Diversion criteria have been met.",
+            path: ['meetsSnfDiversionCriteria'],
+        });
+    }
+    if (data.pathway === 'SNF Transition' && !data.meetsSnfTransitionCriteria) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "You must confirm that all SNF Transition criteria have been met.",
+            path: ['meetsSnfTransitionCriteria'],
+        });
+    }
+    if (data.hasPrefRCFE === 'Yes') {
+        if (!data.rcfeName) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Name is required.", path: ['rcfeName'] });
+        }
+        if (!data.rcfeAddress) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Address is required.", path: ['rcfeAddress'] });
+        }
+    }
 });
 
 export type FormValues = z.infer<typeof formSchema>;
