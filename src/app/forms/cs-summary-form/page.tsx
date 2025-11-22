@@ -16,6 +16,7 @@ import { doc, setDoc, getDoc, serverTimestamp, collection } from 'firebase/fires
 import Step1 from './components/Step1';
 import Step2 from './components/Step2';
 import Step3 from './components/Step3';
+import Step4 from './components/Step4';
 import { Header } from '@/components/Header';
 
 const formSchema = z.object({
@@ -36,6 +37,7 @@ const formSchema = z.object({
   referrerRelationship: z.string().min(1, 'Relationship is required'),
   memberPhone: z.string().optional(),
   memberEmail: z.string().email().optional().or(z.literal('')),
+  isBestContact: z.boolean().default(false),
   bestContactName: z.string().optional(),
   bestContactRelationship: z.string().optional(),
   bestContactPhone: z.string().optional(),
@@ -60,13 +62,15 @@ const formSchema = z.object({
   customaryCity: z.string().optional(),
   customaryState: z.string().optional(),
   customaryZip: z.string().optional(),
-  healthPlan: z.enum(['Kaiser', 'Health Net', 'Other']),
 
   // Step 3
+  healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
   pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
   snfTransitionEligibility: z.enum(['Yes', 'No', 'N/A']).optional(),
   snfDiversionEligibility: z.enum(['Yes', 'No', 'N/A']).optional(),
   snfDiversionReason: z.string().optional(),
+  
+  // Step 4
   ispFirstName: z.string().optional(),
   ispLastName: z.string().optional(),
   ispRelationship: z.string().optional(),
@@ -81,7 +85,7 @@ const formSchema = z.object({
   ispZip: z.string().optional(),
   ispCounty: z.string().optional(),
   onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
-  hasPrefRCFE: z.enum(['Yes', 'No']),
+  hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: 'Please make a selection.' }),
   rcfeName: z.string().optional(),
   rcfeAdminName: z.string().optional(),
   rcfeAdminPhone: z.string().optional(),
@@ -103,16 +107,18 @@ const stepFields: Record<number, FieldName<FormValues>[]> = {
   1: [
     'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'confirmMemberMediCalNum',
     'memberMrn', 'confirmMemberMrn', 'memberLanguage', 'referrerFirstName', 'referrerLastName',
-    'referrerEmail', 'referrerPhone', 'referrerRelationship', 'memberPhone', 'memberEmail', 'hasCapacity',
+    'referrerEmail', 'referrerPhone', 'referrerRelationship', 'memberPhone', 'memberEmail', 'isBestContact',
     'bestContactName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
-    'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
+    'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
   ],
   2: [
     'currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip',
-    'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'healthPlan'
+    'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip'
   ],
   3: [
-    'pathway', 'snfTransitionEligibility', 'snfDiversionEligibility', 'snfDiversionReason',
+    'healthPlan', 'pathway', 'snfTransitionEligibility', 'snfDiversionEligibility', 'snfDiversionReason'
+  ],
+  4: [
     'ispFirstName', 'ispLastName', 'ispRelationship', 'ispFacilityName', 'ispPhone', 'ispEmail',
     'ispCopyCurrent', 'ispCopyCustomary', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty',
     'onALWWaitlist', 'hasPrefRCFE',
@@ -122,9 +128,10 @@ const stepFields: Record<number, FieldName<FormValues>[]> = {
 
 
 const steps = [
-  { id: 1, name: 'Member, Contact & Legal Info' },
-  { id: 2, name: 'Location & Health Plan' },
-  { id: 3, name: 'Pathway & Eligibility' },
+  { id: 1, name: 'Member & Contact Info' },
+  { id: 2, name: 'Location Information' },
+  { id: 3, name: 'Health Plan & Pathway' },
+  { id: 4, name: 'ISP & Facility Selection' },
 ];
 
 function CsSummaryFormComponent() {
@@ -139,7 +146,10 @@ function CsSummaryFormComponent() {
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      isBestContact: false,
       copyAddress: false,
+      ispCopyCurrent: false,
+      ispCopyCustomary: false,
     }
   });
 
@@ -242,6 +252,7 @@ function CsSummaryFormComponent() {
                 {currentStep === 1 && <Step1 />}
                 {currentStep === 2 && <Step2 />}
                 {currentStep === 3 && <Step3 />}
+                {currentStep === 4 && <Step4 />}
               </div>
 
               <div className="mt-8 pt-5 border-t flex justify-between">

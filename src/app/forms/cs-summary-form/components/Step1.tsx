@@ -48,7 +48,7 @@ export default function Step1() {
               name="memberFirstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -62,7 +62,7 @@ export default function Step1() {
               name="memberLastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name</FormLabel>
+                  <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -78,7 +78,7 @@ export default function Step1() {
               name="memberDob"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date of Birth</FormLabel>
+                  <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -131,7 +131,7 @@ export default function Step1() {
               name="memberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Medi-Cal Number</FormLabel>
+                  <FormLabel>Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -144,7 +144,7 @@ export default function Step1() {
               name="confirmMemberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Medi-Cal Number</FormLabel>
+                  <FormLabel>Confirm Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -159,7 +159,7 @@ export default function Step1() {
               name="memberMrn"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>MRN</FormLabel>
+                  <FormLabel>MRN <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -172,7 +172,7 @@ export default function Step1() {
               name="confirmMemberMrn"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm MRN</FormLabel>
+                  <FormLabel>Confirm MRN <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -186,7 +186,7 @@ export default function Step1() {
             name="memberLanguage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preferred Language</FormLabel>
+                <FormLabel>Preferred Language <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -209,7 +209,7 @@ export default function Step1() {
               name="referrerFirstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -223,7 +223,7 @@ export default function Step1() {
               name="referrerLastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name</FormLabel>
+                  <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -239,7 +239,7 @@ export default function Step1() {
               name="referrerEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input type="email" {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -253,7 +253,7 @@ export default function Step1() {
               name="referrerPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input type="tel" {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -268,7 +268,7 @@ export default function Step1() {
             name="referrerRelationship"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Relationship to Member</FormLabel>
+                <FormLabel>Relationship to Member <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -363,7 +363,7 @@ export default function Step1() {
                 name="hasCapacity"
                 render={({ field }) => (
                     <FormItem className="space-y-3">
-                    <FormLabel>Does member have capacity to make their own decisions?</FormLabel>
+                    <FormLabel>Does member have capacity to make their own decisions? <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>

@@ -98,7 +98,7 @@ function PrintableCsSummaryFormContent() {
               </div>
 
               <div>
-                <SectionTitle>Location & Health Plan</SectionTitle>
+                <SectionTitle>Location Information</SectionTitle>
                 <Field label="Member's Current Location (SNF, Hospital, Home, etc.)" className="sm:col-span-2" />
                 <h3 className="text-lg font-medium text-gray-800 mt-6">Current Address</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mt-2">
@@ -115,6 +115,10 @@ function PrintableCsSummaryFormContent() {
                     <Field label="State" />
                     <Field label="ZIP Code" />
                  </div>
+              </div>
+
+              <div>
+                <SectionTitle>Health Plan & Pathway</SectionTitle>
                  <div className="space-y-4 mt-6">
                     <p className="text-sm font-medium text-gray-700">Health Plan (Managed Care Plan)</p>
                     <div className="flex gap-8">
@@ -123,11 +127,7 @@ function PrintableCsSummaryFormContent() {
                         <CheckboxField label="Other" />
                     </div>
                  </div>
-              </div>
-
-              <div>
-                <SectionTitle>Pathway & Eligibility</SectionTitle>
-                <p className="text-sm font-medium text-gray-700">Pathway Selection</p>
+                <p className="text-sm font-medium text-gray-700 mt-6">Pathway Selection</p>
                  <div className="flex gap-8">
                     <CheckboxField label="SNF Transition" />
                     <CheckboxField label="SNF Diversion" />
@@ -149,8 +149,11 @@ function PrintableCsSummaryFormContent() {
                     <CheckboxField label="N/A" />
                 </div>
                 <Field label="Reason for SNF Diversion" className="sm:col-span-2" />
+              </div>
 
-                <SectionTitle>Individual Service Plan (ISP) Contact</SectionTitle>
+              <div>
+                <SectionTitle>ISP & Facility Information</SectionTitle>
+                 <h3 className="text-lg font-medium text-gray-800 mt-6">Individual Service Plan (ISP) Contact</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mt-2">
                     <Field label="First Name" />
                     <Field label="Last Name" />
@@ -173,16 +176,15 @@ function PrintableCsSummaryFormContent() {
                     <Field label="County" />
                  </div>
 
-                <SectionTitle>Assisted Living Waiver (ALW) Status</SectionTitle>
-                <p className="text-sm font-medium text-gray-700 mt-2">Is the member currently on the ALW waitlist?</p>
+                <h3 className="text-lg font-medium text-gray-800 mt-6">Assisted Living Waiver (ALW) Status</h3>
+                <p className="text-sm text-gray-700 mt-2">Is the member currently on the ALW waitlist?</p>
                 <div className="flex gap-8">
                     <CheckboxField label="Yes" />
                     <CheckboxField label="No" />
                     <CheckboxField label="Unknown" />
                 </div>
 
-
-                <SectionTitle>RCFE Selection</SectionTitle>
+                <h3 className="text-lg font-medium text-gray-800 mt-6">RCFE Selection</h3>
                 <div className="space-y-4 mt-6">
                     <p className="text-sm font-medium text-gray-700">Has a preferred assisted living facility (RCFE) been chosen?</p>
                     <div className="flex gap-8">
@@ -190,7 +192,7 @@ function PrintableCsSummaryFormContent() {
                         <CheckboxField label="No" />
                     </div>
                 </div>
-                <h3 className="text-lg font-medium text-gray-800 mt-6">Preferred Facility Details</h3>
+                <h4 className="text-md font-medium text-gray-800 mt-6">Preferred Facility Details</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mt-2">
                     <Field label="Facility Name" className="sm:col-span-2"/>
                     <Field label="Facility Address" className="sm:col-span-2"/>
