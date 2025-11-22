@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -19,7 +20,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ApplicationStatus } from '@/lib/definitions';
 import { Header } from '@/components/Header';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, doc, deleteDoc, Query } from 'firebase/firestore';
+import { collection, doc, deleteDoc, Query, Timestamp } from 'firebase/firestore';
+import { format } from 'date-fns';
+
 
 // Define a type for the application data coming from Firestore
 interface ApplicationData {
@@ -27,7 +30,7 @@ interface ApplicationData {
   memberFirstName: string;
   memberLastName: string;
   status: ApplicationStatus;
-  lastUpdated: string; // This might be a Timestamp from Firestore, convert to string
+  lastUpdated: Timestamp; // Correctly typed as a Firestore Timestamp
   pathway: 'SNF Transition' | 'SNF Diversion';
 }
 
@@ -99,7 +102,7 @@ const ApplicationsTable = ({
                       {app.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{app.lastUpdated}</TableCell>
+                  <TableCell>{app.lastUpdated ? format(app.lastUpdated.toDate(), 'PPP') : 'N/A'}</TableCell>
                   <TableCell className="text-right">
                     {app.status === 'In Progress' || app.status === 'Requires Revision' ? (
                       <Button asChild variant="outline" size="sm">
@@ -171,7 +174,7 @@ export default function MyApplicationsPage() {
   };
   
   const handleDelete = async () => {
-    if (!user) return;
+    if (!user || !firestore) return;
     // Logic to delete from Firebase would go here
     for (const appId of selected) {
         const docRef = doc(firestore, `users/${user.uid}/applications`, appId);
