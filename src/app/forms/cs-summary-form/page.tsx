@@ -70,6 +70,8 @@ const formSchema = z.object({
 
   // Step 3
   healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
+  existingHealthPlan: z.string().optional(),
+  switchingHealthPlan: z.enum(['Yes', 'No']).optional(),
   pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
   meetsSnfTransitionCriteria: z.boolean().optional(),
   meetsSnfDiversionCriteria: z.boolean().optional(),
@@ -114,6 +116,14 @@ const formSchema = z.object({
             ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repLanguage'] });
         }
     }
+    if (data.healthPlan === 'Other') {
+        if (!data.existingHealthPlan) {
+            ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['existingHealthPlan'] });
+        }
+        if (!data.switchingHealthPlan) {
+            ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['switchingHealthPlan'] });
+        }
+    }
 });
 
 
@@ -127,7 +137,7 @@ const steps = [
       'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan'] },
   { id: 4, name: 'ISP & Facility Selection', fields: [] },
 ];
 

@@ -38,12 +38,13 @@ function PrintableCsSummaryFormContent() {
                   <Field label="Date of Birth (MM/DD/YYYY)" />
                   <Field label="Age" />
                   <Field 
-                    label="Medi-Cal Number or Medical Record Number" 
-                    description="Medi-Cal Number for Health Net, Medical Record Number for Kaiser."
+                    label="Medi-Cal Number" 
+                    description="Medi-Cal Number for Health Net."
                   />
-                  <Field label="Confirm Number" />
-                  <Field label="Medical Record Number (MRN)" />
-                  <Field label="Confirm Medical Record Number" />
+                  <Field 
+                    label="Medical Record Number (MRN)"
+                    description="Medical Record Number for Kaiser. If Health Net, repeat Medi-Cal Number."
+                  />
                   <Field label="Preferred Language" />
                 </div>
               </div>
@@ -55,7 +56,8 @@ function PrintableCsSummaryFormContent() {
                   <Field label="Last Name" />
                   <Field label="Your Phone" />
                   <Field label="Your Email" />
-                  <Field label="Relationship to Member (e.g., Family Member, Social Worker)" className="sm:col-span-2" />
+                  <Field label="Relationship to Member (e.g., Family Member, Social Worker)" />
+                  <Field label="Agency (e.g., Bob's Referral Agency, Hospital Name, etc.)" />
                 </div>
               </div>
 
@@ -82,7 +84,6 @@ function PrintableCsSummaryFormContent() {
                     <div className="flex gap-6">
                         <CheckboxField label="Yes" />
                         <CheckboxField label="No" />
-                        <CheckboxField label="Unknown" />
                     </div>
                  </div>
                  <div className="space-y-2 mt-3">
@@ -90,6 +91,7 @@ function PrintableCsSummaryFormContent() {
                     <div className="flex gap-6">
                         <CheckboxField label="Yes" />
                         <CheckboxField label="No" />
+                        <CheckboxField label="Unknown" />
                     </div>
                  </div>
                  <h3 className="text-sm font-medium text-gray-800 mt-4">Representative's Contact Info</h3>
@@ -124,8 +126,8 @@ function PrintableCsSummaryFormContent() {
                     <Field label="State" />
                     <Field label="ZIP Code" />
                  </div>
-                <CheckboxField label="Customary residence is the same as current location." />
-                <h3 className="text-sm font-medium text-gray-800 mt-4">Customary Residence (where is the member's normal long term address) (if different)</h3>
+                <h3 className="text-sm font-medium text-gray-800 mt-4">Customary Residence (where is the member's normal long term address)</h3>
+                 <CheckboxField label="Same as current location" />
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
                     <Field label="Street Address" className="sm:col-span-2"/>
                     <Field label="City" />
@@ -142,6 +144,12 @@ function PrintableCsSummaryFormContent() {
                         <CheckboxField label="Kaiser Permanente" />
                         <CheckboxField label="Health Net" />
                         <CheckboxField label="Other" />
+                    </div>
+                    <Field label="If Other, what is existing health plan?" />
+                    <p className="text-xs font-medium text-gray-700 mt-2">Will member be switching Health Plan by end of month?</p>
+                     <div className="flex gap-6">
+                        <CheckboxField label="Yes" />
+                        <CheckboxField label="No" />
                     </div>
                  </div>
                 <p className="text-xs font-medium text-gray-700 mt-4">Pathway Selection</p>

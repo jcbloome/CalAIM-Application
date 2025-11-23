@@ -8,9 +8,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import type { FormValues } from '../page';
 
 export default function Step3() {
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext<FormValues>();
+  const healthPlan = watch('healthPlan');
   
   return (
     <div className="space-y-6">
@@ -25,9 +28,9 @@ export default function Step3() {
             name="healthPlan"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Health Plan</FormLabel>
+                <FormLabel>Health Plan <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+                  <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Kaiser" /></FormControl><FormLabel className="font-normal">Kaiser Permanente</FormLabel></FormItem>
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Health Net" /></FormControl><FormLabel className="font-normal">Health Net</FormLabel></FormItem>
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Other" /></FormControl><FormLabel className="font-normal">Other</FormLabel></FormItem>
@@ -37,6 +40,37 @@ export default function Step3() {
               </FormItem>
             )}
           />
+          {healthPlan === 'Other' && (
+            <div className="space-y-4 mt-4 p-4 border rounded-md bg-muted/50">
+                <FormField
+                    control={control}
+                    name="existingHealthPlan"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Name of existing health plan <span className="text-destructive">*</span></FormLabel>
+                            <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name="switchingHealthPlan"
+                    render={({ field }) => (
+                        <FormItem className="space-y-2">
+                            <FormLabel>Will member be switching Health Plan by end of month? <span className="text-destructive">*</span></FormLabel>
+                            <FormControl>
+                                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                </RadioGroup>
+                            </FormControl>
+                             <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -51,22 +85,16 @@ export default function Step3() {
             name="pathway"
             render={({ field }) => (
               <FormItem className="space-y-3">
-                <FormLabel>Pathway Selection</FormLabel>
+                <FormLabel>Pathway Selection <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormItem>
-                      <RadioGroupItem value="SNF Transition" id="snf_transition" className="peer sr-only" />
-                      <Label htmlFor="snf_transition" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                        <h3 className="font-semibold">SNF Transition</h3>
-                        <p className="text-sm text-muted-foreground mt-2 text-center">For members currently in a Skilled Nursing Facility who want to move to a community setting.</p>
-                      </Label>
+                  <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-2">
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="SNF Transition" /></FormControl>
+                        <FormLabel className="font-normal">SNF Transition - For members currently in a Skilled Nursing Facility who want to move to a community setting.</FormLabel>
                     </FormItem>
-                    <FormItem>
-                      <RadioGroupItem value="SNF Diversion" id="snf_diversion" className="peer sr-only" />
-                      <Label htmlFor="snf_diversion" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                        <h3 className="font-semibold">SNF Diversion</h3>
-                        <p className="text-sm text-muted-foreground mt-2 text-center">For members at risk of SNF admission who can be safely cared for in the community.</p>
-                      </Label>
+                     <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl><RadioGroupItem value="SNF Diversion" /></FormControl>
+                        <FormLabel className="font-normal">SNF Diversion - For members at risk of SNF admission who can be safely cared for in the community.</FormLabel>
                     </FormItem>
                   </RadioGroup>
                 </FormControl>
