@@ -18,6 +18,7 @@ import Step2 from './components/Step2';
 import Step3 from './components/Step3';
 import Step4 from './components/Step4';
 import { Header } from '@/components/Header';
+import type { FormStatus as FormStatusType } from '@/lib/definitions';
 
 
 const requiredString = z.string().min(1, { message: 'This field is required.' });
@@ -146,6 +147,25 @@ const steps = [
       'ispFirstName', 'ispLastName', 'ispRelationship', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty'
   ]},
 ];
+
+const getRequiredFormsForPathway = (pathway: FormValues['pathway']): FormStatusType[] => {
+  const commonForms: FormStatusType[] = [
+    { name: 'CS Member Summary', status: 'Completed', type: 'online-form', href: '/forms/cs-summary-form' },
+    { name: 'Program Information', status: 'Pending', type: 'info', href: '/info' },
+    { name: 'HIPAA Authorization', status: 'Pending', type: 'online-form', href: '/forms/hipaa-authorization' },
+    { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '/forms/liability-waiver' },
+    { name: 'Freedom of Choice Waiver', status: 'Pending', type: 'online-form', href: '/forms/freedom-of-choice' },
+  ];
+
+  if (pathway === 'SNF Diversion') {
+    return [
+      ...commonForms,
+      { name: 'Declaration of Eligibility', status: 'Pending', type: 'upload', href: '/forms/declaration-of-eligibility/printable' },
+    ];
+  }
+  return commonForms;
+};
+
 
 function CsSummaryFormComponent() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -308,19 +328,22 @@ function CsSummaryFormComponent() {
         Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value])
     );
 
+    const requiredForms = getRequiredFormsForPathway(data.pathway);
+    
     const dataToSave = {
       ...sanitizedData,
       id: docId,
       userId: user.uid,
-      status: 'In Progress', // This could be updated to 'Submitted' if this is the final step
+      status: 'In Progress', // The form is complete, but the application is just starting
       lastUpdated: serverTimestamp(),
+      forms: requiredForms, // Add the required forms array
     };
   
     try {
       await setDoc(docRef, dataToSave, { merge: true });
       toast({
-        title: 'Application Submitted!',
-        description: 'Your application has been successfully submitted.',
+        title: 'Application Started!',
+        description: 'Your member summary is complete. Continue to the next steps.',
         className: 'bg-green-100 text-green-900 border-green-200',
       });
       router.push(`/pathway?applicationId=${docId}`);
