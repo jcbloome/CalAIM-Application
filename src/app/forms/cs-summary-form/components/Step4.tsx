@@ -18,7 +18,7 @@ export default function Step4() {
           <CardHeader>
             <CardTitle>Individual Service Plan (ISP) Contact</CardTitle>
             <CardDescription>
-                All applications are required to have an ISP filled out by a RN employed by Connections who will review all medical documentation the 602 Physician's report, medicine list and diagnostic codes. The RN will also a conduct a virtual visit with the member (if he/she has capacity), social worker, primary caregiver and/or AR to determine tier level of care (e.g., how much Medi-Cal will pay for the "assisted living" portion). Once finalized, the ISP requires signatures from the RN, the member or AR and, eventually, a representative from the assisted living home.
+                All applications are required to have ISP (which eventually determines the tiered level of care and the amount paid for "assisted living" to the RCFE/ARF) conducted in-person (Kaiser) or virtually (Health Net) by RN or MSW (with sign-off by RN). The ISP contact is usually the SNF or hospital RN, social worker or case manager, or, if the member is in the community with the family member or caregiver). Once finalized the ISP requires signatures by the ISP contact.
                 <br/><br/>
                 Who is the most convenient person to contact for the ISP to be signed by the member if he/she has capacity? For example, if the member is in a SNF but does not have email, the SNF social worker is usually the best contact person.
                 <br/><br/>
