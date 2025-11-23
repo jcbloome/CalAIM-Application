@@ -21,8 +21,6 @@ export default function Step4() {
                 All applications are required to have ISP (which eventually determines the tiered level of care and the amount paid for &quot;assisted living&quot; to the RCFE/ARF) conducted in-person (Kaiser) or virtually (Health Net) by RN or MSW (with sign-off by RN). The ISP contact is usually the SNF or hospital RN, social worker or case manager, or, if the member is in the community with the family member or caregiver). Once finalized the ISP requires signatures by the ISP contact.
                 <br/><br/>
                 Who is the person we should contact for the ISP?
-                <br/><br/>
-                <strong>Kaiser requires in-person visits by RN or MSW (with sign-off by RN) and Health Net allows for virtual assessments by RN.</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
