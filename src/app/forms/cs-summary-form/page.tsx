@@ -73,8 +73,7 @@ const formSchema = z.object({
   existingHealthPlan: z.string().optional(),
   switchingHealthPlan: z.enum(['Yes', 'No']).optional(),
   pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
-  meetsSnfTransitionCriteria: z.boolean().optional(),
-  meetsSnfDiversionCriteria: z.boolean().optional(),
+  meetsPathwayCriteria: z.boolean().refine(val => val === true, { message: "You must confirm the criteria are met." }),
   snfDiversionReason: z.string().optional(),
 
   // Step 4
@@ -137,7 +136,7 @@ const steps = [
       'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan', 'meetsPathwayCriteria'] },
   { id: 4, name: 'ISP & Facility Selection', fields: [] },
 ];
 

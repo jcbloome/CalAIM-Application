@@ -14,6 +14,7 @@ import type { FormValues } from '../page';
 export default function Step3() {
   const { control, watch } = useFormContext<FormValues>();
   const healthPlan = watch('healthPlan');
+  const pathway = watch('pathway');
   
   return (
     <div className="space-y-6">
@@ -104,23 +105,22 @@ export default function Step3() {
           />
 
             <div className="space-y-4 p-4 border rounded-md">
-                <h3 className="font-semibold text-lg">SNF Transition Eligibility Requirements</h3>
-                <p className="text-sm text-muted-foreground">Enables a current SNF resident to transfer to a RCFE or ARF.</p>
+                <h3 className="font-semibold text-lg">Pathway Eligibility Requirements</h3>
+                <p className="text-sm text-muted-foreground">The selected pathway must meet the criteria below. Other criteria also apply.</p>
                 <ul className="list-disc pl-5 space-y-2 text-sm">
-                    <li>Has resided in a SNF for at least 60 consecutive days (which can include a combination of Medicare and Medi-Cal days and back and forth from SNF-hospital-SNF); and</li>
-                    <li>Is willing to live in RCFE as an alternative to a SNF; and</li>
-                    <li>Is able to safely reside in RCFE with appropriate and cost-effective supports and services.</li>
+                    <li><strong>For SNF Transition:</strong> Has resided in a SNF for at least 60 consecutive days.</li>
+                    <li><strong>For SNF Diversion:</strong> Must be currently at a medically necessary SNF level of care (e.g., requires substantial help with ADLs).</li>
                 </ul>
                 <FormField
                     control={control}
-                    name="meetsSnfTransitionCriteria"
+                    name="meetsPathwayCriteria"
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
                             <FormControl>
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for SNF Transition have been met.</FormLabel>
+                                <FormLabel>All criteria for the selected pathway (SNF Diversion/Transition) have been met. <span className="text-destructive">*</span></FormLabel>
                             </div>
                             <FormMessage />
                         </FormItem>
@@ -128,43 +128,23 @@ export default function Step3() {
                 />
             </div>
           
-            <div className="space-y-4 p-4 border rounded-md">
-                 <h3 className="font-semibold text-lg">SNF Diversion Eligibility Requirements</h3>
-                 <p className="text-sm text-muted-foreground">Transition a member who, without this support, would need to reside in a SNF and instead transitions him/her to RCFE or ARF.</p>
-                 <ul className="list-disc pl-5 space-y-2 text-sm">
-                    <li>Interested in remaining in the community; and</li>
-                    <li>Is able to safely reside in RCFE with appropriate and cost-effective supports and services; and</li>
-                    <li>Must be currently at medically necessary SNF level of care: e.g., require substantial help with activities of daily living (help with dressing, bathing, incontinence, etc.) or at risk of premature institutionalization; and meet the criteria to receive those services in RCFE or ARF.</li>
-                 </ul>
-                 <FormField
-                    control={control}
-                    name="meetsSnfDiversionCriteria"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
+            {pathway === 'SNF Diversion' && (
+                <div className="space-y-4 p-4 border rounded-md">
+                    <FormField
+                        control={control}
+                        name="snfDiversionReason"
+                        render={({ field }) => (
+                            <FormItem className="mt-4">
+                            <FormLabel>Reason for SNF Diversion</FormLabel>
                             <FormControl>
-                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for why the member is at risk for institutionalization..." />
                             </FormControl>
-                            <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for SNF Diversion have been met.</FormLabel>
-                            </div>
                             <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={control}
-                    name="snfDiversionReason"
-                    render={({ field }) => (
-                        <FormItem className="mt-4">
-                        <FormLabel>Reason for SNF Diversion</FormLabel>
-                        <FormControl>
-                            <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for the diversion..." />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-            </div>
+                            </FormItem>
+                        )}
+                        />
+                </div>
+            )}
         </CardContent>
       </Card>
     </div>
