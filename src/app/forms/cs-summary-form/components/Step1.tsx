@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -19,8 +19,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 export default function Step1() {
   const { control, watch, setValue } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
-  const isBestContact = useWatch({ control, name: 'isBestContact' });
-  const hasLegalRep = useWatch({ control, name: 'hasLegalRep' });
 
   useEffect(() => {
     if (memberDob) {
@@ -211,10 +209,11 @@ export default function Step1() {
               name="referrerEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input type="email" {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -300,22 +299,22 @@ export default function Step1() {
                 <h3 className="font-medium">Best Contact Person (if not the member)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="bestContactName" render={({ field }) => (
-                        <FormItem><FormLabel>Name {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="bestContactRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="bestContactEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <FormField control={control} name="bestContactLanguage" render={({ field }) => (
-                    <FormItem><FormLabel>Language {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
         </CardContent>
@@ -365,22 +364,22 @@ export default function Step1() {
                 <h3 className="font-medium">Representative's Contact Info</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repName" render={({ field }) => (
-                        <FormItem><FormLabel>Name {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <FormField control={control} name="repLanguage" render={({ field }) => (
-                    <FormItem><FormLabel>Language {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
         </CardContent>
@@ -388,3 +387,5 @@ export default function Step1() {
     </div>
   );
 }
+
+    

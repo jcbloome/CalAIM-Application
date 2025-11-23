@@ -1,58 +1,16 @@
 
 'use client';
 
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import type { FormValues } from '../page';
-import { useEffect } from 'react';
 
 export default function Step4() {
-  const { control, setValue, watch } = useFormContext<FormValues>();
+  const { control } = useFormContext();
   
-  const ispCopyCurrent = useWatch({ control, name: 'ispCopyCurrent' });
-  const ispCopyCustomary = useWatch({ control, name: 'ispCopyCustomary' });
-  const hasPrefRCFE = useWatch({ control, name: 'hasPrefRCFE' });
-  
-  const currentAddress = {
-    address: watch('currentAddress'),
-    city: watch('currentCity'),
-    state: watch('currentState'),
-    zip: watch('currentZip'),
-  };
-  const customaryAddress = {
-    address: watch('customaryAddress'),
-    city: watch('customaryCity'),
-    state: watch('customaryState'),
-    zip: watch('customaryZip'),
-  };
-
-  useEffect(() => {
-    if (ispCopyCurrent) {
-      setValue('ispAddress', currentAddress.address);
-      setValue('ispCity', currentAddress.city);
-      setValue('ispState', currentAddress.state);
-      setValue('ispZip', currentAddress.zip);
-      setValue('ispCopyCustomary', false, { shouldValidate: true });
-    }
-  }, [ispCopyCurrent, currentAddress.address, currentAddress.city, currentAddress.state, currentAddress.zip, setValue]);
-  
-  useEffect(() => {
-    if (ispCopyCustomary) {
-      setValue('ispAddress', customaryAddress.address);
-      setValue('ispCity', customaryAddress.city);
-      setValue('ispState', customaryAddress.state);
-      setValue('ispZip', customaryAddress.zip);
-      setValue('ispCopyCurrent', false, { shouldValidate: true });
-    }
-  }, [ispCopyCustomary, customaryAddress.address, customaryAddress.city, customaryAddress.state, customaryAddress.zip, setValue]);
-
-  const disableISPAddress = ispCopyCurrent || ispCopyCustomary;
-  const showRCFEDetails = hasPrefRCFE === 'Yes';
-
   return (
     <div className="space-y-6">
       <Card className="border-l-4 border-accent">
@@ -101,19 +59,19 @@ export default function Step4() {
             )} />
             <div className="space-y-4 p-4 border rounded-md">
                 <FormField control={control} name="ispAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={disableISPAddress} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="ispCity" render={({ field }) => (
-                        <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={disableISPAddress} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispState" render={({ field }) => (
-                        <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={disableISPAddress} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="ispZip" render={({ field }) => (
-                        <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={disableISPAddress} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispCounty" render={({ field }) => (
                         <FormItem><FormLabel>County</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -172,20 +130,20 @@ export default function Step4() {
           <div className="p-4 border rounded-md space-y-4">
               <h3 className="font-medium">Preferred Facility Details</h3>
               <FormField control={control} name="rcfeName" render={({ field }) => (
-                  <FormItem><FormLabel>Facility Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Facility Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={control} name="rcfeAddress" render={({ field }) => (
-                  <FormItem><FormLabel>Facility Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Facility Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
                <FormField control={control} name="rcfeAdminName" render={({ field }) => (
-                  <FormItem><FormLabel>Administrator Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Administrator Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="rcfeAdminPhone" render={({ field }) => (
-                      <FormItem><FormLabel>Administrator Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Administrator Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={control} name="rcfeAdminEmail" render={({ field }) => (
-                      <FormItem><FormLabel>Administrator Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} disabled={!showRCFEDetails} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Administrator Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
           </div>
