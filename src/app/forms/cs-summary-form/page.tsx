@@ -357,7 +357,8 @@ function CsSummaryFormComponent() {
     const finalData = {
       ...data, // Include all form data
       forms: requiredForms,
-      status: 'Completed & Submitted' // Change status on successful submission
+      status: 'Completed & Submitted' as const, // Change status on successful submission
+      lastUpdated: serverTimestamp(),
     };
   
     try {
@@ -447,5 +448,3 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
-
-    
