@@ -244,6 +244,20 @@ export default function Step1() {
               </FormItem>
             )}
           />
+           <FormField
+            control={control}
+            name="agency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Agency</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormDescription>e.g., Bob's Referral Agency, Hospital Name, etc.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
       

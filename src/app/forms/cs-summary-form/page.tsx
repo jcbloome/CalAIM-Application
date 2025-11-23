@@ -37,6 +37,7 @@ const formSchema = z.object({
   referrerEmail: z.string().optional(),
   referrerPhone: requiredString,
   referrerRelationship: requiredString,
+  agency: z.string().optional(),
 
   memberPhone: z.string().optional(),
   memberEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
