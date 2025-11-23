@@ -121,12 +121,14 @@ export default function ProgramInfoPage() {
   const handleNext = () => {
     if (currentPage < totalPages) {
       setCurrentPage(p => p + 1);
+      window.scrollTo(0, 0);
     }
   };
 
   const handleBack = () => {
     if (currentPage > 1) {
       setCurrentPage(p => p - 1);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -207,7 +209,3 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
-
-    
-
-    
