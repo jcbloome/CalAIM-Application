@@ -56,9 +56,13 @@ export default function Step2() {
                       <SelectTrigger><SelectValue placeholder="Select a location type" /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="SNF">Skilled Nursing Facility (SNF)</SelectItem>
+                      <SelectItem value="SNF">Skilled Nursing Facility</SelectItem>
+                      <SelectItem value="Home">Home</SelectItem>
                       <SelectItem value="Hospital">Hospital</SelectItem>
-                      <SelectItem value="Home">Home / Own Residence</SelectItem>
+                      <SelectItem value="Sub-Acute">Sub-Acute</SelectItem>
+                      <SelectItem value="Recuperative Care">Recuperative Care</SelectItem>
+                      <SelectItem value="Unhoused">Unhoused</SelectItem>
+                      <SelectItem value="RCFE/ARF">RCFE/ARF</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
