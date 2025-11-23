@@ -133,7 +133,7 @@ export default function Step4() {
                         <FormItem className="space-y-3">
                         <FormLabel>Is the member currently on the ALW waitlist?</FormLabel>
                         <FormControl>
-                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value ?? undefined} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Unknown" /></FormControl><FormLabel className="font-normal">Unknown</FormLabel></FormItem>
@@ -159,7 +159,7 @@ export default function Step4() {
               <FormItem className="space-y-3">
                 <FormLabel>Has a preferred assisted living facility (RCFE) been chosen?</FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
+                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value ?? undefined} className="flex items-center space-x-4">
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                   </RadioGroup>
@@ -194,3 +194,5 @@ export default function Step4() {
     </div>
   );
 }
+
+    

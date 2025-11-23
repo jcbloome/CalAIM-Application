@@ -77,7 +77,7 @@ const formSchema = z.object({
 
   // Step 4
   ispFirstName: z.string().optional(),
-  ispLastName: z.string().optional(),
+  ispLastName: z_string().optional(),
   ispRelationship: z.string().optional(),
   ispFacilityName: z.string().optional(),
   ispPhone: z.string().optional(),
@@ -121,9 +121,9 @@ export type FormValues = z.infer<typeof formSchema>;
 const steps = [
   { id: 1, name: 'Member & Contact Info', fields: [
       'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'memberMrn', 'memberLanguage',
-      'referrerPhone', 'referrerRelationship', 'hasCapacity', 'hasLegalRep', 'bestContactName', 
+      'referrerPhone', 'referrerRelationship', 'isBestContact', 'bestContactName', 
       'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
-      'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
+      'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway'] },
@@ -196,7 +196,7 @@ function CsSummaryFormComponent() {
 
   const nextStep = async () => {
     const fieldsToValidate = steps[currentStep - 1].fields;
-    const isValid = await trigger(fieldsToValidate as any);
+    const isValid = await trigger(fieldsToValidate as (keyof FormValues)[]);
 
     if (isValid) {
         if (currentStep < steps.length) {
@@ -328,3 +328,5 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
+
+    
