@@ -195,16 +195,8 @@ function PrintableCsSummaryFormContent() {
                  </div>
                  
                  <h3 className="text-sm font-medium text-gray-800 mt-4">ISP Assessment Location</h3>
-                 <div className="space-y-1 mt-1">
-                    <CheckboxField label="ISP contact location is same as member's current location" />
-                    <CheckboxField label="ISP contact location is same as member's customary residence" />
-                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
-                    <Field label="Address" className="sm:col-span-2"/>
-                    <Field label="City" />
-                    <Field label="State" />
-                    <Field label="Zip Code" />
-                    <Field label="County" />
+                    <Field label="Name of ISP Assessment Location (e.g., Bob's Nursing Home, at home, etc.)" className="sm:col-span-2"/>
                  </div>
 
                 <h3 className="text-sm font-medium text-gray-800 mt-4">Assisted Living Waiver (ALW) Status</h3>

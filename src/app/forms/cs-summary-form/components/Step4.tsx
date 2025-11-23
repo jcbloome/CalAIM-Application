@@ -5,7 +5,6 @@ import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 
 export default function Step4() {
@@ -16,7 +15,11 @@ export default function Step4() {
       <Card className="border-l-4 border-accent">
           <CardHeader>
             <CardTitle>Individual Service Plan (ISP) Contact</CardTitle>
-            <CardDescription>Contact person for the member's service plan.</CardDescription>
+            <CardDescription>
+                All applications are required to have an ISP filled out by a RN employed by Connections who will review all medical documentation the 602 Physician's report, medicine list and diagnostic codes. The RN will also a conduct a virtual visit with the member (if he/she has capacity), social worker, primary caregiver and/or AR to determine tier level of care (e.g., how much Medi-Cal will pay for the "assisted living" portion). Once finalized, the ISP requires signatures from the RN, the member or AR and, eventually, the assisted living home.
+                <br/><br/>
+                Who is the most convenient person to contact for the ISP to be signed by the member if he/she has capacity? For example, if the member is in a SNF but does not have email, the SNF social worker is usually the best contact person.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,33 +54,13 @@ export default function Step4() {
             <CardDescription>Where the ISP assessment will take place.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <FormField control={control} name="ispCopyCurrent" render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>ISP contact location is same as member's current location</FormLabel></div></FormItem>
+            <FormField control={control} name="ispAssessmentLocation" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Name of ISP Assessment Location</FormLabel>
+                    <FormControl><Input {...field} value={field.value ?? ''} placeholder="e.g., Bob's Nursing Home, at home, Nano's Hospital, etc." /></FormControl>
+                    <FormMessage />
+                </FormItem>
             )} />
-            <FormField control={control} name="ispCopyCustomary" render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl><div className="space-y-1 leading-none"><FormLabel>ISP contact location is same as member's customary residence</FormLabel></div></FormItem>
-            )} />
-            <div className="space-y-4 p-4 border rounded-md">
-                <FormField control={control} name="ispAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={control} name="ispCity" render={({ field }) => (
-                        <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={control} name="ispState" render={({ field }) => (
-                        <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={control} name="ispZip" render={({ field }) => (
-                        <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={control} name="ispCounty" render={({ field }) => (
-                        <FormItem><FormLabel>County</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                </div>
-            </div>
           </CardContent>
        </Card>
 
@@ -152,5 +135,3 @@ export default function Step4() {
     </div>
   );
 }
-
-    

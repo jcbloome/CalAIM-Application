@@ -83,13 +83,7 @@ const formSchema = z.object({
   ispFacilityName: z.string().optional(),
   ispPhone: z.string().optional(),
   ispEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
-  ispCopyCurrent: z.boolean().optional(),
-  ispCopyCustomary: z.boolean().optional(),
-  ispAddress: z.string().optional(),
-  ispCity: z.string().optional(),
-  ispState: z.string().optional(),
-  ispZip: z.string().optional(),
-  ispCounty: z.string().optional(),
+  ispAssessmentLocation: z.string().optional(),
   onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
   hasPrefRCFE: z.enum(['Yes', 'No']).optional(),
   rcfeName: z.string().optional(),
@@ -136,7 +130,7 @@ const steps = [
       'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan', 'meetsPathwayCriteria', 'snfDiversionReason'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan', 'meetsPathwayCriteria'] },
   { id: 4, name: 'ISP & Facility Selection', fields: [] },
 ];
 
@@ -163,8 +157,6 @@ function CsSummaryFormComponent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       copyAddress: false,
-      ispCopyCurrent: false,
-      ispCopyCustomary: false,
     },
     mode: 'onChange', // Important for instant validation feedback
   });
