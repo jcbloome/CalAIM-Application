@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense, useMemo } from 'react';
@@ -24,7 +25,6 @@ import { cn } from '@/lib/utils';
 import type { Application, FormStatus as FormStatusType } from '@/lib/definitions';
 import { useDoc, useUser, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import AiAssistant from './components/AiAssistant';
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
@@ -153,7 +153,6 @@ function PathwayPageContent() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {application && <AiAssistant applicationData={application} />}
             {pathwayRequirements.map((req) => {
                 const status = formStatusMap.get(req.title) || 'Pending';
                 const isFormComplete = status === 'Completed';
