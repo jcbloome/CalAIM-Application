@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -18,58 +19,69 @@ import Step3 from './components/Step3';
 import Step4 from './components/Step4';
 import { Header } from '@/components/Header';
 
-// Minimal schema to allow progression
+
+const requiredString = z.string().min(1, { message: 'This field is required.' });
+
 const formSchema = z.object({
-  memberFirstName: z.string().optional(),
-  memberLastName: z.string().optional(),
-  memberDob: z.any().optional(),
-  memberAge: z.any().optional(),
-  memberMediCalNum: z.string().optional(),
-  confirmMemberMediCalNum: z.string().optional(),
-  memberMrn: z.string().optional(),
-  confirmMemberMrn: z.string().optional(),
-  memberLanguage: z.string().optional(),
+  // Step 1
+  memberFirstName: requiredString,
+  memberLastName: requiredString,
+  memberDob: z.date({ required_error: 'Date of birth is required.' }),
+  memberAge: z.number().optional(),
+  memberMediCalNum: requiredString,
+  memberMrn: requiredString,
+  memberLanguage: requiredString,
+  
   referrerFirstName: z.string().optional(),
   referrerLastName: z.string().optional(),
   referrerEmail: z.string().optional(),
-  referrerPhone: z.string().optional(),
-  referrerRelationship: z.string().optional(),
+  referrerPhone: requiredString,
+  referrerRelationship: requiredString,
+
   memberPhone: z.string().optional(),
-  memberEmail: z.string().optional(),
+  memberEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+
   isBestContact: z.boolean().optional(),
   bestContactName: z.string().optional(),
   bestContactRelationship: z.string().optional(),
   bestContactPhone: z.string().optional(),
-  bestContactEmail: z.string().optional(),
+  bestContactEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
   bestContactLanguage: z.string().optional(),
-  hasCapacity: z.any().optional(),
-  hasLegalRep: z.any().optional(),
+
+  hasCapacity: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
+  hasLegalRep: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
   repName: z.string().optional(),
   repRelationship: z.string().optional(),
   repPhone: z.string().optional(),
-  repEmail: z.string().optional(),
+  repEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
   repLanguage: z.string().optional(),
-  currentLocation: z.string().optional(),
-  currentAddress: z.string().optional(),
-  currentCity: z.string().optional(),
-  currentState: z.string().optional(),
-  currentZip: z.string().optional(),
+
+  // Step 2
+  currentLocation: requiredString,
+  currentAddress: requiredString,
+  currentCity: requiredString,
+  currentState: requiredString,
+  currentZip: requiredString,
   copyAddress: z.boolean().optional(),
   customaryAddress: z.string().optional(),
   customaryCity: z.string().optional(),
   customaryState: z.string().optional(),
   customaryZip: z.string().optional(),
-  healthPlan: z.any().optional(),
-  pathway: z.any().optional(),
+
+  // Step 3
+  healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
+  pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
   meetsSnfTransitionCriteria: z.boolean().optional(),
   meetsSnfDiversionCriteria: z.boolean().optional(),
   snfDiversionReason: z.string().optional(),
+
+  // Step 4
   ispFirstName: z.string().optional(),
   ispLastName: z.string().optional(),
   ispRelationship: z.string().optional(),
   ispFacilityName: z.string().optional(),
   ispPhone: z.string().optional(),
-  ispEmail: z.string().optional(),
+  ispEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
   ispCopyCurrent: z.boolean().optional(),
   ispCopyCustomary: z.boolean().optional(),
   ispAddress: z.string().optional(),
@@ -77,23 +89,45 @@ const formSchema = z.object({
   ispState: z.string().optional(),
   ispZip: z.string().optional(),
   ispCounty: z.string().optional(),
-  onALWWaitlist: z.any().optional(),
-  hasPrefRCFE: z.any().optional(),
+  onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
+  hasPrefRCFE: z.enum(['Yes', 'No']).optional(),
   rcfeName: z.string().optional(),
   rcfeAdminName: z.string().optional(),
-  rcfeAdminPhone: z.string().optional(),
-  rcfeAdminEmail: z.string().optional(),
+  rcfeAdminPhone: zstring().optional(),
+  rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
   rcfeAddress: z.string().optional(),
+}).superRefine((data, ctx) => {
+    // Best Contact validation
+    if (!data.isBestContact) {
+        if (!data.bestContactName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["bestContactName"] });
+        if (!data.bestContactRelationship) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["bestContactRelationship"] });
+        if (!data.bestContactPhone) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["bestContactPhone"] });
+        if (!data.bestContactEmail) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["bestContactEmail"] });
+        if (!data.bestContactLanguage) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["bestContactLanguage"] });
+    }
+    // Legal Rep validation
+    if (data.hasLegalRep === 'Yes') {
+        if (!data.repName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["repName"] });
+        if (!data.repRelationship) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["repRelationship"] });
+        if (!data.repPhone) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["repPhone"] });
+        if (!data.repEmail) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["repEmail"] });
+        if (!data.repLanguage) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["repLanguage"] });
+    }
 });
 
 
 export type FormValues = z.infer<typeof formSchema>;
 
 const steps = [
-  { id: 1, name: 'Member & Contact Info' },
-  { id: 2, name: 'Location Information' },
-  { id: 3, name: 'Health Plan & Pathway' },
-  { id: 4, name: 'ISP & Facility Selection' },
+  { id: 1, name: 'Member & Contact Info', fields: [
+      'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'memberMrn', 'memberLanguage',
+      'referrerPhone', 'referrerRelationship', 'hasCapacity', 'hasLegalRep', 'bestContactName', 
+      'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
+      'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
+  ]},
+  { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway'] },
+  { id: 4, name: 'ISP & Facility Selection', fields: [] },
 ];
 
 function CsSummaryFormComponent() {
@@ -115,13 +149,14 @@ function CsSummaryFormComponent() {
   const { data: userProfile } = useDoc(userProfileDocRef);
 
   const methods = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       isBestContact: false,
       copyAddress: false,
       ispCopyCurrent: false,
       ispCopyCustomary: false,
     },
-    mode: 'onChange',
+    mode: 'onBlur', // Validate on blur
   });
 
   useEffect(() => {
@@ -158,12 +193,21 @@ function CsSummaryFormComponent() {
   }, [applicationId, user, firestore, methods]);
 
 
-  const { handleSubmit } = methods;
+  const { handleSubmit, trigger } = methods;
 
-  const nextStep = () => {
-    if (currentStep < steps.length) {
+  const nextStep = async () => {
+    const fieldsToValidate = steps[currentStep - 1].fields;
+    const isValid = await trigger(fieldsToValidate as any);
+
+    if (isValid && currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Please fill out all required fields before continuing.",
+        });
     }
   };
 

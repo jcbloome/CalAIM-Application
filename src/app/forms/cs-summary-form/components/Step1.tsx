@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 export default function Step1() {
   const { control, watch, setValue } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
+  const isBestContact = useWatch({ control, name: 'isBestContact' });
+  const hasLegalRep = useWatch({ control, name: 'hasLegalRep' });
 
   useEffect(() => {
     if (memberDob) {
@@ -48,7 +50,7 @@ export default function Step1() {
               name="memberFirstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -62,7 +64,7 @@ export default function Step1() {
               name="memberLastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name</FormLabel>
+                  <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -78,7 +80,7 @@ export default function Step1() {
                 name="memberDob"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Date of Birth</FormLabel>
+                    <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
                     <Popover>
                         <PopoverTrigger asChild>
                         <FormControl>
@@ -131,52 +133,25 @@ export default function Step1() {
               name="memberMediCalNum"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Medi-Cal Number or Medical Record Number</FormLabel>
+                  <FormLabel>Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>Medi-Cal Number for Health Net, Medical Record Number for Kaiser.</FormDescription>
+                   <FormDescription>Medi-Cal Number for Health Net.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={control}
-              name="confirmMemberMediCalNum"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Number</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
               name="memberMrn"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>MRN</FormLabel>
+                  <FormLabel>Medical Record Number (MRN) <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="confirmMemberMrn"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm MRN</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
-                  </FormControl>
+                  <FormDescription>Medical Record Number for Kaiser. If Health Net, repeat Medi-Cal Number.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -187,7 +162,7 @@ export default function Step1() {
             name="memberLanguage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preferred Language</FormLabel>
+                <FormLabel>Preferred Language <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -214,8 +189,6 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
-                  <FormDescription>e.g., Jane</FormDescription>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -228,8 +201,6 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
-                  <FormDescription>e.g., Smith</FormDescription>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -244,8 +215,6 @@ export default function Step1() {
                   <FormControl>
                     <Input type="email" {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
-                  <FormDescription>e.g., jane.smith@example.com</FormDescription>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -254,11 +223,10 @@ export default function Step1() {
               name="referrerPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input type="tel" {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>e.g., (123) 456-7890</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -269,7 +237,7 @@ export default function Step1() {
             name="referrerRelationship"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Relationship to Member</FormLabel>
+                <FormLabel>Relationship to Member <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <Input {...field} value={field.value ?? ''} />
                 </FormControl>
@@ -332,22 +300,22 @@ export default function Step1() {
                 <h3 className="font-medium">Best Contact Person (if not the member)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="bestContactName" render={({ field }) => (
-                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="bestContactRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="bestContactEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <FormField control={control} name="bestContactLanguage" render={({ field }) => (
-                    <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Language {!isBestContact && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={isBestContact} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
         </CardContent>
@@ -364,12 +332,11 @@ export default function Step1() {
                 name="hasCapacity"
                 render={({ field }) => (
                     <FormItem className="space-y-3">
-                    <FormLabel>Does member have capacity to make their own decisions?</FormLabel>
+                    <FormLabel>Does member have capacity to make their own decisions? <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Unknown" /></FormControl><FormLabel className="font-normal">Unknown</FormLabel></FormItem>
                         </RadioGroup>
                     </FormControl>
                     <FormMessage />
@@ -382,7 +349,7 @@ export default function Step1() {
                 name="hasLegalRep"
                 render={({ field }) => (
                     <FormItem className="space-y-3 p-4 border rounded-md">
-                    <FormLabel>Does member have a legal representative?</FormLabel>
+                    <FormLabel>Does member have a legal representative? <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
@@ -398,22 +365,22 @@ export default function Step1() {
                 <h3 className="font-medium">Representative's Contact Info</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repName" render={({ field }) => (
-                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <FormField control={control} name="repLanguage" render={({ field }) => (
-                    <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Language {hasLegalRep === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={hasLegalRep !== 'Yes'} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
         </CardContent>
@@ -421,5 +388,3 @@ export default function Step1() {
     </div>
   );
 }
-
-    
