@@ -123,13 +123,6 @@ const formSchema = z.object({
             ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['switchingHealthPlan'] });
         }
     }
-    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
-        ctx.addIssue({
-            code: 'custom',
-            message: 'This field is required for the SNF Diversion pathway.',
-            path: ['snfDiversionReason'],
-        });
-    }
 });
 
 

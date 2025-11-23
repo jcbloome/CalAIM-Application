@@ -3,7 +3,7 @@
 
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -151,7 +151,10 @@ export default function Step3() {
                         name="snfDiversionReason"
                         render={({ field }) => (
                             <FormItem>
-                            <FormLabel>Reason for SNF Diversion <span className="text-destructive">*</span></FormLabel>
+                            <FormLabel>Reason for SNF Diversion</FormLabel>
+                             <FormDescription>
+                                Reason for SNF Diversion must be included below if this is pathway selected.
+                            </FormDescription>
                             <FormControl>
                                 <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for why the member is at risk for institutionalization..." />
                             </FormControl>
