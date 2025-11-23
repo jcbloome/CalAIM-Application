@@ -23,112 +23,150 @@ import type { FormStatus as FormStatusType } from '@/lib/definitions';
 
 const requiredString = z.string().min(1, { message: 'This field is required.' });
 
-const formSchema = z.object({
-  // Step 1
-  memberFirstName: requiredString,
-  memberLastName: requiredString,
-  memberDob: z.date({ required_error: 'Date of birth is required.' }),
-  memberAge: z.number().optional(),
-  memberMediCalNum: requiredString,
-  memberMrn: requiredString,
-  memberLanguage: requiredString,
-  
-  referrerFirstName: z.string().optional(),
-  referrerLastName: z.string().optional(),
-  referrerEmail: z.string().optional(),
-  referrerPhone: requiredString,
-  referrerRelationship: requiredString,
-  agency: z.string().optional(),
+const formSchema = z
+  .object({
+    // Step 1
+    memberFirstName: requiredString,
+    memberLastName: requiredString,
+    memberDob: z.date({ required_error: 'Date of birth is required.' }),
+    memberAge: z.number().optional(),
+    memberMediCalNum: requiredString,
+    memberMrn: requiredString,
+    memberLanguage: requiredString,
+    
+    referrerFirstName: z.string().optional(),
+    referrerLastName: z.string().optional(),
+    referrerEmail: z.string().optional(),
+    referrerPhone: requiredString,
+    referrerRelationship: requiredString,
+    agency: z.string().optional(),
 
-  memberPhone: z.string().optional(),
-  memberEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+    memberPhone: z.string().optional(),
+    memberEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
 
-  bestContactName: requiredString,
-  bestContactRelationship: requiredString,
-  bestContactPhone: requiredString,
-  bestContactEmail: requiredString.email({ message: 'Invalid email format.' }),
-  bestContactLanguage: requiredString,
+    bestContactName: requiredString,
+    bestContactRelationship: requiredString,
+    bestContactPhone: requiredString,
+    bestContactEmail: requiredString.email({ message: 'Invalid email format.' }),
+    bestContactLanguage: requiredString,
 
-  hasCapacity: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
-  hasLegalRep: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'This field is required.' }),
-  repName: z.string().optional(),
-  repRelationship: z.string().optional(),
-  repPhone: z.string().optional(),
-  repEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
-  repLanguage: z.string().optional(),
+    hasCapacity: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
+    hasLegalRep: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'This field is required.' }),
+    repName: z.string().optional(),
+    repRelationship: z.string().optional(),
+    repPhone: z.string().optional(),
+    repEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+    repLanguage: z.string().optional(),
 
-  // Step 2
-  currentLocation: requiredString,
-  currentAddress: requiredString,
-  currentCity: requiredString,
-  currentState: requiredString,
-  currentZip: requiredString,
-  copyAddress: z.boolean().optional(),
-  customaryAddress: z.string().optional(),
-  customaryCity: z.string().optional(),
-  customaryState: z.string().optional(),
-  customaryZip: z.string().optional(),
+    // Step 2
+    currentLocation: requiredString,
+    currentAddress: requiredString,
+    currentCity: requiredString,
+    currentState: requiredString,
+    currentZip: requiredString,
+    copyAddress: z.boolean().optional(),
+    customaryAddress: z.string().optional(),
+    customaryCity: z.string().optional(),
+    customaryState: z.string().optional(),
+    customaryZip: z.string().optional(),
 
-  // Step 3
-  healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
-  existingHealthPlan: z.string().optional(),
-  switchingHealthPlan: z.enum(['Yes', 'No']).optional(),
-  pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
-  meetsPathwayCriteria: z.boolean().refine(val => val === true, { message: "You must confirm the criteria are met." }),
-  snfDiversionReason: z.string().optional(),
+    // Step 3
+    healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.' }),
+    existingHealthPlan: z.string().optional(),
+    switchingHealthPlan: z.enum(['Yes', 'No']).optional(),
+    pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
+    meetsPathwayCriteria: z.boolean().refine(val => val === true, { message: "You must confirm the criteria are met." }),
+    snfDiversionReason: z.string().optional(),
 
-  // Step 4
-  ispFirstName: z.string().optional(),
-  ispLastName: z.string().optional(),
-  ispRelationship: z.string().optional(),
-  ispFacilityName: z.string().optional(),
-  ispPhone: z.string().optional(),
-  ispEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
-  ispAddress: z.string().optional(),
-  ispCity: z.string().optional(),
-  ispState: z.string().optional(),
-  ispZip: z.string().optional(),
-  ispCounty: z.string().optional(),
-  onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
-  hasPrefRCFE: z.enum(['Yes', 'No']).optional(),
-  rcfeName: z.string().optional(),
-  rcfeAdminName: z.string().optional(),
-  rcfeAdminPhone: z.string().optional(),
-  rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
-  rcfeAddress: z.string().optional(),
-}).superRefine((data, ctx) => {
-    if (data.hasLegalRep === 'Yes') {
-        if (!data.repName) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repName'] });
-        if (!data.repRelationship) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repRelationship'] });
-        if (!data.repPhone) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repPhone'] });
-        if (!data.repEmail) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repEmail'] });
-        if (!data.repLanguage) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['repLanguage'] });
+    // Step 4
+    ispFirstName: z.string().optional(),
+    ispLastName: z.string().optional(),
+    ispRelationship: z.string().optional(),
+    ispFacilityName: z.string().optional(),
+    ispPhone: z.string().optional(),
+    ispEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+    ispAddress: z.string().optional(),
+    ispCity: z.string().optional(),
+    ispState: z.string().optional(),
+    ispZip: z.string().optional(),
+    ispCounty: z.string().optional(),
+    onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional(),
+    hasPrefRCFE: z.enum(['Yes', 'No']).optional(),
+    rcfeName: z.string().optional(),
+    rcfeAdminName: z.string().optional(),
+    rcfeAdminPhone: z.string().optional(),
+    rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+    rcfeAddress: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.hasLegalRep === 'Yes') {
+        return !!data.repName && !!data.repRelationship && !!data.repPhone && !!data.repEmail && !!data.repLanguage;
+      }
+      return true;
+    },
+    {
+      message: 'Representative details are required.',
+      // Even though we specify a general message, individual field errors are better.
+      // So we add specific path issues in the next refinement.
+      path: ['repName'], // This is just a placeholder path for the overall error
     }
-    if (data.healthPlan === 'Other') {
-        if (!data.existingHealthPlan) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['existingHealthPlan'] });
-        if (!data.switchingHealthPlan) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['switchingHealthPlan'] });
+  )
+  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repName), { path: ['repName'], message: 'This field is required.' })
+  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repRelationship), { path: ['repRelationship'], message: 'This field is required.' })
+  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repPhone), { path: ['repPhone'], message: 'This field is required.' })
+  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repEmail), { path: ['repEmail'], message: 'This field is required.' })
+  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repLanguage), { path: ['repLanguage'], message: 'This field is required.' })
+  .refine(
+    (data) => {
+      if (data.healthPlan === 'Other') {
+        return !!data.existingHealthPlan && !!data.switchingHealthPlan;
+      }
+      return true;
+    },
+    {
+      message: 'Details for "Other" health plan are required.',
+      path: ['existingHealthPlan'],
     }
-    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
-        // No longer required by default, but we might check this on final submission if needed.
+  )
+  .refine((data) => !(data.healthPlan === 'Other' && !data.existingHealthPlan), { path: ['existingHealthPlan'], message: 'This field is required.' })
+  .refine((data) => !(data.healthPlan === 'Other' && !data.switchingHealthPlan), { path: ['switchingHealthPlan'], message: 'This field is required.' })
+  .refine(
+    (data) => {
+        if (data.hasPrefRCFE === 'Yes') {
+            return !!data.rcfeName && !!data.rcfeAddress && !!data.rcfeAdminName && !!data.rcfeAdminPhone && !!data.rcfeAdminEmail;
+        }
+        return true;
+    }, {
+        message: 'Preferred facility details are required.',
+        path: ['rcfeName']
     }
-    if (data.hasPrefRCFE === 'Yes') {
-        if (!data.rcfeName) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['rcfeName'] });
-        if (!data.rcfeAddress) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['rcfeAddress'] });
-        if (!data.rcfeAdminName) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['rcfeAdminName'] });
-        if (!data.rcfeAdminPhone) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['rcfeAdminPhone'] });
-        if (!data.rcfeAdminEmail) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['rcfeAdminEmail'] });
+  )
+  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeName), { path: ['rcfeName'], message: 'This field is required.' })
+  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAddress), { path: ['rcfeAddress'], message: 'This field is required.' })
+  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminName), { path: ['rcfeAdminName'], message: 'This field is required.' })
+  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminPhone), { path: ['rcfeAdminPhone'], message: 'This field is required.' })
+  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminEmail), { path: ['rcfeAdminEmail'], message: 'This field is required.' })
+  .refine(
+    (data) => {
+        if (data.healthPlan === 'Kaiser') {
+            return !!data.ispFirstName && !!data.ispLastName && !!data.ispRelationship && !!data.ispAddress && !!data.ispCity && !!data.ispState && !!data.ispZip && !!data.ispCounty;
+        }
+        return true;
+    }, {
+        message: 'ISP contact and location are required for Kaiser.',
+        path: ['ispFirstName']
     }
-    if (data.healthPlan === 'Kaiser') {
-        if (!data.ispFirstName) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispFirstName'] });
-        if (!data.ispLastName) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispLastName'] });
-        if (!data.ispRelationship) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispRelationship'] });
-        if (!data.ispAddress) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispAddress'] });
-        if (!data.ispCity) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispCity'] });
-        if (!data.ispState) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispState'] });
-        if (!data.ispZip) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispZip'] });
-        if (!data.ispCounty) ctx.addIssue({ code: 'custom', message: 'This field is required for Kaiser.', path: ['ispCounty'] });
-    }
-});
+  )
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispFirstName), { path: ['ispFirstName'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispLastName), { path: ['ispLastName'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispRelationship), { path: ['ispRelationship'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispAddress), { path: ['ispAddress'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispCity), { path: ['ispCity'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispState), { path: ['ispState'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispZip), { path: ['ispZip'], message: 'This field is required for Kaiser.' })
+  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispCounty), { path: ['ispCounty'], message: 'This field is required for Kaiser.' });
+
 
 
 export type FormValues = z.infer<typeof formSchema>;
@@ -422,3 +460,5 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
+
+    
