@@ -69,7 +69,10 @@ export default function Step4() {
        </Card>
 
         <Card className="border-l-4 border-accent">
-            <CardHeader><CardTitle>Assisted Living Waiver (ALW) Status</CardTitle></CardHeader>
+            <CardHeader>
+                <CardTitle>CalAIM vs. Assisted Living Waiver (ALW)</CardTitle>
+                <CardDescription>CalAIM and ALW are duplicative services, a member enrolled in one will not be funded by the other.</CardDescription>
+            </CardHeader>
             <CardContent>
                 <FormField
                     control={control}
