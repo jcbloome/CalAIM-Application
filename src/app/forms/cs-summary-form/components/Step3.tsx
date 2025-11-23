@@ -136,7 +136,7 @@ export default function Step3() {
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for the selected pathway (SNF Diversion/Transition) have been met. <span className="text-destructive">*</span></FormLabel>
+                                <FormLabel>All criteria for SNF Diversion or Transition has been met. <span className="text-destructive">*</span></FormLabel>
                             </div>
                             <FormMessage />
                         </FormItem>
