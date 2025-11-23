@@ -10,7 +10,6 @@ import type { FormValues } from '../page';
 
 export default function Step4() {
   const { control, watch } = useFormContext<FormValues>();
-  const hasPrefRCFE = watch('hasPrefRCFE');
   const healthPlan = watch('healthPlan');
   const isKaiser = healthPlan === 'Kaiser';
   
@@ -57,23 +56,24 @@ export default function Step4() {
               </div>
 
                <div className="space-y-4 p-4 border rounded-md mt-4">
-                 <h3 className="font-medium text-base">ISP Assessment Location {isKaiser && <span className="text-destructive font-normal text-sm">(Required for Kaiser)</span>}</h3>
+                 <h3 className="font-medium text-base">ISP Assessment Location</h3>
+                 <p className="text-sm text-muted-foreground">Required for Kaiser pathways. For other pathways, enter N/A if not applicable.</p>
                  <FormField control={control} name="ispAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Street Address {isKaiser && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={control} name="ispCity" render={({ field }) => (
-                        <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>City {isKaiser && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispState" render={({ field }) => (
-                        <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>State {isKaiser && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispZip" render={({ field }) => (
-                        <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>ZIP Code {isKaiser && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <FormField control={control} name="ispCounty" render={({ field }) => (
-                    <FormItem><FormLabel>County</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>County {isKaiser && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
           </CardContent>
@@ -128,28 +128,27 @@ export default function Step4() {
             )}
           />
 
-          {hasPrefRCFE === 'Yes' && (
             <div className="p-4 border rounded-md space-y-4">
                 <h3 className="font-medium">Preferred Facility Details</h3>
+                <p className="text-sm text-muted-foreground">If a facility has not been chosen, please enter N/A in the following fields.</p>
                 <FormField control={control} name="rcfeName" render={({ field }) => (
-                    <FormItem><FormLabel>Facility Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Facility Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={control} name="rcfeAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Facility Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Facility Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={control} name="rcfeAdminName" render={({ field }) => (
-                    <FormItem><FormLabel>Administrator Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Administrator Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="rcfeAdminPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Administrator Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Administrator Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="rcfeAdminEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Administrator Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Administrator Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
             </div>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -23,8 +23,7 @@ import type { FormStatus as FormStatusType } from '@/lib/definitions';
 
 const requiredString = z.string().min(1, { message: 'This field is required.' });
 
-const formSchema = z
-  .object({
+const formSchema = z.object({
     // Step 1
     memberFirstName: requiredString,
     memberLastName: requiredString,
@@ -97,75 +96,7 @@ const formSchema = z
     rcfeAdminPhone: z.string().optional(),
     rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
     rcfeAddress: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.hasLegalRep === 'Yes') {
-        return !!data.repName && !!data.repRelationship && !!data.repPhone && !!data.repEmail && !!data.repLanguage;
-      }
-      return true;
-    },
-    {
-      message: 'Representative details are required.',
-      // Even though we specify a general message, individual field errors are better.
-      // So we add specific path issues in the next refinement.
-      path: ['repName'], // This is just a placeholder path for the overall error
-    }
-  )
-  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repName), { path: ['repName'], message: 'This field is required.' })
-  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repRelationship), { path: ['repRelationship'], message: 'This field is required.' })
-  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repPhone), { path: ['repPhone'], message: 'This field is required.' })
-  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repEmail), { path: ['repEmail'], message: 'This field is required.' })
-  .refine((data) => !(data.hasLegalRep === 'Yes' && !data.repLanguage), { path: ['repLanguage'], message: 'This field is required.' })
-  .refine(
-    (data) => {
-      if (data.healthPlan === 'Other') {
-        return !!data.existingHealthPlan && !!data.switchingHealthPlan;
-      }
-      return true;
-    },
-    {
-      message: 'Details for "Other" health plan are required.',
-      path: ['existingHealthPlan'],
-    }
-  )
-  .refine((data) => !(data.healthPlan === 'Other' && !data.existingHealthPlan), { path: ['existingHealthPlan'], message: 'This field is required.' })
-  .refine((data) => !(data.healthPlan === 'Other' && !data.switchingHealthPlan), { path: ['switchingHealthPlan'], message: 'This field is required.' })
-  .refine(
-    (data) => {
-        if (data.hasPrefRCFE === 'Yes') {
-            return !!data.rcfeName && !!data.rcfeAddress && !!data.rcfeAdminName && !!data.rcfeAdminPhone && !!data.rcfeAdminEmail;
-        }
-        return true;
-    }, {
-        message: 'Preferred facility details are required.',
-        path: ['rcfeName']
-    }
-  )
-  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeName), { path: ['rcfeName'], message: 'This field is required.' })
-  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAddress), { path: ['rcfeAddress'], message: 'This field is required.' })
-  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminName), { path: ['rcfeAdminName'], message: 'This field is required.' })
-  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminPhone), { path: ['rcfeAdminPhone'], message: 'This field is required.' })
-  .refine((data) => !(data.hasPrefRCFE === 'Yes' && !data.rcfeAdminEmail), { path: ['rcfeAdminEmail'], message: 'This field is required.' })
-  .refine(
-    (data) => {
-        if (data.healthPlan === 'Kaiser') {
-            return !!data.ispFirstName && !!data.ispLastName && !!data.ispRelationship && !!data.ispAddress && !!data.ispCity && !!data.ispState && !!data.ispZip && !!data.ispCounty;
-        }
-        return true;
-    }, {
-        message: 'ISP contact and location are required for Kaiser.',
-        path: ['ispFirstName']
-    }
-  )
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispFirstName), { path: ['ispFirstName'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispLastName), { path: ['ispLastName'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispRelationship), { path: ['ispRelationship'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispAddress), { path: ['ispAddress'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispCity), { path: ['ispCity'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispState), { path: ['ispState'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispZip), { path: ['ispZip'], message: 'This field is required for Kaiser.' })
-  .refine((data) => !(data.healthPlan === 'Kaiser' && !data.ispCounty), { path: ['ispCounty'], message: 'This field is required for Kaiser.' });
+  });
 
 
 
@@ -176,14 +107,11 @@ const steps = [
       'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'memberMrn', 'memberLanguage',
       'referrerPhone', 'referrerRelationship',
       'bestContactName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
-      'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage',
+      'hasCapacity', 'hasLegalRep',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'existingHealthPlan', 'switchingHealthPlan', 'meetsPathwayCriteria'] },
-  { id: 4, name: 'ISP & Facility Selection', fields: [
-      'hasPrefRCFE', 'rcfeName', 'rcfeAddress', 'rcfeAdminName', 'rcfeAdminPhone', 'rcfeAdminEmail',
-      'ispFirstName', 'ispLastName', 'ispRelationship', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty'
-  ]},
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria'] },
+  { id: 4, name: 'ISP & Facility Selection', fields: []},
 ];
 
 const getRequiredFormsForPathway = (pathway: FormValues['pathway']): FormStatusType[] => {
@@ -460,5 +388,3 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
-
-    

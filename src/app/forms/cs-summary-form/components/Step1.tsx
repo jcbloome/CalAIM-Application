@@ -18,7 +18,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 export default function Step1() {
   const { control, watch, setValue } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
-  const hasLegalRep = watch('hasLegalRep');
 
   useEffect(() => {
     if (memberDob) {
@@ -363,30 +362,29 @@ export default function Step1() {
                 )}
             />
 
-            {hasLegalRep === 'Yes' && (
-              <div className="p-4 border rounded-md space-y-4">
-                  <h3 className="font-medium">Representative's Contact Info</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={control} name="repName" render={({ field }) => (
-                          <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <FormField control={control} name="repRelationship" render={({ field }) => (
-                          <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField control={control} name="repPhone" render={({ field }) => (
-                          <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <FormField control={control} name="repEmail" render={({ field }) => (
-                          <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                  </div>
-                  <FormField control={control} name="repLanguage" render={({ field }) => (
-                      <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                  )} />
-              </div>
-            )}
+            <div className="p-4 border rounded-md space-y-4">
+                <h3 className="font-medium">Representative's Contact Info</h3>
+                <p className="text-sm text-muted-foreground">If the member does not have a legal representative, please enter N/A in the following fields.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={control} name="repName" render={({ field }) => (
+                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={control} name="repRelationship" render={({ field }) => (
+                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={control} name="repPhone" render={({ field }) => (
+                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={control} name="repEmail" render={({ field }) => (
+                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <FormField control={control} name="repLanguage" render={({ field }) => (
+                    <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
         </CardContent>
       </Card>
     </div>
