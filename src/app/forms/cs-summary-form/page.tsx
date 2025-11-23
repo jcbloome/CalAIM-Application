@@ -50,11 +50,11 @@ const formSchema = z.object({
 
   hasCapacity: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
   hasLegalRep: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
-  repName: requiredString,
-  repRelationship: requiredString,
-  repPhone: requiredString,
-  repEmail: requiredString.email({ message: 'Invalid email format.' }),
-  repLanguage: requiredString,
+  repName: z.string().optional(),
+  repRelationship: z.string().optional(),
+  repPhone: z.string().optional(),
+  repEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
+  repLanguage: z.string().optional(),
 
   // Step 2
   currentLocation: requiredString,
@@ -95,7 +95,25 @@ const formSchema = z.object({
   rcfeAdminName: z.string().optional(),
   rcfeAdminPhone: z.string().optional(),
   rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')),
-  rcfeAddress: z.string().optional(),
+  rcfeAddress: zstring().optional(),
+}).superRefine((data, ctx) => {
+    if (data.hasLegalRep === 'Yes') {
+        if (!data.repName) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ['repName'] });
+        }
+        if (!data.repRelationship) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ['repRelationship'] });
+        }
+        if (!data.repPhone) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ['repPhone'] });
+        }
+        if (!data.repEmail) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ['repEmail'] });
+        }
+        if (!data.repLanguage) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ['repLanguage'] });
+        }
+    }
 });
 
 
@@ -104,9 +122,10 @@ export type FormValues = z.infer<typeof formSchema>;
 const steps = [
   { id: 1, name: 'Member & Contact Info', fields: [
       'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'memberMrn', 'memberLanguage',
-      'referrerPhone', 'referrerRelationship',
+      'referrerPhone', 'referrerRelationship', 'isBestContact',
       'bestContactName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
-      'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
+      'hasCapacity', 'hasLegalRep', 
+      'repName', 'repRelationship', 'repPhone', 'repEmail', 'repLanguage'
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway'] },
@@ -311,5 +330,3 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
-
-    

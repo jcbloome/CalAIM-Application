@@ -281,42 +281,28 @@ export default function Step1() {
               )}
             />
           </div>
-          <FormField
-            control={control}
-            name="isBestContact"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Member is the best contact person</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-            <div className="p-4 border rounded-md space-y-4">
-                <h3 className="font-medium">Best Contact Person (if not the member)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={control} name="bestContactName" render={({ field }) => (
-                        <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={control} name="bestContactRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={control} name="bestContactEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                </div>
-                <FormField control={control} name="bestContactLanguage" render={({ field }) => (
-                    <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-            </div>
+          <div className="p-4 border rounded-md space-y-4">
+              <h3 className="font-medium">Best Contact Person</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={control} name="bestContactName" render={({ field }) => (
+                      <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={control} name="bestContactRelationship" render={({ field }) => (
+                      <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={control} name="bestContactPhone" render={({ field }) => (
+                      <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={control} name="bestContactEmail" render={({ field }) => (
+                      <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </div>
+              <FormField control={control} name="bestContactLanguage" render={({ field }) => (
+                  <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+          </div>
         </CardContent>
       </Card>
       
@@ -387,5 +373,3 @@ export default function Step1() {
     </div>
   );
 }
-
-    
