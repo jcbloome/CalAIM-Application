@@ -12,8 +12,10 @@ import {
   PawPrint,
   ShieldAlert,
   LogOut,
+  UserCog,
+  BellRing,
 } from 'lucide-react';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar';
 import { useUser, useAuth } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +27,11 @@ const menuItems = [
   { href: '/admin/activity-log', label: 'Activity Log', icon: Activity },
 ];
 
+const superAdminMenuItems = [
+    { href: '/admin/super/staff', label: 'Staff Management', icon: UserCog },
+    { href: '/admin/super/notifications', label: 'Notification Settings', icon: BellRing },
+];
+
 // Hardcoded admin email
 const ADMIN_EMAIL = 'jason@carehomefinders.com';
 
@@ -33,6 +40,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+
+  const isSuperAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     if (isUserLoading || !auth) return; // Wait until user status and auth service are resolved
@@ -49,6 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     // If logged in but not as the admin, sign out and redirect
+    // This logic should be updated later to check against a list of staff from firestore
     if (user.email !== ADMIN_EMAIL) {
       auth.signOut().then(() => {
         router.push('/admin/login');
@@ -71,6 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // If there's no user or the user is not the admin, we render a loader
   // while the useEffect handles the redirection. This avoids content flashing.
+  // This logic will need to be updated to support multiple staff members
   if (!user || user.email !== ADMIN_EMAIL) {
      return (
       <div className="flex items-center justify-center h-screen">
@@ -106,6 +117,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          
+          {isSuperAdmin && (
+            <>
+                <SidebarSeparator />
+                <div className="p-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Super Admin</p>
+                </div>
+                <SidebarMenu>
+                {superAdminMenuItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)}>
+                            <Link href={item.href}>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+                </SidebarMenu>
+            </>
+          )}
+
         </SidebarContent>
         <SidebarFooter>
           <div className="border-t p-2">

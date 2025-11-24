@@ -633,6 +633,22 @@
             }
           ]
         }
+      },
+      {
+        "path": "/roles_super_admin/{userId}",
+        "definition": {
+          "entityName": "superAdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Indicates that a user is a super admin. Existence of document confers super admin role.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
       }
     ],
     "reasoning": "The Firestore data structure is designed to ensure data isolation and efficient security rules, adhering to the principles of Authorization Independence, Clarity of Intent, and DBAC. User-owned data is nested under `/users/{userId}`, while collaborative data utilizes membership maps. All rules are based on `request.auth.uid`, avoiding custom claims.  The structure supports secure `list` operations by segregating data with different access requirements into separate collections (QAPs). Denormalization of authorization context is used to prevent the need for `get()` calls in rules, enabling atomic operations and improving performance. \n\nThe core data resides within the `/users/{userId}` collection hierarchy.  Each user's data, including applications and related subcollections, are stored under their respective user ID.  This structure enables straightforward, path-based security rules for user-owned data. Because users should only be able to access applications they own, there is a natural hierarchy.\n\n**Authorization Independence:** Each subcollection (applications, contacts, locations) includes the `userId` field, enabling rules to verify ownership without needing to read parent documents.\n\n**QAPs (Rules are not Filters):**\n*   The structure is designed to prevent rules from acting as filters. By storing all applications under the user's ID, listing applications is secure because only the authenticated user's applications are accessible.\n*   The design also includes `/roles_admin/{uid}` which prevents rules from becoming filters to determine the current users role.\n\nSpecifically, the structure directly addresses the requirement that users can only see their applications by structuring all application data under the `/users/{userId}` path. This ensures that listing applications is inherently secure, as rules only need to verify the requesting user's ID matches the `userId` on the application.\n"
