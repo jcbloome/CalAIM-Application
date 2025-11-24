@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import type { FormValues } from '../page';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 export default function Step1() {
@@ -23,6 +23,13 @@ export default function Step1() {
   const bestContactType = watch('bestContactType');
   const memberFirstName = watch('memberFirstName');
   const memberLastName = watch('memberLastName');
+
+  const isRepPrimaryContact = watch('isRepPrimaryContact');
+  const repName = watch('repName');
+  const repPhone = watch('repPhone');
+  const repEmail = watch('repEmail');
+  const repRelationship = watch('repRelationship');
+
 
   useEffect(() => {
     if (memberDob) {
@@ -53,11 +60,27 @@ export default function Step1() {
         setValue('bestContactLastName', memberLastName, { shouldValidate: true });
         setValue('bestContactRelationship', 'Self', { shouldValidate: true });
     } else if (bestContactType === 'other') {
-        setValue('bestContactFirstName', '', { shouldValidate: true });
-        setValue('bestContactLastName', '', { shouldValidate: true });
-        setValue('bestContactRelationship', '', { shouldValidate: true });
+        // Clear fields only if they were previously set to the member's details
+        if (watch('bestContactRelationship') === 'Self') {
+            setValue('bestContactFirstName', '', { shouldValidate: true });
+            setValue('bestContactLastName', '', { shouldValidate: true });
+            setValue('bestContactRelationship', '', { shouldValidate: true });
+        }
     }
-  }, [bestContactType, memberFirstName, memberLastName, setValue]);
+  }, [bestContactType, memberFirstName, memberLastName, setValue, watch]);
+
+  useEffect(() => {
+    if (isRepPrimaryContact) {
+        const [firstName, ...lastNameParts] = (repName || '').split(' ');
+        setValue('bestContactType', 'other', { shouldValidate: true });
+        setValue('bestContactFirstName', firstName, { shouldValidate: true });
+        setValue('bestContactLastName', lastNameParts.join(' '), { shouldValidate: true });
+        setValue('bestContactPhone', repPhone, { shouldValidate: true });
+        setValue('bestContactEmail', repEmail, { shouldValidate: true });
+        setValue('bestContactRelationship', repRelationship, { shouldValidate: true });
+    }
+  }, [isRepPrimaryContact, repName, repPhone, repEmail, repRelationship, setValue]);
+
 
   return (
     <div className="space-y-6">
@@ -91,21 +114,6 @@ export default function Step1() {
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
                    <FormDescription>e.g., Doe</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <FormField
-              control={control}
-              name="memberCounty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>County <span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -293,8 +301,9 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" />
+                    <Input type="tel" {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormDescription>(xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -370,7 +379,12 @@ export default function Step1() {
               )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                      <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
+                      <FormItem>
+                        <FormLabel>Phone</FormLabel>
+                        <FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl>
+                        <FormDescription>(xxx) xxx-xxxx</FormDescription>
+                        <FormMessage />
+                      </FormItem>
                   )} />
                   <FormField control={control} name="bestContactEmail" render={({ field }) => (
                       <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -403,7 +417,12 @@ export default function Step1() {
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="secondaryContactPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                            <FormLabel>Phone</FormLabel>
+                            <FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormDescription>(xxx) xxx-xxxx</FormDescription>
+                            <FormMessage />
+                        </FormItem>
                     )} />
                     <FormField control={control} name="secondaryContactEmail" render={({ field }) => (
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -472,12 +491,34 @@ export default function Step1() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                            <FormLabel>Phone</FormLabel>
+                            <FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormDescription>(xxx) xxx-xxxx</FormDescription>
+                            <FormMessage />
+                        </FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
+                <FormField
+                    control={control}
+                    name="isRepPrimaryContact"
+                    render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                        <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                        <FormLabel>Is the Legal Representative also the Primary Contact Person?</FormLabel>
+                        <FormDescription>
+                            If checked, the representative's information will be copied to the primary contact section.
+                        </FormDescription>
+                        </div>
+                    </FormItem>
+                    )}
+                />
             </div>
         </CardContent>
       </Card>

@@ -72,6 +72,7 @@ const formSchema = z.object({
     repRelationship: optionalString,
     repPhone: optionalString,
     repEmail: optionalEmail,
+    isRepPrimaryContact: z.boolean().optional(),
 
     // Step 2 - Location
     currentLocation: requiredString,
@@ -112,7 +113,7 @@ const formSchema = z.object({
     rcfeName: optionalString,
     rcfeAdminName: optionalString,
     rcfeAdminPhone: optionalString,
-    rcfeAdminEmail: optionalEmail,
+rcfeAdminEmail: optionalEmail,
     rcfeAddress: optionalString,
   })
   .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
@@ -474,3 +475,5 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
+
+    

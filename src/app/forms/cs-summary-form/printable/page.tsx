@@ -35,7 +35,6 @@ function PrintableCsSummaryFormContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                   <Field label="First Name" />
                   <Field label="Last Name" />
-                  <Field label="County" />
                   <Field label="Date of Birth (MM/DD/YYYY)" />
                   <Field label="Age" />
                    <Field 
@@ -57,7 +56,7 @@ function PrintableCsSummaryFormContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                   <Field label="First Name" />
                   <Field label="Last Name" />
-                  <Field label="Your Phone" description="Format: (xxx) xxx-xxxx" />
+                  <Field label="Your Phone" description="(xxx) xxx-xxxx" />
                   <Field label="Your Email" />
                   <Field label="Relationship to Member (e.g., Family Member, Social Worker)" />
                   <Field label="Agency (e.g., Bob's Referral Agency, Hospital Name, etc.)" description="If not applicable, enter N/A"/>
@@ -75,7 +74,7 @@ function PrintableCsSummaryFormContent() {
                     <Field label="First Name" />
                     <Field label="Last Name" />
                     <Field label="Relationship to Member" />
-                    <Field label="Phone" description="Format: (xxx) xxx-xxxx" />
+                    <Field label="Phone" description="(xxx) xxx-xxxx" />
                     <Field label="Email" />
                     <Field label="Preferred Language" />
                  </div>
@@ -87,7 +86,7 @@ function PrintableCsSummaryFormContent() {
                     <Field label="First Name" />
                     <Field label="Last Name" />
                     <Field label="Relationship to Member" />
-                    <Field label="Phone" description="Format: (xxx) xxx-xxxx" />
+                    <Field label="Phone" description="(xxx) xxx-xxxx" />
                     <Field label="Email" />
                     <Field label="Preferred Language" />
                  </div>
@@ -116,9 +115,10 @@ function PrintableCsSummaryFormContent() {
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
                     <Field label="Name" />
                     <Field label="Relationship to Member" />
-                    <Field label="Phone" description="Format: (xxx) xxx-xxxx" />
+                    <Field label="Phone" description="(xxx) xxx-xxxx" />
                     <Field label="Email" />
                  </div>
+                 <CheckboxField label="Is the Legal Representative also the Primary Contact Person?" />
               </div>
 
               <div>
@@ -209,7 +209,7 @@ function PrintableCsSummaryFormContent() {
                     <Field label="Last Name" />
                     <Field label="Relationship to Member" />
                     <Field label="Facility Name" />
-                    <Field label="Phone" description="Format: (xxx) xxx-xxxx"/>
+                    <Field label="Phone" description="(xxx) xxx-xxxx"/>
                     <Field label="Email" />
                  </div>
                  
@@ -245,7 +245,7 @@ function PrintableCsSummaryFormContent() {
                     <Field label="Facility Name" className="sm:col-span-2"/>
                     <Field label="Facility Address" className="sm:col-span-2"/>
                     <Field label="Administrator Name" />
-                    <Field label="Administrator Phone" description="Format: (xxx) xxx-xxxx" />
+                    <Field label="Administrator Phone" description="(xxx) xxx-xxxx" />
                     <Field label="Administrator Email" />
                 </div>
               </div>
