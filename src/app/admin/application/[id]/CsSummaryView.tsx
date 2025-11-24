@@ -18,7 +18,7 @@ import type { Application } from '@/lib/definitions';
 
 export function CsSummaryView({ application }: { application: Partial<Application> }) {
   const methods = useForm<FormValues>({
-    resolver: zodResolver(viewSchema),
+    resolver: zodResolver(viewSchema()),
     defaultValues: application,
     mode: 'onBlur',
   });
