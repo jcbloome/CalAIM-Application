@@ -4,7 +4,7 @@
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Printer, ArrowRight, ExternalLink, Send, Download, Upload } from 'lucide-react';
+import { FileText, Printer, ArrowRight, ExternalLink, Send, Download, Upload, FileUp } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -155,7 +155,7 @@ export default function ApplicationSubmissionPage() {
                             <div className="space-y-4">
                                 {uploadableDocs.map((doc) => (
                                     <div key={doc.id} className="p-3 border rounded-md bg-background">
-                                        <Label htmlFor={doc.id} className="font-medium text-base">{doc.name}</Label>
+                                        <Label className="font-medium text-base">{doc.name}</Label>
                                         <div className="flex flex-col sm:flex-row gap-2 mt-2">
                                             {doc.downloadHref && (
                                                  <Button asChild variant="secondary" className="flex-1">
@@ -165,7 +165,11 @@ export default function ApplicationSubmissionPage() {
                                                 </Button>
                                             )}
                                             <div className="flex-1">
-                                                <Input id={doc.id} type="file" />
+                                                <Label htmlFor={doc.id} className="flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
+                                                    <FileUp className="mr-2 h-4 w-4" />
+                                                    <span>Upload File</span>
+                                                </Label>
+                                                <Input id={doc.id} type="file" className="sr-only" />
                                             </div>
                                         </div>
                                     </div>
@@ -175,7 +179,7 @@ export default function ApplicationSubmissionPage() {
 
                          <Button type="submit" className="w-full">
                             <Send className="mr-2 h-4 w-4" />
-                            Submit All Documents
+                            Submit Documents
                         </Button>
                     </form>
                 </CardContent>
