@@ -97,29 +97,25 @@ export default function FaqPage() {
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
+                         <AccordionItem value="glossary">
+                            <AccordionTrigger>What do all these acronyms mean?</AccordionTrigger>
+                            <AccordionContent>
+                                <dl>
+                                    {acronyms.map((item, index) => (
+                                        <div key={item.term}>
+                                            <div className="flex items-baseline gap-4 py-3">
+                                            <dt className="w-20 text-right font-bold text-primary shrink-0">{item.term}</dt>
+                                            <dd className="text-muted-foreground">{item.definition}</dd>
+                                            </div>
+                                            {index < acronyms.length - 1 && <Separator />}
+                                        </div>
+                                    ))}
+                                </dl>
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </CardContent>
             </Card>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle>Acronym Glossary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <dl>
-                        {acronyms.map((item, index) => (
-                            <div key={item.term}>
-                                <div className="flex items-baseline gap-4 py-3">
-                                <dt className="w-20 text-right font-bold text-primary shrink-0">{item.term}</dt>
-                                <dd className="text-muted-foreground">{item.definition}</dd>
-                                </div>
-                                {index < acronyms.length - 1 && <Separator />}
-                            </div>
-                        ))}
-                    </dl>
-                </CardContent>
-            </Card>
-
         </div>
       </main>
     </div>
