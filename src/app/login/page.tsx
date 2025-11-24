@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Eye, EyeOff } from 'lucide-react';
+import { Header } from '@/components/Header';
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -82,98 +83,101 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="items-center text-center p-6">
-          {logo && (
-            <Image
-              src={logo.imageUrl}
-              alt={logo.description}
-              width={250}
-              height={50}
-              className="object-contain mb-4"
-            />
-          )}
-          <CardTitle className="text-3xl font-bold">
-            {isSigningIn ? 'Welcome Back' : 'Create an Account'}
-          </CardTitle>
-          <CardDescription className="text-base">
-            {isSigningIn ? 'Sign in to access your applications.' : 'Sign up to start your CalAIM journey.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleAuthAction} className="space-y-4">
-            {!isSigningIn && (
-               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="John"
-                    required
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                  />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    required
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                  />
-                </div>
-              </div>
+    <>
+      <Header />
+      <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
+        <Card className="w-full max-w-md shadow-2xl">
+          <CardHeader className="items-center text-center p-6">
+            {logo && (
+              <Image
+                src={logo.imageUrl}
+                alt={logo.description}
+                width={250}
+                height={50}
+                className="object-contain mb-4"
+              />
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2 relative">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                minLength={6}
-              />
-               <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-7 h-7 w-7"
-                onClick={() => setShowPassword(prev => !prev)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+            <CardTitle className="text-3xl font-bold">
+              {isSigningIn ? 'Welcome Back' : 'Create an Account'}
+            </CardTitle>
+            <CardDescription className="text-base">
+              {isSigningIn ? 'Sign in to access your applications.' : 'Sign up to start your CalAIM journey.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleAuthAction} className="space-y-4">
+              {!isSigningIn && (
+                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="John"
+                      required
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                    />
+                  </div>
+                   <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Doe"
+                      required
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2 relative">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  minLength={6}
+                />
+                 <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-7 h-7 w-7"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                </Button>
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full">
+                {isSigningIn ? 'Sign In' : 'Sign Up'}
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm">
+              {isSigningIn ? "Don't have an account?" : 'Already have an account?'}
+              <Button variant="link" onClick={() => setIsSigningIn(!isSigningIn)} className="pl-1">
+                {isSigningIn ? 'Sign Up' : 'Sign In'}
               </Button>
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full">
-              {isSigningIn ? 'Sign In' : 'Sign Up'}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            {isSigningIn ? "Don't have an account?" : 'Already have an account?'}
-            <Button variant="link" onClick={() => setIsSigningIn(!isSigningIn)} className="pl-1">
-              {isSigningIn ? 'Sign Up' : 'Sign In'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </main>
+          </CardContent>
+        </Card>
+      </main>
+    </>
   );
 }
