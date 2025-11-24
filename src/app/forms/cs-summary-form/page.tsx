@@ -34,7 +34,7 @@ const optionalPhone = z.string().refine(val => val === '' || !val || phoneRegex.
 const requiredPhone = z.string().regex(phoneRegex, { message: 'Phone number must be in (xxx) xxx-xxxx format.' });
 const optionalEmail = z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')).nullable();
 
-const formSchema = z.object({
+export const formSchema = z.object({
     // Step 1 - Member Info
     memberFirstName: requiredString,
     memberLastName: requiredString,

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { notFound, useSearchParams } from 'next/navigation';
@@ -13,6 +14,9 @@ import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application } from '@/lib/definitions';
 import { applications as mockApplications } from '@/lib/data';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { CsSummaryView } from './CsSummaryView';
+
 
 // This is a temporary solution for the demo to find the mock application data
 // In a real app, you would fetch this from a central 'applications' collection or use a backend search function.
@@ -154,7 +158,23 @@ export default function AdminApplicationDetailPage({ params }: { params: { id: s
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">View</Button>
+                    {form.name === 'CS Member Summary' ? (
+                       <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">View</Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl">
+                                <DialogHeader>
+                                    <DialogTitle>CS Member Summary: Read-Only</DialogTitle>
+                                </DialogHeader>
+                               <CsSummaryView application={application} />
+                            </DialogContent>
+                        </Dialog>
+                    ) : (
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={`${form.href}?applicationId=${application.id}`}>View</Link>
+                        </Button>
+                    )}
                     <Button variant="secondary" size="sm">
                         <FileWarning className="mr-2 h-4 w-4" />
                         Request Revision
