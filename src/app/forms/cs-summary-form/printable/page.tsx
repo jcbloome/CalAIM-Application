@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -39,7 +40,7 @@ function PrintableCsSummaryFormContent() {
                   <Field label="Age" />
                    <Field 
                     label="Medi-Cal Number" 
-                    description="Format: 9 followed by 7 digits and a letter (e.g. 91234567A)."
+                    description="Format: 9 digits and a letter (e.g. 91234567A)."
                   />
                    <Field label="Confirm Medi-Cal Number" />
                   <Field 
@@ -214,7 +215,6 @@ function PrintableCsSummaryFormContent() {
                  </div>
                  
                  <h3 className="text-sm font-medium text-gray-800 mt-4">ISP Assessment Location</h3>
-                 <p className="text-xs text-gray-500 pt-1">For Kaiser pathways, all fields are required. For other pathways, enter N/A if not applicable.</p>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
                     <Field label="Street Address" className="sm:col-span-2"/>
                     <Field label="City" />

@@ -57,7 +57,6 @@ export default function Step4() {
 
                <div className="space-y-4 p-4 border rounded-md mt-4">
                  <h3 className="font-medium text-base">ISP Assessment Location</h3>
-                 <p className="text-sm text-muted-foreground">All fields are required. We need to know where the Health Net RN is calling to do the ISP, even if virtual.</p>
                  <FormField control={control} name="ispAddress" render={({ field }) => (
                     <FormItem><FormLabel>Street Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
