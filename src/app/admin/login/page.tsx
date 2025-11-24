@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,11 +54,11 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateAccount = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     if (!auth || !firestore) {
       setError("Firebase auth service is not available.");
       toast({
@@ -71,39 +71,55 @@ export default function AdminLoginPage() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await updateProfile(user, {
-        displayName: `${firstName} ${lastName}`
-      });
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, {
-        id: user.uid,
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email,
-      });
-
-      toast({ title: 'Admin account created successfully!' });
+      await setPersistence(auth, browserSessionPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: 'Admin sign-in successful!' });
       router.push('/admin/applications');
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already in use. Please sign in.');
-        toast({
-          variant: 'destructive',
-          title: 'Account Exists',
-          description: 'This email is already registered. Try signing in instead.',
-        });
-      } else {
-        setError(err.message);
-        toast({
-          variant: 'destructive',
-          title: 'Authentication Failed',
-          description: err.message,
-        });
-      }
+        if (err.code === 'auth/user-not-found') {
+            // If user doesn't exist, try creating the account
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await updateProfile(user, {
+                    displayName: `${firstName} ${lastName}`
+                });
+
+                const userDocRef = doc(firestore, 'users', user.uid);
+                await setDoc(userDocRef, {
+                    id: user.uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: user.email,
+                });
+                
+                // Also create admin role doc
+                const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
+                await setDoc(adminRoleRef, {
+                   email: user.email,
+                   role: 'admin'
+                });
+
+
+                toast({ title: 'Admin account created and signed in successfully!' });
+                router.push('/admin/applications');
+            } catch (creationError: any) {
+                 setError(creationError.message);
+                toast({
+                    variant: 'destructive',
+                    title: 'Authentication Failed',
+                    description: creationError.message,
+                });
+            }
+        } else {
+            setError(err.message);
+            toast({
+                variant: 'destructive',
+                title: 'Authentication Failed',
+                description: err.message,
+            });
+        }
     } finally {
         setIsLoading(false);
     }
@@ -117,36 +133,14 @@ export default function AdminLoginPage() {
         <CardHeader className="items-center text-center p-6">
             <PawPrint className="h-12 w-12 text-primary mb-4" />
           <CardTitle className="text-3xl font-bold">
-            Admin Account Setup
+            Admin Portal
           </CardTitle>
           <CardDescription className="text-base">
-            Create your administrator account.
+            Sign in to manage applications.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={handleCreateAccount} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    required
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                  />
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    required
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                  />
-                </div>
-              </div>
+          <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -181,9 +175,9 @@ export default function AdminLoginPage() {
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...</>
               ) : (
-                'Create Admin Account'
+                'Sign In'
               )}
             </Button>
           </form>
