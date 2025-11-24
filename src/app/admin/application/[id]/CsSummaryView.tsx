@@ -15,7 +15,7 @@ import { FormValues, formSchema } from '@/app/forms/cs-summary-form/page';
 import type { Application } from '@/lib/definitions';
 
 // A "tolerant" schema for viewing that makes most fields optional
-const viewSchema = formSchema.deepPartial();
+const viewSchema = formSchema.partial();
 
 export function CsSummaryView({ application }: { application: Partial<Application> }) {
   const methods = useForm<FormValues>({
