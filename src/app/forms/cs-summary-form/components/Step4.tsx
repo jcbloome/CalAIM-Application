@@ -46,7 +46,7 @@ export default function Step4() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={control} name="ispPhone" render={({ field }) => (
-                    <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                 )} />
                 <FormField control={control} name="ispEmail" render={({ field }) => (
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -116,7 +116,7 @@ export default function Step4() {
               <FormItem className="space-y-3">
                 <FormLabel>Has a preferred assisted living facility (RCFE) been chosen?</FormLabel>
                 <FormControl>
-                  <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
+                  <RadioGroup onValueChange={field.onChange} value={field.value ?? ''} className="flex items-center space-x-4">
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                     <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                   </RadioGroup>
@@ -140,7 +140,7 @@ export default function Step4() {
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="rcfeAdminPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Administrator Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Administrator Phone</FormLabel><FormControl><Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="rcfeAdminEmail" render={({ field }) => (
                         <FormItem><FormLabel>Administrator Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -152,5 +152,3 @@ export default function Step4() {
     </div>
   );
 }
-
-    

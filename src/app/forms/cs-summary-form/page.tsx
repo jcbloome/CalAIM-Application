@@ -32,7 +32,9 @@ const formSchema = z.object({
     memberDob: z.date({ required_error: 'Date of birth is required.' }),
     memberAge: z.number().optional(),
     memberMediCalNum: requiredString,
+    confirmMemberMediCalNum: requiredString,
     memberMrn: requiredString,
+    confirmMemberMrn: requiredString,
     memberLanguage: requiredString,
     
     // Step 1 - Referrer Info
@@ -46,7 +48,9 @@ const formSchema = z.object({
     // Step 1 - Member Contact
     memberPhone: z.string().optional().nullable(),
     memberEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')).nullable(),
-    bestContactName: z.string().optional().nullable(),
+    isBestContactMember: z.boolean().optional(),
+    bestContactFirstName: z.string().optional().nullable(),
+    bestContactLastName: z.string().optional().nullable(),
     bestContactRelationship: z.string().optional().nullable(),
     bestContactPhone: z.string().optional().nullable(),
     bestContactEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')).nullable(),
@@ -100,6 +104,14 @@ const formSchema = z.object({
     rcfeAdminPhone: z.string().optional().nullable(),
     rcfeAdminEmail: z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')).nullable(),
     rcfeAddress: z.string().optional().nullable(),
+  })
+  .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
+    message: "Medi-Cal numbers don't match",
+    path: ["confirmMemberMediCalNum"],
+  })
+  .refine(data => data.memberMrn === data.confirmMemberMrn, {
+      message: "Medical Record Numbers don't match",
+      path: ["confirmMemberMrn"],
   });
 
 
@@ -107,7 +119,7 @@ export type FormValues = z.infer<typeof formSchema>;
 
 const steps = [
   { id: 1, name: 'Member & Contact Info', fields: [
-      'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'memberMrn', 'memberLanguage',
+      'memberFirstName', 'memberLastName', 'memberDob', 'memberMediCalNum', 'confirmMemberMediCalNum', 'memberMrn', 'confirmMemberMrn', 'memberLanguage',
       'referrerPhone', 'referrerRelationship',
       'hasCapacity',
   ]},
@@ -184,6 +196,7 @@ function CsSummaryFormComponent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       copyAddress: false,
+      isBestContactMember: false,
     },
     mode: 'onBlur',
   });
@@ -275,10 +288,10 @@ function CsSummaryFormComponent() {
          toast({ title: 'Progress Saved', description: 'Your changes have been saved.' });
        }
        addLog(`Progress saved successfully for application ID: ${docId}`);
-    } catch (error) {
-      addLog(`Error saving progress: ${error}`);
+    } catch (error: any) {
+      addLog(`Error saving progress: ${error.message}`);
       if (!isNavigating) {
-        toast({ variant: "destructive", title: "Save Error", description: "Could not save your progress." });
+        toast({ variant: "destructive", title: "Save Error", description: `Could not save your progress: ${error.message}` });
       }
     }
     return docId;

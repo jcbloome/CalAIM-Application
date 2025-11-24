@@ -14,10 +14,14 @@ import { format } from 'date-fns';
 import { useEffect } from 'react';
 import type { FormValues } from '../page';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function Step1() {
-  const { control, watch, setValue } = useFormContext<FormValues>();
+  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
+  const isBestContactMember = watch('isBestContactMember');
+  const memberFirstName = watch('memberFirstName');
+  const memberLastName = watch('memberLastName');
 
   useEffect(() => {
     if (memberDob) {
@@ -41,6 +45,16 @@ export default function Step1() {
       setValue('memberAge', undefined, { shouldValidate: true });
     }
   }, [memberDob, setValue]);
+
+  useEffect(() => {
+    if (isBestContactMember) {
+        setValue('bestContactFirstName', memberFirstName, { shouldValidate: true });
+        setValue('bestContactLastName', memberLastName, { shouldValidate: true });
+    } else {
+        setValue('bestContactFirstName', '', { shouldValidate: true });
+        setValue('bestContactLastName', '', { shouldValidate: true });
+    }
+  }, [isBestContactMember, memberFirstName, memberLastName, setValue]);
 
   return (
     <div className="space-y-6">
@@ -142,11 +156,26 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                   <FormDescription>Medi-Cal Number for Health Net.</FormDescription>
+                   <FormDescription>Medi-Cal Number for Health Net (begins with 9).</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+             <FormField
+              control={control}
+              name="confirmMemberMediCalNum"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Medi-Cal Number <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
               name="memberMrn"
@@ -157,6 +186,19 @@ export default function Step1() {
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormDescription>Medical Record Number for Kaiser. If Health Net, repeat Medi-Cal Number.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={control}
+              name="confirmMemberMrn"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Medical Record Number (MRN) <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ''} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -231,8 +273,9 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input type="tel" {...field} value={field.value ?? ''} />
+                    <Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} />
                   </FormControl>
+                   <FormDescription>Format: (xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -284,8 +327,9 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input type="tel" {...field} value={field.value ?? ''} />
+                    <Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} />
                   </FormControl>
+                  <FormDescription>Format: (xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -306,24 +350,42 @@ export default function Step1() {
           </div>
           <div className="p-4 border rounded-md space-y-4">
               <h3 className="font-medium">Best Contact Person</h3>
+              <FormField
+                control={control}
+                name="isBestContactMember"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Best contact person is the member</FormLabel>
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={control} name="bestContactName" render={({ field }) => (
-                      <FormItem><FormLabel>Name <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  <FormField control={control} name="bestContactFirstName" render={({ field }) => (
+                      <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isBestContactMember} /></FormControl><FormMessage /></FormItem>
                   )} />
-                  <FormField control={control} name="bestContactRelationship" render={({ field }) => (
-                      <FormItem><FormLabel>Relationship <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  <FormField control={control} name="bestContactLastName" render={({ field }) => (
+                      <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isBestContactMember} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
+              <FormField control={control} name="bestContactRelationship" render={({ field }) => (
+                  <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                      <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                   )} />
                   <FormField control={control} name="bestContactEmail" render={({ field }) => (
-                      <FormItem><FormLabel>Email <span className="text-destructive">*</span></FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
               <FormField control={control} name="bestContactLanguage" render={({ field }) => (
-                  <FormItem><FormLabel>Language <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
           </div>
         </CardContent>
@@ -359,7 +421,7 @@ export default function Step1() {
                     <FormItem className="space-y-3 p-4 border rounded-md">
                     <FormLabel>Does member have a legal representative? (e.g., power of attorney)</FormLabel>
                     <FormControl>
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
+                        <RadioGroup onValueChange={field.onChange} value={field.value ?? ''} className="flex items-center space-x-4">
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Unknown" /></FormControl><FormLabel className="font-normal">Unknown</FormLabel></FormItem>
@@ -383,7 +445,7 @@ export default function Step1() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
