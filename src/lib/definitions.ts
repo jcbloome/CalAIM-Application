@@ -13,7 +13,7 @@ export type Application = {
   status: ApplicationStatus;
   lastUpdated: string | Timestamp; 
   pathway: 'SNF Transition' | 'SNF Diversion';
-  healthPlan: 'Kaiser' | 'Health Net' | 'Other';
+  healthPlan: 'Kaiser' | 'Health Net' | 'Other' | 'Kaiser Permanente';
   forms: FormStatus[];
   progress: number;
 };
