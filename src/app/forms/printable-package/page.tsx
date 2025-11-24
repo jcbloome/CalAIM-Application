@@ -4,7 +4,7 @@
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Printer, ArrowRight, ExternalLink, Send, Download, Upload, FileUp } from 'lucide-react';
+import { FileText, Printer, ArrowRight, ExternalLink, Download, FileUp } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,7 +74,7 @@ export default function ApplicationSubmissionPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground mb-6">
-                        If you prefer to work offline, you can download the blank forms below, complete and sign them, and then upload them all through the secure portal at the bottom of this section. <strong>Do not email completed forms;</strong> for security and HIPAA compliance, please only use the secure upload portal. If you have questions, you may email us at calaim@carehomefinders.com.
+                        If you prefer to work offline, you can download the blank forms below, complete and sign them, and then upload them all through the secure portal at the bottom of this section. For security and HIPAA compliance do not email completed forms, instead use our secure upload portal below. If you have questions, you may email us at calaim@carehomefinders.com.
                     </p>
 
                     <Card className="bg-muted/30">
@@ -178,7 +178,7 @@ export default function ApplicationSubmissionPage() {
                         </div>
 
                          <Button type="submit" className="w-full">
-                            <Send className="mr-2 h-4 w-4" />
+                            <FileUp className="mr-2 h-4 w-4" />
                             Submit Documents
                         </Button>
                     </form>
@@ -190,5 +190,3 @@ export default function ApplicationSubmissionPage() {
     </>
   );
 }
-
-    
