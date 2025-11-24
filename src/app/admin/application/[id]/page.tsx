@@ -19,6 +19,7 @@ import { FormViewer } from './FormViewer';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { sendRevisionRequestEmail } from '@/app/actions/send-email';
+import { Input } from '@/components/ui/input';
 
 
 // This is a temporary solution for the demo to find the mock application data
@@ -277,11 +278,19 @@ export default function AdminApplicationDetailPage() {
                 <DialogHeader>
                     <DialogTitle>Request Revision</DialogTitle>
                     <DialogDescription>
-                      Write a message to the user explaining what needs to be corrected for '{targetFormForRevision}'. This will be sent to them via email.
+                      Write a message explaining what needs to be corrected for '{targetFormForRevision}'. This will be sent via email.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="memberName">Member Name</Label>
+                        <Input id="memberName" value={application.memberName} readOnly />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="userEmail">Recipient Email</Label>
+                        <Input id="userEmail" value={application.userEmail} readOnly />
+                    </div>
+                    <div className="space-y-2">
                         <Label htmlFor="revision-details">Revision Details</Label>
                         <Textarea 
                           id="revision-details" 
