@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import type { Application } from '@/lib/definitions';
