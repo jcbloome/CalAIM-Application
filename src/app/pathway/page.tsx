@@ -20,7 +20,8 @@ import {
   Info,
   Loader2,
   UploadCloud,
-  Send
+  Send,
+  Lock,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -113,6 +114,8 @@ function PathwayPageContent() {
         </div>
     );
   }
+  
+  const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
 
   const pathwayRequirements = getPathwayRequirements(application.pathway);
   
@@ -135,6 +138,17 @@ function PathwayPageContent() {
 
   const getFormAction = (req: (typeof pathwayRequirements)[0], isCompleted: boolean) => {
     const href = req.href ? `${req.href}?applicationId=${applicationId}` : '#';
+    
+    if (isReadOnly) {
+       return (
+            <Button asChild variant="outline" className="w-full bg-slate-50" disabled>
+                <Link href={href}>
+                    <Lock className="mr-2 h-4 w-4" /> View (Locked)
+                </Link>
+            </Button>
+        );
+    }
+    
     switch (req.type) {
         case 'online-form':
             return (
