@@ -96,6 +96,21 @@ export default function Step1() {
               )}
             />
           </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <FormField
+              control={control}
+              name="memberCounty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>County <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
              <FormField
                 control={control}
@@ -278,9 +293,8 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input type="tel" {...field} value={field.value ?? ''} />
+                    <Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" />
                   </FormControl>
-                  <FormDescription>Format: (xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -321,8 +335,8 @@ export default function Step1() {
       
       <Card className="border-l-4 border-accent">
         <CardHeader>
-          <CardTitle>Best Contact Person</CardTitle>
-          <CardDescription>Provide contact details for the member's designated best contact person.</CardDescription>
+          <CardTitle>Primary Contact Person</CardTitle>
+          <CardDescription>Provide contact details for the member's main point of contact.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border rounded-md space-y-4">
@@ -331,7 +345,7 @@ export default function Step1() {
                 name="bestContactType"
                 render={({ field }) => (
                     <FormItem className="space-y-3">
-                    <FormLabel>Who is the best contact person? <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel>Who is the primary contact person? <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="member" /></FormControl><FormLabel className="font-normal">The Member</FormLabel></FormItem>
@@ -356,7 +370,7 @@ export default function Step1() {
               )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="bestContactPhone" render={({ field }) => (
-                      <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={control} name="bestContactEmail" render={({ field }) => (
                       <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -366,49 +380,48 @@ export default function Step1() {
                   <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
           </div>
+        </CardContent>
+      </Card>
 
-          <Collapsible>
-            <CollapsibleTrigger asChild>
-                <Button variant="link" className="p-0 text-accent">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Add a Secondary Contact (Optional)
-                </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <div className="p-4 border rounded-md space-y-4 mt-2">
-                    <h3 className="font-medium">Secondary Contact Person</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField control={control} name="secondaryContactFirstName" render={({ field }) => (
-                            <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={control} name="secondaryContactLastName" render={({ field }) => (
-                            <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                    </div>
-                    <FormField control={control} name="secondaryContactRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+      <Card className="border-l-4 border-accent">
+        <CardHeader>
+            <CardTitle>Secondary Contact Person (Optional)</CardTitle>
+            <CardDescription>Provide details for a secondary point of contact if available.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <div className="p-4 border rounded-md space-y-4 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={control} name="secondaryContactFirstName" render={({ field }) => (
+                        <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField control={control} name="secondaryContactPhone" render={({ field }) => (
-                            <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={control} name="secondaryContactEmail" render={({ field }) => (
-                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                    </div>
-                    <FormField control={control} name="secondaryContactLanguage" render={({ field }) => (
-                        <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    <FormField control={control} name="secondaryContactLastName" render={({ field }) => (
+                        <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
-            </CollapsibleContent>
-          </Collapsible>
+                <FormField control={control} name="secondaryContactRelationship" render={({ field }) => (
+                    <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={control} name="secondaryContactPhone" render={({ field }) => (
+                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={control} name="secondaryContactEmail" render={({ field }) => (
+                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <FormField control={control} name="secondaryContactLanguage" render={({ field }) => (
+                    <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
         </CardContent>
       </Card>
       
       <Card className="border-l-4 border-accent">
         <CardHeader>
           <CardTitle>Legal Representative</CardTitle>
-          <CardDescription>Information about legal capacity and representation.</CardDescription>
+          <CardDescription>
+            Information about legal capacity and representation. A legal representative (e.g., with Power of Attorney) is distinct from a contact person. If the legal representative is also the primary or secondary contact, please enter their information again here to confirm their legal role.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
             <FormField
@@ -459,7 +472,7 @@ export default function Step1() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} value={field.value ?? ''} placeholder="(xxx) xxx-xxxx" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
@@ -471,3 +484,5 @@ export default function Step1() {
     </div>
   );
 }
+
+    

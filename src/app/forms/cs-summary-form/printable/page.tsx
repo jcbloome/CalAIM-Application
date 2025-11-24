@@ -35,6 +35,7 @@ function PrintableCsSummaryFormContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                   <Field label="First Name" />
                   <Field label="Last Name" />
+                  <Field label="County" />
                   <Field label="Date of Birth (MM/DD/YYYY)" />
                   <Field label="Age" />
                    <Field 
@@ -64,13 +65,12 @@ function PrintableCsSummaryFormContent() {
               </div>
 
               <div>
-                <SectionTitle>Member Contact Information</SectionTitle>
-                <p className="text-xs font-medium text-gray-700 mt-2">Who is the best contact person?</p>
+                <SectionTitle>Primary Contact Person</SectionTitle>
+                <p className="text-xs font-medium text-gray-700 mt-2">Who is the primary contact person?</p>
                  <div className="flex gap-6">
                     <CheckboxField label="The Member" />
                     <CheckboxField label="Another Contact Person" />
                 </div>
-                <h3 className="text-sm font-medium text-gray-800 mt-4">Best Contact Person</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
                     <Field label="First Name" />
                     <Field label="Last Name" />
@@ -79,7 +79,10 @@ function PrintableCsSummaryFormContent() {
                     <Field label="Email" />
                     <Field label="Preferred Language" />
                  </div>
-                 <h3 className="text-sm font-medium text-gray-800 mt-4">Secondary Contact Person (Optional)</h3>
+              </div>
+              
+              <div>
+                <SectionTitle>Secondary Contact Person (Optional)</SectionTitle>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
                     <Field label="First Name" />
                     <Field label="Last Name" />
@@ -92,6 +95,7 @@ function PrintableCsSummaryFormContent() {
 
               <div>
                 <SectionTitle>Legal Representative</SectionTitle>
+                 <p className="text-xs text-gray-600 my-2">A legal representative (e.g., with Power of Attorney) is distinct from a contact person. If the legal representative is also the primary or secondary contact, please enter their information again here to confirm their legal role.</p>
                  <div className="space-y-2">
                     <p className="text-xs font-medium text-gray-700">Does member have capacity to make their own decisions?</p>
                     <div className="flex gap-6">
@@ -284,3 +288,5 @@ export default function PrintableCsSummaryForm() {
     </div>
   );
 }
+
+    
