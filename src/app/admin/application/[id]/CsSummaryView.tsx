@@ -2,10 +2,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { Application } from '@/lib/definitions';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
 
 const Field = ({ label, value }: { label: string; value: any }) => (
     <div>
@@ -23,32 +23,38 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
     </div>
 );
 
-export function CsSummaryView({ application }: { application: Partial<Application> & { [key: string]: any } }) {
-  const [data, setData] = useState<Partial<Application> & { [key: string]: any } | null>(null);
-
-  useEffect(() => {
-    if (application) {
-        const transformedData = { ...application };
-        if (transformedData.memberDob && typeof transformedData.memberDob.toDate === 'function') {
-            transformedData.memberDob = format(transformedData.memberDob.toDate(), 'PPP');
-        } else if (typeof transformedData.memberDob === 'string') {
-            transformedData.memberDob = format(new Date(transformedData.memberDob), 'PPP');
-        }
-        setData(transformedData);
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (date instanceof Timestamp) {
+        return format(date.toDate(), 'PPP');
     }
-  }, [application]);
-  
-  if (!data) {
+    if (date instanceof Date) {
+        return format(date, 'PPP');
+    }
+    if (typeof date === 'string') {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate.getTime())) {
+            return format(parsedDate, 'PPP');
+        }
+    }
+    return 'Invalid Date';
+};
+
+export function CsSummaryView({ application }: { application: Partial<Application> & { [key: string]: any } }) {
+  if (!application) {
     return <div>Loading application data...</div>;
   }
   
+  const data = application;
+  const dobFormatted = formatDate(data.memberDob);
+
   return (
     <ScrollArea className="h-[75vh] pr-6">
         <div className="space-y-8">
             <Section title="Member Information">
                 <Field label="First Name" value={data.memberFirstName} />
                 <Field label="Last Name" value={data.memberLastName} />
-                <Field label="Date of Birth" value={data.memberDob} />
+                <Field label="Date of Birth" value={dobFormatted} />
                 <Field label="Age" value={data.memberAge} />
                 <Field label="Medi-Cal Number" value={data.memberMediCalNum} />
                 <Field label="Medical Record Number (MRN)" value={data.memberMrn} />
@@ -95,9 +101,9 @@ export function CsSummaryView({ application }: { application: Partial<Applicatio
 
             <Section title="Location Information">
                 <Field label="Current Location" value={data.currentLocation} />
-                <Field label="Current Address" value={`${data.currentAddress}, ${data.currentCity}, ${data.currentState} ${data.currentZip}`} />
+                <Field label="Current Address" value={`${data.currentAddress || ''}, ${data.currentCity || ''}, ${data.currentState || ''} ${data.currentZip || ''}`.replace(/, , /g, ', ').replace(/^, |, $/g, '')} />
                 <Field label="Current County" value={data.currentCounty} />
-                <Field label="Customary Address" value={data.copyAddress ? 'Same as current' : `${data.customaryAddress}, ${data.customaryCity}, ${data.customaryState} ${data.customaryZip}`} />
+                <Field label="Customary Address" value={data.copyAddress ? 'Same as current' : `${data.customaryAddress || ''}, ${data.customaryCity || ''}, ${data.customaryState || ''} ${data.customaryZip || ''}`.replace(/, , /g, ', ').replace(/^, |, $/g, '')} />
                  <Field label="Customary County" value={data.customaryCounty} />
             </Section>
 
@@ -116,7 +122,7 @@ export function CsSummaryView({ application }: { application: Partial<Applicatio
                 <Field label="Facility" value={data.ispFacilityName} />
                 <Field label="Phone" value={data.ispPhone} />
                 <Field label="Email" value={data.ispEmail} />
-                <Field label="ISP Address" value={`${data.ispAddress}, ${data.ispCity}, ${data.ispState} ${data.ispZip}`} />
+                <Field label="ISP Address" value={`${data.ispAddress || ''}, ${data.ispCity || ''}, ${data.ispState || ''} ${data.ispZip || ''}`.replace(/, , /g, ', ').replace(/^, |, $/g, '')} />
                 <Field label="ISP County" value={data.ispCounty} />
             </Section>
 
