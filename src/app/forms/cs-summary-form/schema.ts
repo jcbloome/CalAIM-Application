@@ -55,7 +55,7 @@ export const formSchema = z.object({
     repRelationship: optionalString,
     repPhone: optionalPhone,
     repEmail: optionalEmail,
-    isRepPrimaryContact: z.boolean().optional(),
+    isRepPrimaryContact: z.boolean().optional().default(false),
 
     // Step 2 - Location
     currentLocation: requiredString,
