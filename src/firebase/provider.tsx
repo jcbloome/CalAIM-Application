@@ -120,7 +120,7 @@ export const useFirebase = (): FirebaseServicesAndUser | {
     firebaseApp: null;
     firestore: null;
     auth: null;
-    user: null;
+    user: User | null;
     isUserLoading: boolean;
     userError: Error | null;
 } => {
