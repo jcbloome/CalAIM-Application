@@ -1,5 +1,6 @@
 
 import { Application, Acronym, Activity } from './definitions';
+import { format } from 'date-fns';
 
 export const applications: (Application & { healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; })[] = [
   {
@@ -46,7 +47,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
     memberName: 'Jane Smith (Test)',
     status: 'In Progress',
     healthPlan: 'Health Net',
-    lastUpdated: '2023-10-28',
+    lastUpdated: '2023-09-28',
     pathway: 'SNF Diversion',
     progress: 25,
     forms: [
@@ -66,7 +67,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
     memberName: 'Peter Jones',
     status: 'Completed & Submitted',
     healthPlan: 'Kaiser Permanente',
-    lastUpdated: '2023-10-24',
+    lastUpdated: '2023-09-24',
     pathway: 'SNF Transition',
     progress: 100,
     forms: [],
@@ -79,7 +80,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
     memberName: 'Mary Johnson',
     status: 'Approved',
     healthPlan: 'Health Net',
-    lastUpdated: '2023-10-20',
+    lastUpdated: '2023-08-20',
     pathway: 'SNF Diversion',
     progress: 100,
     forms: [],
@@ -92,7 +93,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
     memberName: 'Chris Lee',
     status: 'In Progress',
     healthPlan: 'Kaiser Permanente',
-    lastUpdated: '2023-10-27',
+    lastUpdated: '2023-08-27',
     pathway: 'SNF Diversion',
     progress: 15,
     forms: [],
@@ -121,45 +122,74 @@ export const activities: Activity[] = [
   { id: 'act-5', user: 'Admin', action: 'Application Approved', timestamp: '2023-10-25 11:00 AM', details: 'Application #app-004 was approved.' },
 ];
 
-const getTopCounts = (data: typeof applications, key: keyof typeof applications[0]) => {
-  const counts = data.reduce((acc, app) => {
-    const item = app[key] as string | undefined;
-    if (item && item !== 'N/A') {
-      acc[item] = (acc[item] || 0) + 1;
+type Stats = {
+  byMcp: { name: string; value: number }[];
+  byPathway: { name: string; value: number }[];
+  byCounty: { name: string; value: number }[];
+  monthly: { month: string; total: number }[];
+  topIspContacts: { name: string; value: number }[];
+  topReferrers: { name: string; value: number }[];
+};
+
+const calculateStats = (apps: typeof applications): Stats => {
+  const byMcp: Record<string, number> = {};
+  const byPathway: Record<string, number> = {};
+  const byCounty: Record<string, number> = {};
+  const monthly: Record<string, number> = {};
+  const topIspContacts: Record<string, number> = {};
+  const topReferrers: Record<string, number> = {};
+
+  for (const app of apps) {
+    if (app.healthPlan) {
+      byMcp[app.healthPlan] = (byMcp[app.healthPlan] || 0) + 1;
     }
-    return acc;
-  }, {} as Record<string, number>);
+    if (app.pathway) {
+      byPathway[app.pathway] = (byPathway[app.pathway] || 0) + 1;
+    }
+    // `memberCounty` doesn't exist on the base type, so we'll assume it might.
+    const county = (app as any).memberCounty;
+    if (county) {
+        byCounty[county] = (byCounty[county] || 0) + 1;
+    }
 
-  return Object.entries(counts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    if (app.lastUpdated) {
+        try {
+            const month = format(new Date(app.lastUpdated), 'MMM');
+            monthly[month] = (monthly[month] || 0) + 1;
+        } catch (e) {
+            console.error(`Invalid date format for app ${app.id}: ${app.lastUpdated}`);
+        }
+    }
+
+    if (app.ispContactName) {
+      topIspContacts[app.ispContactName] = (topIspContacts[app.ispContactName] || 0) + 1;
+    }
+    if (app.agency && app.agency !== 'N/A') {
+      topReferrers[app.agency] = (topReferrers[app.agency] || 0) + 1;
+    }
+  }
+  
+  const formatForChart = (data: Record<string, number>) => {
+      return Object.entries(data)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+  }
+  
+  // Create a sorted list of months for the chart
+  const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const sortedMonthly = Object.entries(monthly)
+    .map(([month, total]) => ({ month, total }))
+    .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+
+
+  return {
+    byMcp: formatForChart(byMcp),
+    byPathway: formatForChart(byPathway),
+    byCounty: formatForChart(byCounty),
+    monthly: sortedMonthly,
+    topIspContacts: formatForChart(topIspContacts),
+    topReferrers: formatForChart(topReferrers),
+  };
 };
 
-export const statsData = {
-  byMcp: [
-    { name: 'Kaiser Permanente', value: 120 },
-    { name: 'Health Net', value: 230 },
-    { name: 'Other', value: 45 },
-  ],
-  byCounty: [
-    { name: 'Los Angeles', value: 150 },
-    { name: 'San Diego', value: 90 },
-    { name: 'Orange', value: 65 },
-    { name: 'Riverside', value: 50 },
-    { name: 'San Bernardino', value: 40 },
-  ],
-  byPathway: [
-    { name: 'SNF Transition', value: 250 },
-    { name: 'SNF Diversion', value: 145 },
-  ],
-  monthly: [
-    { month: 'Jan', total: 30 },
-    { month: 'Feb', total: 45 },
-    { month: 'Mar', total: 38 },
-    { month: 'Apr', total: 55 },
-    { month: 'May', total: 62 },
-    { month: 'Jun', total: 70 },
-  ],
-  topIspContacts: getTopCounts(applications, 'ispContactName'),
-  topReferrers: getTopCounts(applications, 'agency'),
-};
+export const statsData = calculateStats(applications);
