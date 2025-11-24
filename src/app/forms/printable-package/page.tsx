@@ -4,12 +4,13 @@
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Printer, ArrowRight, ExternalLink, Send } from 'lucide-react';
+import { FileText, Printer, ArrowRight, ExternalLink, Send, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
+import { Separator } from '@/components/ui/separator';
 
 const forms = [
     { name: 'CS Member Summary', icon: FileText, href: '/forms/cs-summary-form/printable' },
@@ -19,6 +20,18 @@ const forms = [
     { name: 'Freedom of Choice Waiver', icon: FileText, href: '/forms/freedom-of-choice/printable' },
     { name: 'Declaration of Eligibility (for SNF Diversion only)', icon: FileText, href: '/forms/declaration-of-eligibility/printable' },
     { name: 'LIC 602A - Physician\'s Report', icon: ExternalLink, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf', target: '_blank' },
+];
+
+const uploadableDocs = [
+  { id: 'cs-summary', name: 'CS Member Summary', downloadHref: '/forms/cs-summary-form/printable' },
+  { id: 'hipaa', name: 'HIPAA Authorization', downloadHref: '/forms/hipaa-authorization/printable' },
+  { id: 'liability-waiver', name: 'Liability Waiver', downloadHref: '/forms/liability-waiver/printable' },
+  { id: 'freedom-of-choice', name: 'Freedom of Choice Waiver', downloadHref: '/forms/freedom-of-choice/printable' },
+  { id: 'proof-of-income', name: 'Proof of Income (Social Security letter or 3 months bank statements)', downloadHref: null },
+  { id: 'physicians-report', name: 'LIC 602A - Physician\'s Report', downloadHref: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
+  { id: 'declaration', name: 'Declaration of Eligibility (for SNF Diversion only)', downloadHref: '/forms/declaration-of-eligibility/printable' },
+  { id: 'med-list', name: 'Medicine List', downloadHref: null },
+  { id: 'snf-facesheet', name: 'SNF Facesheet (for SNF Transition only)', downloadHref: null },
 ];
 
 
@@ -99,83 +112,70 @@ export default function ApplicationSubmissionPage() {
                 </CardHeader>
                 <CardContent>
                     <form className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="fullName">Your Full Name</Label>
-                                <Input id="fullName" placeholder="John Doe" />
+                        <div className="p-4 border rounded-lg bg-slate-50">
+                            <h3 className="font-semibold text-lg mb-4">Step 1: Provide Your Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="fullName">Your Full Name</Label>
+                                    <Input id="fullName" placeholder="John Doe" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Your Email Address</Label>
+                                    <Input id="email" type="email" placeholder="john.doe@example.com" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="memberFullName">Member's Full Name</Label>
+                                    <Input id="memberFullName" placeholder="Jane Smith" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="mediCalNumber">Member's Medi-Cal or Medical Record Number</Label>
+                                    <Input id="mediCalNumber" placeholder="987654321A or MRN" />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Your Email Address</Label>
-                                <Input id="email" type="email" placeholder="john.doe@example.com" />
+                             <div className="space-y-2 mt-6">
+                                <Label htmlFor="healthPlan">Member's Health Plan</Label>
+                                <Select>
+                                    <SelectTrigger id="healthPlan">
+                                        <SelectValue placeholder="Select a health plan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="kaiser">Kaiser Permanente</SelectItem>
+                                        <SelectItem value="health-net">Health Net</SelectItem>
+                                        <SelectItem value="other">Other (Switching to Kaiser/Health Net)</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="memberFullName">Member's Full Name</Label>
-                                <Input id="memberFullName" placeholder="Jane Smith" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="mediCalNumber">Member's Medi-Cal or Medical Record Number</Label>
-                                <Input id="mediCalNumber" placeholder="987654321A or MRN" />
-                                <p className="text-xs text-muted-foreground">
-                                  Medi-Cal Number for Health Net, Medical Record Number for Kaiser.
-                                </p>
-                            </div>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="healthPlan">Member's Health Plan</Label>
-                             <Select>
-                                <SelectTrigger id="healthPlan">
-                                    <SelectValue placeholder="Select a health plan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="kaiser">Kaiser Permanente</SelectItem>
-                                    <SelectItem value="health-net">Health Net</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-sm text-muted-foreground">
-                                Select 'Other' for members switching to Health Net or Kaiser but who do not yet have it.
+
+                        <div className="p-4 border rounded-lg bg-slate-50">
+                             <h3 className="font-semibold text-lg mb-4">Step 2: Upload Documents</h3>
+                             <p className="text-sm text-muted-foreground mb-6">
+                                For each required document, click "Download" to get the blank form if needed, then "Upload File" to submit the completed version. You can upload multiple files for different documents before submitting.
                             </p>
-                        </div>
-                        <div className="space-y-4 rounded-lg border p-4">
-                            <h3 className="font-medium text-base">Upload Documents</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Please categorize each document you upload using the dropdown menu next to the file input.
-                            </p>
-                            <div className="grid grid-cols-1 gap-4">
-                                {['file-1', 'file-2', 'file-3', 'file-4', 'file-5', 'file-6'].map(id => (
-                                    <div key={id} className="flex flex-col sm:flex-row gap-2 items-center">
-                                        <div className="w-full sm:w-1/2">
-                                            <Label htmlFor={id} className="sr-only">File</Label>
-                                            <Input id={id} type="file" />
-                                        </div>
-                                        <div className="w-full sm:w-1/2">
-                                            <Select>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select document type..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="hipaa">HIPAA</SelectItem>
-                                                    <SelectItem value="declaration">Declaration of Eligibility</SelectItem>
-                                                    <SelectItem value="liability">Liability Waiver</SelectItem>
-                                                    <SelectItem value="lic602a">LIC 602A (Physician's Report)</SelectItem>
-                                                    <SelectItem value="freedom-of-choice">Freedom of Choice Waiver</SelectItem>
-                                                    <SelectItem value="proof-of-income">Proof of Income</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                            <div className="space-y-4">
+                                {uploadableDocs.map((doc) => (
+                                    <div key={doc.id} className="p-3 border rounded-md bg-background">
+                                        <Label htmlFor={doc.id} className="font-medium text-base">{doc.name}</Label>
+                                        <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                                            {doc.downloadHref && (
+                                                 <Button asChild variant="secondary" className="flex-1">
+                                                    <Link href={doc.downloadHref} target="_blank">
+                                                        <Download className="mr-2 h-4 w-4" /> Download Blank Form
+                                                    </Link>
+                                                </Button>
+                                            )}
+                                            <div className="flex-1">
+                                                <Input id={doc.id} type="file" />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
-                                 <div className="text-sm text-muted-foreground pt-2">
-                                    <strong>Proof of Income:</strong> This should be either the most recent Social Security annual award letter or 3 months of recent bank statements showing Social Security income.
-                                </div>
                             </div>
-
                         </div>
+
                          <Button type="submit" className="w-full">
                             <Send className="mr-2 h-4 w-4" />
-                            Submit Documents
+                            Submit All Documents
                         </Button>
                     </form>
                 </CardContent>
@@ -186,3 +186,5 @@ export default function ApplicationSubmissionPage() {
     </>
   );
 }
+
+    
