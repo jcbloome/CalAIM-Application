@@ -13,8 +13,10 @@ import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus } from '@/lib/definitions';
 import { applications as mockApplications } from '@/lib/data';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FormViewer } from './FormViewer';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 
 // This is a temporary solution for the demo to find the mock application data
@@ -68,6 +70,9 @@ export default function AdminApplicationDetailPage() {
   const { toast } = useToast();
   const [isSending, setIsSending] = useState(false);
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
+  const [revisionDetails, setRevisionDetails] = useState('');
+  const [isRevisionDialogOpen, setRevisionDialogOpen] = useState(false);
+
 
   // In a real app, you'd likely fetch the application from a root collection
   // or have a more robust way to get the userId. For this demo, we find it from mock data.
@@ -121,6 +126,25 @@ export default function AdminApplicationDetailPage() {
     }
   };
 
+  const handleRequestRevision = () => {
+    if (!application) return;
+
+    // In a real app, you would also update Firestore here
+    // e.g., updateDoc(doc(firestore, ...), { status: 'Requires Revision', revisionNotes: revisionDetails });
+    const appIndex = mockApplications.findIndex(a => a.id === application.id);
+    if (appIndex !== -1) {
+        mockApplications[appIndex].status = 'Requires Revision';
+    }
+
+    toast({
+        title: 'Revision Request Sent',
+        description: 'An email has been sent to the user with the required changes.',
+    });
+    setRevisionDialogOpen(false);
+    setRevisionDetails('');
+  };
+
+
   if (!application) {
     // If the ID was present but no application was found, show not found.
     if (id) {
@@ -135,7 +159,7 @@ export default function AdminApplicationDetailPage() {
   const progress = totalForms > 0 ? (completedForms / totalForms) * 100 : 0;
 
   return (
-    <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedForm(null)}>
+    <Dialog onOpenChange={(isOpen) => { if (!isOpen) setSelectedForm(null) }}>
       <div className="space-y-6">
           <div className="flex items-center justify-between">
               <Button asChild variant="outline">
@@ -206,10 +230,38 @@ export default function AdminApplicationDetailPage() {
                               View
                           </Button>
                       </DialogTrigger>
-                      <Button variant="secondary" size="sm">
-                          <FileWarning className="mr-2 h-4 w-4" />
-                          Request Revision
-                      </Button>
+                       <Dialog open={isRevisionDialogOpen} onOpenChange={setRevisionDialogOpen}>
+                          <DialogTrigger asChild>
+                              <Button variant="secondary" size="sm">
+                                  <FileWarning className="mr-2 h-4 w-4" />
+                                  Request Revision
+                              </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                              <DialogHeader>
+                                  <DialogTitle>Request Revision</DialogTitle>
+                                  <DialogDescription>
+                                    Write a message to the user explaining what needs to be corrected for '{form.name}'. This will be sent to them via email.
+                                  </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                  <div className="grid gap-2">
+                                      <Label htmlFor="revision-details">Revision Details</Label>
+                                      <Textarea 
+                                        id="revision-details" 
+                                        placeholder="e.g., Please provide a clearer copy of the Proof of Income document." 
+                                        rows={5}
+                                        value={revisionDetails}
+                                        onChange={(e) => setRevisionDetails(e.target.value)}
+                                       />
+                                  </div>
+                              </div>
+                              <DialogFooter>
+                                  <Button variant="outline" onClick={() => setRevisionDialogOpen(false)}>Cancel</Button>
+                                  <Button onClick={handleRequestRevision} disabled={!revisionDetails}>Send Request</Button>
+                              </DialogFooter>
+                          </DialogContent>
+                      </Dialog>
                   </div>
                 </div>
               ))}

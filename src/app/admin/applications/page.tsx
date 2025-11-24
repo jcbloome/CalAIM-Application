@@ -67,8 +67,7 @@ export default function AdminApplicationsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Member Name</TableHead>
-                <TableHead>Application ID</TableHead>
+                <TableHead>Member / Application ID</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Pathway</TableHead>
                 <TableHead>Last Updated</TableHead>
@@ -78,8 +77,10 @@ export default function AdminApplicationsPage() {
             <TableBody>
               {mockApplications.map(app => (
                 <TableRow key={app.id}>
-                  <TableCell className="font-medium">{app.memberName}</TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">{app.id}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{app.memberName}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{app.id}</div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={getBadgeVariant(app.status)}>
                       {app.status}
