@@ -2,7 +2,7 @@
 
 'use client';
 
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { sendRevisionRequestEmail } from '@/app/actions/send-email';
 import { Input } from '@/components/ui/input';
+import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 
 
 // This is a temporary solution for the demo to find the mock application data
@@ -104,11 +105,14 @@ export default function AdminApplicationDetailPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
   
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [revisionDetails, setRevisionDetails] = useState('');
   const [isRevisionDialogOpen, setRevisionDialogOpen] = useState(false);
   const [targetFormForRevision, setTargetFormForRevision] = useState('');
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState('');
 
 
   // In a real app, you'd likely fetch the application from a root collection
@@ -160,6 +164,55 @@ export default function AdminApplicationDetailPage() {
     setRevisionDetails('');
     setTargetFormForRevision('');
   };
+  
+   const handleDeleteApplication = async () => {
+    if (!application || !user) return;
+
+    // 1. Send notification email if message is provided
+    if (deleteMessage) {
+        try {
+            await sendApplicationStatusEmail({
+                to: application.userEmail,
+                subject: `CalAIM Application Status Update for ${application.memberName}`,
+                memberName: application.memberName,
+                staffName: user.displayName || 'The Admin Team',
+                message: deleteMessage,
+                status: 'Deleted'
+            });
+            toast({ title: 'Notification Sent', description: 'User has been notified of the application deletion.' });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Email Failed',
+                description: 'The application was deleted, but the notification email could not be sent. Please contact the user manually.'
+            });
+        }
+    }
+
+    // 2. Delete the application (from mock data for now)
+    const appIndex = mockApplications.findIndex(a => a.id === application.id);
+    if (appIndex !== -1) {
+        mockApplications.splice(appIndex, 1);
+    }
+    
+    // 3. Log the activity (to mock data)
+     mockActivities.unshift({
+        id: `act-${Date.now()}`,
+        applicationId: application.id,
+        user: user.displayName || 'Admin',
+        action: 'Application Deletion',
+        timestamp: new Date().toLocaleString(),
+        details: `Deleted application for ${application.memberName}. ${deleteMessage ? 'User was notified.' : 'User was not notified.'}`
+    });
+
+    // 4. Close dialog and navigate away
+    toast({
+        title: 'Application Deleted',
+        description: `The application for ${application.memberName} has been removed.`,
+    });
+    setDeleteDialogOpen(false);
+    router.push('/admin/applications');
+  };
 
 
   if (!application) {
@@ -185,12 +238,36 @@ export default function AdminApplicationDetailPage() {
                       Back to All Applications
                   </Link>
               </Button>
-              <div className="flex gap-2">
+               <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogTrigger asChild>
                   <Button variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Application
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Application
                   </Button>
-              </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone. This will permanently delete the application for <strong>{application.memberName}</strong>.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2">
+                    <Label htmlFor="delete-message">Optional Message to User</Label>
+                    <Textarea
+                      id="delete-message"
+                      placeholder="e.g., This application was a duplicate. Please refer to application #123."
+                      value={deleteMessage}
+                      onChange={(e) => setDeleteMessage(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">If you provide a message, an email will be sent to the user notifying them of the deletion.</p>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={handleDeleteApplication}>Confirm Deletion</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
           </div>
 
         <Card>
