@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
 import { applications as mockApplications, activities as mockActivities } from '@/lib/data';
@@ -125,8 +125,6 @@ const healthNetSteps = [
 const ApplicationStatusTracker = ({ application, onStatusChange }: { application: Partial<Application> & { [key: string]: any }, onStatusChange: (status: string) => void }) => {
     const steps = application.healthPlan?.includes('Kaiser') ? kaiserSteps : healthNetSteps;
     const currentStatus = application.status || '';
-
-    // Correctly find the index of the current status.
     const currentIndex = steps.findIndex(step => step.name === currentStatus);
 
     return (
@@ -142,9 +140,7 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
                 </div>
                 <div className="space-y-2">
                     {steps.map((step, index) => {
-                        // A step is completed if its index is less than the current step's index.
                         const isCompleted = currentIndex > index;
-                        // A step is current if its index is the same as the current step's index.
                         const isCurrent = currentIndex === index;
 
                         return (
@@ -182,8 +178,7 @@ export default function AdminApplicationDetailPage() {
   const { toast } = useToast();
   const router = useRouter();
   
-  // Local state to manage the application data for re-rendering
-  const [localApplication, setLocalApplication] = useState< (Application & { [key: string]: any }) | undefined>(undefined);
+  const [localApplication, setLocalApplication] = useState< (Application & { [key: string]: any }) | null | undefined>(undefined);
 
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [revisionDetails, setRevisionDetails] = useState('');
@@ -192,19 +187,12 @@ export default function AdminApplicationDetailPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState('');
 
-  // Use memo to get the initial mock data
-  const initialApplication = useMemo(() => {
-    if (!id) return undefined;
-    return getMockApplicationById(id);
-  }, [id]);
-
-  // Set local state when the initial data is loaded
-  useState(() => {
-    if (initialApplication) {
-      setLocalApplication(initialApplication);
+  useEffect(() => {
+    if (id) {
+        const appData = getMockApplicationById(id);
+        setLocalApplication(appData);
     }
-  });
-
+  }, [id]);
 
   const applicationActivities = useMemo(() => {
     return mockActivities.filter(activity => activity.applicationId === id);
@@ -214,8 +202,7 @@ export default function AdminApplicationDetailPage() {
   const handleRequestRevision = async () => {
     if (!localApplication || !revisionDetails || !targetFormForRevision) return;
 
-    // Update state to trigger re-render
-    setLocalApplication(prev => prev ? { ...prev, status: 'Requires Revision' } : undefined);
+    setLocalApplication(prev => prev ? { ...prev, status: 'Requires Revision' } : null);
 
     try {
         await sendRevisionRequestEmail({
@@ -248,7 +235,6 @@ export default function AdminApplicationDetailPage() {
    const handleDeleteApplication = async () => {
     if (!localApplication || !user) return;
 
-    // 1. Send notification email if message is provided
     if (deleteMessage) {
         try {
             await sendApplicationStatusEmail({
@@ -269,13 +255,11 @@ export default function AdminApplicationDetailPage() {
         }
     }
 
-    // 2. Delete the application (from mock data for now)
     const appIndex = mockApplications.findIndex(a => a.id === localApplication.id);
     if (appIndex !== -1) {
         mockApplications.splice(appIndex, 1);
     }
     
-    // 3. Log the activity (to mock data)
      mockActivities.unshift({
         id: `act-${Date.now()}`,
         applicationId: localApplication.id,
@@ -285,7 +269,6 @@ export default function AdminApplicationDetailPage() {
         details: `Deleted application for ${localApplication.memberName}. ${deleteMessage ? 'User was notified.' : 'User was not notified.'}`
     });
 
-    // 4. Close dialog and navigate away
     toast({
         title: 'Application Deleted',
         description: `The application for ${localApplication.memberName} has been removed.`,
@@ -296,8 +279,6 @@ export default function AdminApplicationDetailPage() {
 
   const handleStatusChange = (newStatus: string) => {
     if (!localApplication) return;
-     // In a real app, update Firestore:
-    // await updateDoc(docRef, { status: newStatus });
      setLocalApplication(prev => prev ? { ...prev, status: newStatus as any } : undefined);
     
     toast({
@@ -306,15 +287,19 @@ export default function AdminApplicationDetailPage() {
     });
   }
 
-
-  if (!localApplication) {
-    // If the ID was present but no application was found, show not found.
-    if (id) {
-      notFound();
-    }
-    // If there's no ID yet (e.g. during initial render), show a loader or nothing
-    return <div>Loading...</div>;
+  if (localApplication === undefined) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4">Loading application...</p>
+        </div>
+    );
   }
+  
+  if (localApplication === null) {
+      notFound();
+  }
+
 
   const completedForms = localApplication.forms.filter(f => f.status === 'Completed').length;
   const totalForms = localApplication.forms.length;
@@ -482,7 +467,3 @@ export default function AdminApplicationDetailPage() {
     </Dialog>
   );
 }
-
-    
-
-    
