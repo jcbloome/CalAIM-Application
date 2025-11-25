@@ -126,6 +126,7 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
     const steps = application.healthPlan?.includes('Kaiser') ? kaiserSteps : healthNetSteps;
     const currentStatus = application.status || '';
 
+    // Correctly find the index of the current status.
     const currentIndex = steps.findIndex(step => step.name === currentStatus);
 
     return (
@@ -141,7 +142,9 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
                 </div>
                 <div className="space-y-2">
                     {steps.map((step, index) => {
+                        // A step is completed if its index is less than the current step's index.
                         const isCompleted = currentIndex > index;
+                        // A step is current if its index is the same as the current step's index.
                         const isCurrent = currentIndex === index;
 
                         return (
@@ -150,17 +153,17 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
                                 onClick={() => onStatusChange(step.name)}
                                 className={cn(
                                     "w-full flex items-center gap-4 p-3 rounded-lg text-left transition-colors",
-                                    isCurrent && "ring-2 ring-primary",
-                                    "hover:bg-muted"
+                                    isCurrent && "ring-2 ring-primary bg-muted",
+                                    "hover:bg-muted/80"
                                 )}
                             >
                                 <div className={cn(
-                                    "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
-                                    isCompleted ? "bg-green-500 text-white" : isCurrent ? "bg-primary text-white" : "bg-gray-200"
+                                    "h-6 w-6 rounded-full flex items-center justify-center shrink-0 border-2",
+                                    isCompleted ? "bg-green-500 border-green-500 text-white" : isCurrent ? "border-primary" : "border-gray-300 bg-gray-100"
                                 )}>
-                                    {isCompleted ? <Check className="h-4 w-4" /> : <Circle className={cn("h-3 w-3", isCurrent ? "fill-white" : "fill-gray-400")} />}
+                                    {isCompleted ? <Check className="h-4 w-4" /> : <Circle className={cn("h-3 w-3", isCurrent ? "fill-primary text-primary" : "fill-gray-300 text-gray-300")} />}
                                 </div>
-                                <span className={cn("font-medium", isCompleted ? "text-muted-foreground line-through" : isCurrent && "font-semibold")}>{step.name}</span>
+                                <span className={cn("font-medium", isCompleted ? "text-muted-foreground line-through" : isCurrent ? "font-semibold text-primary" : "text-foreground")}>{step.name}</span>
                             </button>
                         )
                     })}
@@ -179,6 +182,9 @@ export default function AdminApplicationDetailPage() {
   const { toast } = useToast();
   const router = useRouter();
   
+  // Local state to manage the application data for re-rendering
+  const [localApplication, setLocalApplication] = useState< (Application & { [key: string]: any }) | undefined>(undefined);
+
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [revisionDetails, setRevisionDetails] = useState('');
   const [isRevisionDialogOpen, setRevisionDialogOpen] = useState(false);
@@ -186,13 +192,19 @@ export default function AdminApplicationDetailPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState('');
 
-
-  // In a real app, you'd likely fetch the application from a root collection
-  // or have a more robust way to get the userId. For this demo, we find it from mock data.
-  const application = useMemo(() => {
+  // Use memo to get the initial mock data
+  const initialApplication = useMemo(() => {
     if (!id) return undefined;
     return getMockApplicationById(id);
   }, [id]);
+
+  // Set local state when the initial data is loaded
+  useState(() => {
+    if (initialApplication) {
+      setLocalApplication(initialApplication);
+    }
+  });
+
 
   const applicationActivities = useMemo(() => {
     return mockActivities.filter(activity => activity.applicationId === id);
@@ -200,20 +212,16 @@ export default function AdminApplicationDetailPage() {
 
 
   const handleRequestRevision = async () => {
-    if (!application || !revisionDetails || !targetFormForRevision) return;
+    if (!localApplication || !revisionDetails || !targetFormForRevision) return;
 
-    // In a real app, you would also update Firestore here
-    // e.g., updateDoc(doc(firestore, ...), { status: 'Requires Revision', revisionNotes: revisionDetails });
-    const appIndex = mockApplications.findIndex(a => a.id === application.id);
-    if (appIndex !== -1) {
-        mockApplications[appIndex].status = 'Requires Revision';
-    }
+    // Update state to trigger re-render
+    setLocalApplication(prev => prev ? { ...prev, status: 'Requires Revision' } : undefined);
 
     try {
         await sendRevisionRequestEmail({
-            to: application.userEmail,
-            subject: `Revision Required for Your CalAIM Application: ${application.memberName}`,
-            memberName: application.memberName,
+            to: localApplication.userEmail,
+            subject: `Revision Required for Your CalAIM Application: ${localApplication.memberName}`,
+            memberName: localApplication.memberName,
             formName: targetFormForRevision,
             revisionNotes: revisionDetails
         });
@@ -238,15 +246,15 @@ export default function AdminApplicationDetailPage() {
   };
   
    const handleDeleteApplication = async () => {
-    if (!application || !user) return;
+    if (!localApplication || !user) return;
 
     // 1. Send notification email if message is provided
     if (deleteMessage) {
         try {
             await sendApplicationStatusEmail({
-                to: application.userEmail,
-                subject: `CalAIM Application Status Update for ${application.memberName}`,
-                memberName: application.memberName,
+                to: localApplication.userEmail,
+                subject: `CalAIM Application Status Update for ${localApplication.memberName}`,
+                memberName: localApplication.memberName,
                 staffName: user.displayName || 'The Admin Team',
                 message: deleteMessage,
                 status: 'Deleted'
@@ -262,7 +270,7 @@ export default function AdminApplicationDetailPage() {
     }
 
     // 2. Delete the application (from mock data for now)
-    const appIndex = mockApplications.findIndex(a => a.id === application.id);
+    const appIndex = mockApplications.findIndex(a => a.id === localApplication.id);
     if (appIndex !== -1) {
         mockApplications.splice(appIndex, 1);
     }
@@ -270,40 +278,36 @@ export default function AdminApplicationDetailPage() {
     // 3. Log the activity (to mock data)
      mockActivities.unshift({
         id: `act-${Date.now()}`,
-        applicationId: application.id,
+        applicationId: localApplication.id,
         user: user.displayName || 'Admin',
         action: 'Application Deletion',
         timestamp: new Date().toLocaleString(),
-        details: `Deleted application for ${application.memberName}. ${deleteMessage ? 'User was notified.' : 'User was not notified.'}`
+        details: `Deleted application for ${localApplication.memberName}. ${deleteMessage ? 'User was notified.' : 'User was not notified.'}`
     });
 
     // 4. Close dialog and navigate away
     toast({
         title: 'Application Deleted',
-        description: `The application for ${application.memberName} has been removed.`,
+        description: `The application for ${localApplication.memberName} has been removed.`,
     });
     setDeleteDialogOpen(false);
     router.push('/admin/applications');
   };
 
   const handleStatusChange = (newStatus: string) => {
-    if (!application) return;
+    if (!localApplication) return;
      // In a real app, update Firestore:
     // await updateDoc(docRef, { status: newStatus });
-     const appIndex = mockApplications.findIndex(a => a.id === application.id);
-     if (appIndex !== -1) {
-         mockApplications[appIndex].status = newStatus as any;
-         // Force re-render if needed, though state change should do it
-         router.refresh();
-     }
+     setLocalApplication(prev => prev ? { ...prev, status: newStatus as any } : undefined);
+    
     toast({
         title: "Status Updated",
-        description: `Application for ${application.memberName} is now: ${newStatus}`,
+        description: `Application for ${localApplication.memberName} is now: ${newStatus}`,
     });
   }
 
 
-  if (!application) {
+  if (!localApplication) {
     // If the ID was present but no application was found, show not found.
     if (id) {
       notFound();
@@ -312,8 +316,8 @@ export default function AdminApplicationDetailPage() {
     return <div>Loading...</div>;
   }
 
-  const completedForms = application.forms.filter(f => f.status === 'Completed').length;
-  const totalForms = application.forms.length;
+  const completedForms = localApplication.forms.filter(f => f.status === 'Completed').length;
+  const totalForms = localApplication.forms.length;
   const progress = totalForms > 0 ? (completedForms / totalForms) * 100 : 0;
 
   return (
@@ -337,7 +341,7 @@ export default function AdminApplicationDetailPage() {
                   <DialogHeader>
                     <DialogTitle>Are you absolutely sure?</DialogTitle>
                     <DialogDescription>
-                      This action cannot be undone. This will permanently delete the application for <strong>{application.memberName}</strong>.
+                      This action cannot be undone. This will permanently delete the application for <strong>{localApplication.memberName}</strong>.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-2">
@@ -362,9 +366,9 @@ export default function AdminApplicationDetailPage() {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="text-2xl">Application: {application.id}</CardTitle>
+                <CardTitle className="text-2xl">Application: {localApplication.id}</CardTitle>
                 <CardDescription>
-                  Member: <strong>{application.memberName}</strong> | Pathway: <strong>{application.pathway}</strong> | Status: <strong>{application.status}</strong>
+                  Member: <strong>{localApplication.memberName}</strong> | Pathway: <strong>{localApplication.pathway}</strong> | Status: <strong>{localApplication.status}</strong>
                 </CardDescription>
               </div>
               <div className="text-right">
@@ -387,7 +391,7 @@ export default function AdminApplicationDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                    {application.forms.map(form => (
+                    {localApplication.forms.map(form => (
                         <div key={form.name} className="flex items-center justify-between rounded-lg border p-4">
                         <div className="flex items-center gap-4">
                             {form.status === 'Completed' ? (
@@ -416,7 +420,7 @@ export default function AdminApplicationDetailPage() {
                         </div>
                         </div>
                     ))}
-                    {application.forms.length === 0 && (
+                    {localApplication.forms.length === 0 && (
                         <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
                     )}
                     </div>
@@ -427,7 +431,7 @@ export default function AdminApplicationDetailPage() {
             </div>
 
             <div className="lg:col-span-1">
-                 <ApplicationStatusTracker application={application} onStatusChange={handleStatusChange} />
+                 <ApplicationStatusTracker application={localApplication} onStatusChange={handleStatusChange} />
             </div>
         </div>
         
@@ -443,11 +447,11 @@ export default function AdminApplicationDetailPage() {
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="memberName">Member Name</Label>
-                        <Input id="memberName" value={application.memberName} readOnly />
+                        <Input id="memberName" value={localApplication.memberName} readOnly />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="userEmail">Recipient Email</Label>
-                        <Input id="userEmail" value={application.userEmail} readOnly />
+                        <Input id="userEmail" value={localApplication.userEmail} readOnly />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="revision-details">Revision Details</Label>
@@ -472,11 +476,13 @@ export default function AdminApplicationDetailPage() {
               <DialogHeader>
                   <DialogTitle>{selectedForm || 'Form View'}: Read-Only</DialogTitle>
               </DialogHeader>
-              {selectedForm && <FormViewer formName={selectedForm} application={application} />}
+              {selectedForm && <FormViewer formName={selectedForm} application={localApplication} />}
           </DialogContent>
       </div>
     </Dialog>
   );
 }
+
+    
 
     
