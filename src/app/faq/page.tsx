@@ -99,7 +99,7 @@ export default function FaqPage() {
                             <AccordionItem value={`item-${index}`} key={index}>
                                 <AccordionTrigger>{item.question}</AccordionTrigger>
                                 <AccordionContent>
-                                    <p className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                                    <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: item.answer }} />
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
