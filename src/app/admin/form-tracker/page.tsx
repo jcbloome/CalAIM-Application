@@ -14,17 +14,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { applications as mockApplications } from '@/lib/data';
 import type { FormStatus, ApplicationStatus } from '@/lib/definitions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CheckCircle2, Circle, FileQuestion, ArrowUpDown } from 'lucide-react';
+import { CheckCircle2, Circle, FileQuestion, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import type { Application } from '@/lib/definitions';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 // Get a list of all unique form names across all applications
 const allFormNames = Array.from(new Set(mockApplications.flatMap(app => app.forms.map(form => form.name))));
 
 // Add any other forms that might not be in the initial mock data but should have a column
-const additionalForms = ['SNF Facesheet', 'Proof of Income', "LIC 602A - Physician's Report", "Medicine List"];
+const additionalForms = ['SNF Facesheet', 'Proof of Income', "LIC 602A - Physician's Report", "Medicine List", 'Declaration of Eligibility'];
 additionalForms.forEach(formName => {
     if (!allFormNames.includes(formName)) {
         allFormNames.push(formName);
@@ -49,6 +51,27 @@ const legendItems = allFormNames.map(name => ({
     initial: formInitialsMap[name] || name.substring(0, 2).toUpperCase(),
     fullName: name
 }));
+
+const getRequiredFormsForPathway = (pathway: Application['pathway']): string[] => {
+  const baseForms = [
+    'CS Member Summary', 
+    'Program Information', 
+    'HIPAA Authorization', 
+    'Liability Waiver', 
+    'Freedom of Choice Waiver',
+    'Proof of Income',
+    "LIC 602A - Physician's Report",
+    "Medicine List"
+  ];
+  
+  if (pathway === 'SNF Diversion') {
+    return [...baseForms, 'Declaration of Eligibility'];
+  }
+  if (pathway === 'SNF Transition') {
+    return [...baseForms, 'SNF Facesheet'];
+  }
+  return baseForms; // Default
+};
 
 
 const FormStatusIcon = ({ status }: { status: FormStatus['status'] | undefined }) => {
@@ -135,21 +158,37 @@ export default function FormTrackerPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Application Form Status</CardTitle>
-          <CardDescription>
-            A compact view of form statuses. Green means completed, yellow means pending. Click column headers to sort.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="p-4 border rounded-lg bg-muted/50 mb-6">
-                <h3 className="font-semibold mb-2">Legend</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1 text-sm">
-                    {legendItems.map(item => (
-                        <p key={item.initial}><span className="font-bold text-primary">{item.initial}</span>: {item.fullName}</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>All Application Form Status</CardTitle>
+              <CardDescription>
+                A compact view of form statuses. Green means completed, yellow means pending. Click column headers to sort.
+              </CardDescription>
+            </div>
+             <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline"><BookOpen className="mr-2 h-4 w-4" /> View Legend</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Form Legend</DialogTitle>
+                </DialogHeader>
+                 <div className="space-y-2 py-2">
+                    {legendItems.map((item, index) => (
+                      <>
+                        <div key={item.initial} className="flex justify-between items-center text-sm">
+                            <span className="font-bold text-primary">{item.initial}</span>
+                            <span>{item.fullName}</span>
+                        </div>
+                        {index < legendItems.length - 1 && <Separator />}
+                      </>
                     ))}
                 </div>
-            </div>
-
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
             <div className="flex flex-wrap gap-4 mb-6 p-4 border rounded-lg">
                 <Select value={filters.status} onValueChange={(v) => handleFilterChange('status', v)}>
                     <SelectTrigger className="w-full sm:w-auto"><SelectValue placeholder="Filter by Status" /></SelectTrigger>
@@ -200,14 +239,13 @@ export default function FormTrackerPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">Member / App ID</TableHead>
+                  <TableHead className="w-[200px] font-bold">Member / App ID</TableHead>
                   {legendItems.map(item => (
                      <TableHead key={item.initial} className="text-center">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="sm" onClick={() => handleSort(item.fullName)}>
+                                <Button variant="ghost" size="sm" onClick={() => handleSort(item.fullName)} className="font-bold">
                                     {item.initial}
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent><p>{item.fullName}</p></TooltipContent>
@@ -219,6 +257,7 @@ export default function FormTrackerPage() {
               <TableBody>
                 {filteredApplications.map(app => {
                   const formStatusMap = new Map(app.forms.map(form => [form.name, form.status]));
+                  const requiredForms = getRequiredFormsForPathway(app.pathway);
                   return (
                     <TableRow key={app.id}>
                       <TableCell>
@@ -227,11 +266,16 @@ export default function FormTrackerPage() {
                         </Link>
                         <div className="text-xs text-muted-foreground font-mono">{app.id}</div>
                       </TableCell>
-                       {legendItems.map(item => (
-                            <TableCell key={item.initial} className="text-center">
-                                <FormStatusIcon status={formStatusMap.get(item.fullName)} />
-                            </TableCell>
-                        ))}
+                       {legendItems.map(item => {
+                            if (!requiredForms.includes(item.fullName)) {
+                                return <TableCell key={item.initial} className="text-center"></TableCell>;
+                            }
+                            return (
+                                <TableCell key={item.initial} className="text-center">
+                                    <FormStatusIcon status={formStatusMap.get(item.fullName)} />
+                                </TableCell>
+                            )
+                        })}
                     </TableRow>
                   );
                 })}
