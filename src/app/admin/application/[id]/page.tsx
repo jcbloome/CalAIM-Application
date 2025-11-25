@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check } from 'lucide-react';
+import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
@@ -125,21 +125,23 @@ const healthNetSteps = [
 const ApplicationStatusTracker = ({ application, onStatusChange }: { application: Partial<Application> & { [key: string]: any }, onStatusChange: (status: string) => void }) => {
     const steps = application.healthPlan?.includes('Kaiser') ? kaiserSteps : healthNetSteps;
     const currentStatus = application.status || '';
-    
-    // Find the index of the current status in the steps array.
-    // We assume the status string in the application object matches a step's name.
+
     const currentIndex = steps.findIndex(step => step.name === currentStatus);
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Application Status Tracker</CardTitle>
-                <CardDescription>Update the application's progress. This will be visible to the user.</CardDescription>
+                <CardDescription>Update the application's progress. The selected step will be visible to the user.</CardDescription>
             </CardHeader>
             <CardContent>
+                 <div className="mb-4">
+                    <p className="text-sm font-medium text-muted-foreground">Current User-Facing Status:</p>
+                    <p className="font-semibold">{currentStatus || 'Not Started'}</p>
+                </div>
                 <div className="space-y-2">
                     {steps.map((step, index) => {
-                        const isCompleted = currentIndex >= index;
+                        const isCompleted = currentIndex > index;
                         const isCurrent = currentIndex === index;
 
                         return (
@@ -149,15 +151,15 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
                                 className={cn(
                                     "w-full flex items-center gap-4 p-3 rounded-lg text-left transition-colors",
                                     isCompleted ? "bg-green-50 text-green-900" : "bg-muted/60",
-                                    isCurrent ? "ring-2 ring-primary" : "",
+                                    isCurrent && "ring-2 ring-primary",
                                     "hover:bg-muted"
                                 )}
                             >
                                 <div className={cn(
                                     "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
-                                    isCompleted ? "bg-green-500 text-white" : "bg-gray-300"
+                                    isCompleted ? "bg-green-500 text-white" : isCurrent ? "bg-primary text-white" : "bg-gray-300"
                                 )}>
-                                    {isCompleted && <Check className="h-4 w-4" />}
+                                    {isCompleted ? <Check className="h-4 w-4" /> : <Circle className={cn("h-3 w-3", isCurrent ? "fill-white" : "fill-gray-500")} />}
                                 </div>
                                 <span className={cn("font-medium", isCompleted && "font-semibold")}>{step.name}</span>
                             </button>
@@ -478,3 +480,4 @@ export default function AdminApplicationDetailPage() {
   );
 }
 
+    
