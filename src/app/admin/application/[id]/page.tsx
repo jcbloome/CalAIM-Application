@@ -425,18 +425,6 @@ export default function AdminApplicationDetailPage() {
           </CardContent>
         </Card>
         
-        <Card>
-            <CardHeader>
-                <CardTitle>Debug Log</CardTitle>
-                <CardDescription>Raw data for the current application being viewed.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <pre className="p-4 bg-muted text-xs rounded-md overflow-x-auto">
-                    {JSON.stringify(localApplication, null, 2)}
-                </pre>
-            </CardContent>
-        </Card>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2 space-y-6">
                 <Card>
