@@ -162,13 +162,6 @@ const healthNetSteps = [
     { id: 'healthnet-8', name: 'Social Worker Visits Started' },
 ];
 
-const allSteps = [
-  { id: 'in-progress', name: 'In Progress' },
-  { id: 'submitted', name: 'Completed & Submitted'},
-  ...kaiserSteps,
-  ...healthNetSteps,
-];
-
 
 const ApplicationStatusTracker = ({ application, onStatusChange }: { application: Partial<Application> & { [key: string]: any }, onStatusChange: (status: string) => void }) => {
     let steps;
@@ -537,5 +530,3 @@ export default function AdminApplicationDetailPage() {
     </Dialog>
   );
 }
-
-    
