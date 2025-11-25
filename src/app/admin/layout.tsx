@@ -28,8 +28,7 @@ const menuItems = [
 ];
 
 const superAdminMenuItems = [
-    { href: '/admin/super/staff', label: 'Staff Management', icon: UserCog },
-    { href: '/admin/super/notifications', label: 'Notification Settings', icon: BellRing },
+    { href: '/admin/super', label: 'Super Admin', icon: ShieldAlert },
 ];
 
 // Hardcoded admin email
