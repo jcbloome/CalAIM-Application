@@ -1,6 +1,7 @@
 
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import {
@@ -9,7 +10,6 @@ import {
   BarChart,
   Activity,
   FileCheck2,
-  PawPrint,
   ShieldAlert,
   LogOut,
   UserCog,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar';
 import { useUser, useAuth } from '@/firebase';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -39,6 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+  const mascot = PlaceHolderImages.find(p => p.id === 'fox-mascot');
 
   const isSuperAdmin = user?.email === ADMIN_EMAIL;
 
@@ -98,9 +100,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
-            <PawPrint className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-semibold">Admin Panel</h1>
+          <div className="flex flex-col items-center gap-2 p-4 border-b">
+            {mascot && (
+                <Image 
+                    src={mascot.imageUrl}
+                    alt={mascot.description}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 object-contain rounded-full"
+                />
+            )}
+            <div className="text-center">
+                <h1 className="text-xl font-semibold">Admin Panel</h1>
+                {user?.displayName && <p className="text-sm text-muted-foreground">Welcome, {user.displayName}</p>}
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
