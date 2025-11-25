@@ -28,6 +28,7 @@ const menuItems = [
 const superAdminMenuItems = [
     { href: '/admin/super', label: 'Super Admin', icon: ShieldAlert },
     { href: '/admin/activity-log', label: 'Activity Log', icon: Activity },
+    { href: '/admin/application/app-001', label: 'Form Tracker', icon: FileCheck2 },
 ];
 
 // Hardcoded admin email
