@@ -176,13 +176,13 @@ export default function FormTrackerPage() {
                 </DialogHeader>
                  <div className="space-y-2 py-2">
                     {legendItems.map((item, index) => (
-                      <>
-                        <div key={item.initial} className="flex justify-between items-center text-sm">
+                      <React.Fragment key={item.initial}>
+                        <div className="flex justify-between items-center text-sm">
                             <span className="font-bold text-primary">{item.initial}</span>
                             <span>{item.fullName}</span>
                         </div>
                         {index < legendItems.length - 1 && <Separator />}
-                      </>
+                      </React.Fragment>
                     ))}
                 </div>
               </DialogContent>
@@ -266,7 +266,7 @@ export default function FormTrackerPage() {
                           {app.memberName}
                         </Link>
                         <div className="text-xs text-muted-foreground font-mono">{app.id}</div>
-                        <div className="text-xs text-muted-foreground">{app.healthPlan} &ndash; {app.pathway}</div>
+                        <div className="text-xs text-muted-foreground">{app.healthPlan} – {app.pathway}</div>
                       </TableCell>
                        {legendItems.map(item => {
                             const isRequired = requiredForms.includes(item.fullName);
@@ -291,5 +291,3 @@ export default function FormTrackerPage() {
     </div>
   );
 }
-
-    
