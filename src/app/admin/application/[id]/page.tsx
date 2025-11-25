@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock } from 'lucide-react';
+import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { sendRevisionRequestEmail } from '@/app/actions/send-email';
 import { Input } from '@/components/ui/input';
 import { sendApplicationStatusEmail } from '@/app/actions/send-email';
+import { cn } from '@/lib/utils';
 
 
 // This is a temporary solution for the demo to find the mock application data
@@ -97,6 +98,76 @@ const ApplicationActivityLog = ({ activities }: { activities: Activity[] }) => {
     </Card>
   );
 };
+
+const kaiserSteps = [
+    { id: 'kaiser-1', name: 'Authorization Received' },
+    { id: 'kaiser-2', name: 'MSW/RN Visit & Tier Assessment' },
+    { id: 'kaiser-3', name: 'ISP Tool Submitted to ILS/Kaiser' },
+    { id: 'kaiser-4', name: 'Tiered Rate Received' },
+    { id: 'kaiser-5', name: 'RCFE Recommended' },
+    { id: 'kaiser-6', name: 'RCFE Selected & Contracting Started' },
+    { id: 'kaiser-7', name: 'Authorization Start Date & Payment Instructions Received' },
+    { id: 'kaiser-8', name: 'Member Moved In' },
+    { id: 'kaiser-9', name: 'Social Worker Visits Started' },
+];
+
+const healthNetSteps = [
+    { id: 'healthnet-1', name: 'Documents Compiled' },
+    { id: 'healthnet-2', name: 'RN Virtual Assessment & Tier Score' },
+    { id: 'healthnet-3', name: 'RCFE Recommended' },
+    { id: 'healthnet-4', name: 'RCFE Selected' },
+    { id: 'healthnet-5', name: 'Package Submitted to Health Net for Authorization' },
+    { id: 'healthnet-6', name: 'Authorization Received' },
+    { id: 'healthnet-7', name: 'Member Moved In' },
+    { id: 'healthnet-8', name: 'Social Worker Visits Started' },
+];
+
+const ApplicationStatusTracker = ({ application, onStatusChange }: { application: Partial<Application> & { [key: string]: any }, onStatusChange: (status: string) => void }) => {
+    const steps = application.healthPlan?.includes('Kaiser') ? kaiserSteps : healthNetSteps;
+    const currentStatus = application.status || '';
+    
+    // Find the index of the current status in the steps array.
+    // We assume the status string in the application object matches a step's name.
+    const currentIndex = steps.findIndex(step => step.name === currentStatus);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Application Status Tracker</CardTitle>
+                <CardDescription>Update the application's progress. This will be visible to the user.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {steps.map((step, index) => {
+                        const isCompleted = currentIndex >= index;
+                        const isCurrent = currentIndex === index;
+
+                        return (
+                            <button
+                                key={step.id}
+                                onClick={() => onStatusChange(step.name)}
+                                className={cn(
+                                    "w-full flex items-center gap-4 p-3 rounded-lg text-left transition-colors",
+                                    isCompleted ? "bg-green-50 text-green-900" : "bg-muted/60",
+                                    isCurrent ? "ring-2 ring-primary" : "",
+                                    "hover:bg-muted"
+                                )}
+                            >
+                                <div className={cn(
+                                    "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
+                                    isCompleted ? "bg-green-500 text-white" : "bg-gray-300"
+                                )}>
+                                    {isCompleted && <Check className="h-4 w-4" />}
+                                </div>
+                                <span className={cn("font-medium", isCompleted && "font-semibold")}>{step.name}</span>
+                            </button>
+                        )
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 
 export default function AdminApplicationDetailPage() {
@@ -214,6 +285,22 @@ export default function AdminApplicationDetailPage() {
     router.push('/admin/applications');
   };
 
+  const handleStatusChange = (newStatus: string) => {
+    if (!application) return;
+     // In a real app, update Firestore:
+    // await updateDoc(docRef, { status: newStatus });
+     const appIndex = mockApplications.findIndex(a => a.id === application.id);
+     if (appIndex !== -1) {
+         mockApplications[appIndex].status = newStatus as any;
+         // Force re-render if needed, though state change should do it
+         router.refresh();
+     }
+    toast({
+        title: "Status Updated",
+        description: `Application for ${application.memberName} is now: ${newStatus}`,
+    });
+  }
+
 
   if (!application) {
     // If the ID was present but no application was found, show not found.
@@ -231,7 +318,7 @@ export default function AdminApplicationDetailPage() {
   return (
     <Dialog onOpenChange={(isOpen) => { if (!isOpen) setSelectedForm(null) }}>
       <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <Button asChild variant="outline">
                   <Link href="/admin/applications">
                       <ArrowLeft className="mr-2 h-4 w-4" />
@@ -290,51 +377,57 @@ export default function AdminApplicationDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <Card>
-            <CardHeader>
-                <CardTitle>Forms & Documents</CardTitle>
-                <CardDescription>Review submitted materials and request revisions if needed.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                {application.forms.map(form => (
-                    <div key={form.name} className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="flex items-center gap-4">
-                        {form.status === 'Completed' ? (
-                        <CheckCircle2 className="h-6 w-6 text-green-500" />
-                        ) : (
-                        <PenSquare className="h-6 w-6 text-yellow-500" />
-                        )}
-                        <div>
-                        <p className="font-medium">{form.name}</p>
-                        <p className="text-sm text-muted-foreground">Type: {form.type}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2 space-y-6">
+                <Card>
+                <CardHeader>
+                    <CardTitle>Forms & Documents</CardTitle>
+                    <CardDescription>Review submitted materials and request revisions if needed.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                    {application.forms.map(form => (
+                        <div key={form.name} className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="flex items-center gap-4">
+                            {form.status === 'Completed' ? (
+                            <CheckCircle2 className="h-6 w-6 text-green-500" />
+                            ) : (
+                            <PenSquare className="h-6 w-6 text-yellow-500" />
+                            )}
+                            <div>
+                            <p className="font-medium">{form.name}</p>
+                            <p className="text-sm text-muted-foreground">Type: {form.type}</p>
+                            </div>
                         </div>
+                        <div className="flex items-center gap-2">
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedForm(form.name)}>
+                                    View
+                                </Button>
+                            </DialogTrigger>
+                                <Button variant="secondary" size="sm" onClick={() => {
+                                    setTargetFormForRevision(form.name);
+                                    setRevisionDialogOpen(true);
+                                }}>
+                                    <FileWarning className="mr-2 h-4 w-4" />
+                                    Request Revision
+                                </Button>
+                        </div>
+                        </div>
+                    ))}
+                    {application.forms.length === 0 && (
+                        <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
+                    )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedForm(form.name)}>
-                                View
-                            </Button>
-                        </DialogTrigger>
-                            <Button variant="secondary" size="sm" onClick={() => {
-                                setTargetFormForRevision(form.name);
-                                setRevisionDialogOpen(true);
-                            }}>
-                                <FileWarning className="mr-2 h-4 w-4" />
-                                Request Revision
-                            </Button>
-                    </div>
-                    </div>
-                ))}
-                {application.forms.length === 0 && (
-                    <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
-                )}
-                </div>
-            </CardContent>
-            </Card>
+                </CardContent>
+                </Card>
 
-            <ApplicationActivityLog activities={applicationActivities} />
+                 <ApplicationActivityLog activities={applicationActivities} />
+            </div>
+
+            <div className="lg:col-span-1">
+                 <ApplicationStatusTracker application={application} onStatusChange={handleStatusChange} />
+            </div>
         </div>
         
         {/* Revision Request Dialog */}

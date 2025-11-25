@@ -23,7 +23,6 @@ import { Button } from '@/components/ui/button';
 const menuItems = [
   { href: '/admin/applications', label: 'Applications', icon: Users },
   { href: '/admin/application-statistics', label: 'Statistics', icon: BarChart },
-  { href: '/admin/tracker', label: 'Tracker', icon: FileCheck2 },
 ];
 
 const superAdminMenuItems = [
