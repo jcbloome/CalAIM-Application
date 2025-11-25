@@ -4,6 +4,13 @@ import type { Application } from '@/lib/definitions';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Send, Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
 
 const Field = ({ label, value }: { label: string; value: any }) => (
     <div>
@@ -38,6 +45,94 @@ const formatDate = (date: any) => {
     return 'Invalid Date';
 };
 
+const CaspioSender = ({ application }: { application: Partial<Application> & { [key: string]: any } }) => {
+    const { toast } = useToast();
+    const [isSending, setIsSending] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const { user } = useUser();
+    const isSuperAdmin = user?.email === 'jason@carehomefinders.com';
+
+    // This is a placeholder for the real logic
+    const checkUniqueness = async (): Promise<{ isUnique: boolean, reason: string }> => {
+        // In a real app, this would query Firestore
+        // For now, we simulate a check. Let's say app-002 is a duplicate.
+        const isDuplicate = application.id === 'app-002' && application.healthPlan === 'Health Net';
+        
+        if (isDuplicate) {
+            return { isUnique: false, reason: `An application with Medi-Cal # ${application.memberMediCalNum} already exists.` };
+        }
+        return { isUnique: true, reason: '' };
+    };
+
+    const handleSendToCaspio = async (overrideUniquenessCheck = false) => {
+        const webhookUrl = 'https://hook.us2.make.com/mqif1rouo1wh762k2eze1y7568gwq6kx';
+        
+        setIsSending(true);
+
+        if (!overrideUniquenessCheck) {
+            const { isUnique, reason } = await checkUniqueness();
+            if (!isUnique) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Duplicate Record',
+                    description: reason + " Super admin can override this.",
+                });
+                setIsSending(false);
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(application),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Webhook server responded with status ${response.status}.`);
+            }
+
+            toast({
+                title: 'Success!',
+                description: 'Application data has been sent to Caspio.',
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+        } catch (err: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Webhook Error',
+                description: err.message || 'Failed to send data to Caspio.',
+            });
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    return (
+        <div className="p-4 border-2 border-dashed rounded-lg bg-muted/30 space-y-4 mb-6">
+            <h3 className="text-base font-semibold">Caspio Integration</h3>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="verified" checked={isVerified} onCheckedChange={(checked) => setIsVerified(!!checked)} />
+                <Label htmlFor="verified" className="font-medium">I have verified this information is correct and ready for submission.</Label>
+            </div>
+            <div className="flex gap-2">
+                 <Button onClick={() => handleSendToCaspio(false)} disabled={isSending || !isVerified}>
+                    {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    Send to Caspio
+                </Button>
+                {isSuperAdmin && (
+                    <Button onClick={() => handleSendToCaspio(true)} disabled={isSending} variant="destructive">
+                        {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
+                        Override and Send
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
 export function CsSummaryView({ application }: { application: Partial<Application> & { [key: string]: any } }) {
   if (!application) {
     return <div>Loading application data...</div>;
@@ -49,6 +144,8 @@ export function CsSummaryView({ application }: { application: Partial<Applicatio
   return (
     <ScrollArea className="h-[75vh] pr-6">
         <div className="space-y-8">
+            <CaspioSender application={application} />
+
             <Section title="Member Information">
                 <Field label="First Name" value={data.memberFirstName} />
                 <Field label="Last Name" value={data.memberLastName} />

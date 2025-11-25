@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Send, Loader2, User, Clock } from 'lucide-react';
+import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
@@ -104,7 +104,7 @@ export default function AdminApplicationDetailPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isSending, setIsSending] = useState(false);
+  
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [revisionDetails, setRevisionDetails] = useState('');
   const [isRevisionDialogOpen, setRevisionDialogOpen] = useState(false);
@@ -122,50 +122,6 @@ export default function AdminApplicationDetailPage() {
     return mockActivities.filter(activity => activity.applicationId === id);
   }, [id]);
 
-  const handleSendToCaspio = async () => {
-    const webhookUrl = 'https://hook.us2.make.com/mqif1rouo1wh762k2eze1y7568gwq6kx';
-    
-    if (!application) {
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Application data is not available to send.',
-        });
-        return;
-    }
-
-    setIsSending(true);
-
-    try {
-        // This part is tricky without knowing the real user ID.
-        // We will send the mock data for the demo.
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(application),
-        });
-
-        if (!response.ok) {
-            throw new Error(`Webhook server responded with status ${response.status}.`);
-        }
-
-        toast({
-            title: 'Success!',
-            description: 'Application data has been sent to Caspio.',
-            className: 'bg-green-100 text-green-900 border-green-200',
-        });
-    } catch (err: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Webhook Error',
-            description: err.message || 'Failed to send data to Caspio.',
-        });
-    } finally {
-        setIsSending(false);
-    }
-  };
 
   const handleRequestRevision = async () => {
     if (!application || !revisionDetails || !targetFormForRevision) return;
@@ -230,14 +186,6 @@ export default function AdminApplicationDetailPage() {
                   </Link>
               </Button>
               <div className="flex gap-2">
-                   <Button onClick={handleSendToCaspio} disabled={isSending}>
-                      {isSending ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                          <Send className="mr-2 h-4 w-4" />
-                      )}
-                      Send to Caspio
-                  </Button>
                   <Button variant="destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete Application
