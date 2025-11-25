@@ -134,10 +134,22 @@ const allSteps = [
 
 const ApplicationStatusTracker = ({ application, onStatusChange }: { application: Partial<Application> & { [key: string]: any }, onStatusChange: (status: string) => void }) => {
     let steps;
-    if (application.status === 'In Progress' || application.status === 'Requires Revision') {
-      steps = [{id: application.status, name: application.status}];
+    // Determine the correct pathway steps, including 'In Progress' for manual selection.
+    if (application.healthPlan?.includes('Kaiser')) {
+        steps = [{ id: 'in-progress', name: 'In Progress' }, ...kaiserSteps];
+    } else if (application.healthPlan?.includes('Health Net')) {
+        steps = [{ id: 'in-progress', name: 'In Progress' }, ...healthNetSteps];
     } else {
-      steps = application.healthPlan?.includes('Kaiser') ? kaiserSteps : healthNetSteps;
+        // A default or generic set of steps if the health plan isn't set or recognized
+        steps = [
+            { id: 'in-progress', name: 'In Progress' },
+            { id: 'submitted', name: 'Application Under Review' }
+        ];
+    }
+    
+    // For 'Requires Revision', we show it as a standalone status.
+    if (application.status === 'Requires Revision') {
+      steps = [{id: application.status, name: application.status}];
     }
     
     const currentStatus = application.status || '';
@@ -206,6 +218,10 @@ export default function AdminApplicationDetailPage() {
   useEffect(() => {
     if (id) {
         const appData = getMockApplicationById(id);
+        // Ensure initial status is set correctly if not present in mock data
+        if (appData && !appData.status) {
+            appData.status = 'In Progress';
+        }
         setLocalApplication(appData ? appData : null);
     }
   }, [id]);
@@ -483,3 +499,5 @@ export default function AdminApplicationDetailPage() {
     </Dialog>
   );
 }
+
+    
