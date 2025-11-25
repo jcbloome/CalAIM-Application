@@ -32,7 +32,7 @@ const getMockApplicationById = (id: string): (Application & { [key: string]: any
       // For the demo, let's just create a more complete object.
       // In a real app this data would come from firestore.
       return { 
-        ...app, 
+        ...app, // This now correctly includes the 'forms' array from the mock data
         ApplicationID: app.id,
         MemberFullName: app.memberName,
         MemberFirstName: app.memberName?.split(' ')[0] || '',
@@ -249,10 +249,6 @@ export default function AdminApplicationDetailPage() {
   useEffect(() => {
     if (id) {
         const appData = getMockApplicationById(id);
-        // Ensure initial status is set correctly if not present in mock data
-        if (appData && !appData.status) {
-            appData.status = 'In Progress';
-        }
         setLocalApplication(appData ? appData : null);
     }
   }, [id]);
@@ -364,8 +360,8 @@ export default function AdminApplicationDetailPage() {
   }
 
 
-  const completedForms = localApplication.forms.filter(f => f.status === 'Completed').length;
-  const totalForms = localApplication.forms.length;
+  const completedForms = localApplication.forms?.filter(f => f.status === 'Completed').length || 0;
+  const totalForms = localApplication.forms?.length || 0;
   const progress = totalForms > 0 ? (completedForms / totalForms) * 100 : 0;
 
   return (
@@ -439,7 +435,7 @@ export default function AdminApplicationDetailPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                    {localApplication.forms.map(form => (
+                    {localApplication.forms?.map((form: FormStatus) => (
                         <div key={form.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border p-4">
                         <div className="flex items-center gap-4">
                             {form.status === 'Completed' ? (
@@ -449,7 +445,7 @@ export default function AdminApplicationDetailPage() {
                             )}
                             <div>
                             <p className="font-medium">{form.name}</p>
-                            <p className="text-sm text-muted-foreground">Type: {form.type}</p>
+                            <p className="text-sm text-muted-foreground">Status: {form.status}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 self-end sm:self-center">
@@ -468,7 +464,7 @@ export default function AdminApplicationDetailPage() {
                         </div>
                         </div>
                     ))}
-                    {localApplication.forms.length === 0 && (
+                    {!localApplication.forms?.length && (
                         <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
                     )}
                     </div>
@@ -530,3 +526,5 @@ export default function AdminApplicationDetailPage() {
     </Dialog>
   );
 }
+
+    
