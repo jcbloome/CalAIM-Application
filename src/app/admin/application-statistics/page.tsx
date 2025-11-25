@@ -44,11 +44,11 @@ const StatCard = ({ title, value, icon: Icon, data, description, borderColor }: 
     </Card>
 );
 
-const TopListCard = ({ title, data, listType }: { title: string; data: { name: string; value: number }[]; listType: string }) => {
+const TopListCard = ({ title, data, listType, borderColor }: { title: string; data: { name: string; value: number }[]; listType: string; borderColor?: string }) => {
     const topItems = data.slice(0, 10);
 
     return (
-        <Card>
+        <Card className={cn(borderColor)}>
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-base">{title}</CardTitle>
@@ -66,7 +66,7 @@ const TopListCard = ({ title, data, listType }: { title: string; data: { name: s
                                     <div key={index}>
                                         <div className="flex justify-between items-center py-2">
                                             <span className="font-medium">{item.name}</span>
-                                            <span className="text-muted-foreground">{item.value} applications</span>
+                                            <span className="text-muted-foreground">{item.value}</span>
                                         </div>
                                          {index < data.length - 1 && <Separator />}
                                     </div>
@@ -140,10 +140,10 @@ export default function ApplicationStatisticsPage() {
       </div>
 
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <TopListCard title="Top 10 Referrer Agencies" data={statsData.topReferrers} listType="Referrers" />
-        <TopListCard title="Top 10 ISP Contacts" data={statsData.topIspContacts} listType="ISP Contacts" />
+        <TopListCard title="Top 10 Referrer Agencies" data={statsData.topReferrers} listType="Referrers" borderColor="border-t-4 border-red-500" />
+        <TopListCard title="Top 10 ISP Contacts" data={statsData.topIspContacts} listType="ISP Contacts" borderColor="border-t-4 border-orange-500" />
 
-         <Card>
+         <Card className="border-t-4 border-sky-500">
             <CardHeader>
                 <CardTitle className="text-base">Applications by County</CardTitle>
                 <CardDescription>Top 5 counties by application volume.</CardDescription>
