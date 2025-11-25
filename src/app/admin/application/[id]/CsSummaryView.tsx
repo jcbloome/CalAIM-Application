@@ -7,10 +7,11 @@ import { Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Send, Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Send, Loader2, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
+import { applications as mockApplications } from '@/lib/data';
 
 const Field = ({ label, value }: { label: string; value: any }) => (
     <div>
@@ -54,12 +55,17 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
 
     // This is a placeholder for the real logic
     const checkUniqueness = async (): Promise<{ isUnique: boolean, reason: string }> => {
-        // In a real app, this would query Firestore
-        // For now, we simulate a check. Let's say app-002 is a duplicate.
-        const isDuplicate = application.id === 'app-002' && application.healthPlan === 'Health Net';
+        // In a real app, this would query a 'sentToCaspio' collection or check a flag.
+        // For this demo, we'll simulate it by checking against other mock applications.
+        // We'll pretend 'app-002' has a Medi-Cal number that was already sent.
+        const duplicate = mockApplications.find(app => 
+            app.id !== application.id && 
+            (app as any).memberMediCalNum === application.memberMediCalNum &&
+            (app as any).caspioSent // a hypothetical flag
+        );
         
-        if (isDuplicate) {
-            return { isUnique: false, reason: `An application with Medi-Cal # ${application.memberMediCalNum} already exists.` };
+        if (duplicate) {
+            return { isUnique: false, reason: `An application with Medi-Cal # ${application.memberMediCalNum} has already been sent to Caspio.` };
         }
         return { isUnique: true, reason: '' };
     };
@@ -74,8 +80,8 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
             if (!isUnique) {
                 toast({
                     variant: 'destructive',
-                    title: 'Duplicate Record',
-                    description: reason + " Super admin can override this.",
+                    title: 'Duplicate Record Found',
+                    description: reason + " A super admin can override this check after verifying the record in Caspio.",
                 });
                 setIsSending(false);
                 return;
@@ -91,6 +97,13 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
 
             if (!response.ok) {
                 throw new Error(`Webhook server responded with status ${response.status}.`);
+            }
+            
+            // In a real app, you would now update the application doc in Firestore
+            // to set a flag like `caspioSent: true`.
+            const appIndex = mockApplications.findIndex(a => a.id === application.id);
+            if (appIndex !== -1) {
+                (mockApplications[appIndex] as any).caspioSent = true;
             }
 
             toast({
@@ -122,9 +135,9 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
                     Send to Caspio
                 </Button>
                 {isSuperAdmin && (
-                    <Button onClick={() => handleSendToCaspio(true)} disabled={isSending} variant="destructive">
+                    <Button onClick={() => handleSendToCaspio(true)} disabled={isSending || !isVerified} variant="secondary">
                         {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
-                        Override and Send
+                        Reset and Resend
                     </Button>
                 )}
             </div>
