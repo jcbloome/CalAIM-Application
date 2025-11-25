@@ -34,24 +34,12 @@ const faqItems = [
       answer: "Connections Care Home Consultants is a Community Supports (CS) Provider. Our role is to assist with understanding the program, finding participating facilities, coordinating all the required paperwork and assessments, and liaising with the Managed Care Plan (Health Net or Kaiser) to request authorization for the services."
   },
   {
-    question: "What is the difference between an ARF and an RCFE?",
-    answer: "An Adult Residential Facility (ARF) is licensed for adults aged 18 to 59. A Residential Care Facility for the Elderly (RCFE) is licensed to care for individuals aged 60 and older. Both provide non-medical care and supervision in a community setting."
+    question: "What is an Individual Service Plan (ISP) and why is it important?",
+    answer: "An Individual Service Plan (ISP) is a comprehensive assessment conducted by the Managed Care Plan's (MCP) clinical team to determine the member's care needs and to approve them for the program. The ISP assessment is a critical step for getting the MCP's authorization."
   },
   {
-    question: "What is a Share of Cost (SOC)?",
-    answer: "A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay. This happens when your income is above the limit for free Medi-Cal but you still qualify for the program."
-  },
-  {
-    question: "How must a Share of Cost (SOC) be eliminated for the CalAIM program?",
-    answer: "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC."
-  },
-  {
-      question: "What is an Individual Service Plan (ISP) and why is it important?",
-      answer: "An Individual Service Plan (ISP) is a comprehensive assessment conducted by the Managed Care Plan's (MCP) clinical team to determine the member's care needs and to approve them for the program. The ISP assessment is a critical step for getting the MCP's authorization."
-  },
-   {
-      question: "Can you tell me more about Connections Care Home Consultants?",
-      answer: "Connections Care Home Consultants is a provider that specializes in helping members navigate the CalAIM Community Supports program for assisted living. We work closely with members, their families, and healthcare providers to ensure a smooth transition from a skilled nursing facility or home environment into a community-based RCFE or ARF."
+    question: "Can you tell me more about Connections Care Home Consultants?",
+    answer: "Connections Care Home Consultants is a provider that specializes in helping members navigate the CalAIM Community Supports program for assisted living. We work closely with members, their families, and healthcare providers to ensure a smooth transition from a skilled nursing facility or home environment into a community-based RCFE or ARF."
   },
   {
     question: "Which MCPs does Connections work with?",
@@ -61,13 +49,21 @@ const faqItems = [
     question: "What do I need to do if I want to switch to Kaiser or Health Net to work with Connections?",
     answer: "You can switch your Medi-Cal Managed Care Plan by contacting California Health Care Options at 1-800-430-4263. Plan changes made by the end of the month are typically effective on the first day of the following month."
   },
-    {
-      question: "How long does it take to switch Medi-Cal MCPs?",
-      answer: "Generally, if you make a request to switch your Managed Care Plan by the end of any given month, the change will become effective on the first day of the following month. For example, a change requested on January 20th would be effective February 1st."
+  {
+    question: "How long does it take to switch Medi-Cal MCPs?",
+    answer: "Generally, if you make a request to switch your Managed Care Plan by the end of any given month, the change will become effective on the first day of the following month. For example, a change requested on January 20th would be effective February 1st."
   },
-   {
-      question: "What's the difference between Medicare and Medi-Cal?",
-      answer: "Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway."
+  {
+    question: "What's the difference between Medicare and Medi-Cal?",
+    answer: "Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway."
+  },
+  {
+    question: "What is Share of Cost (SOC)?",
+    answer: "A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay. This happens when your income is above the limit for free Medi-Cal but you still qualify for the program."
+  },
+  {
+    question: "How must a Share of Cost (SOC) be eliminated for the CalAIM program?",
+    answer: "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC."
   },
   {
       question: "What are the required forms and their purpose?",
