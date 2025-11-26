@@ -32,12 +32,15 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 const formatDate = (date: any) => {
     if (!date) return 'N/A';
-    if (date instanceof Timestamp) {
+    // Handle Firestore Timestamps
+    if (date && typeof date.toDate === 'function') {
         return format(date.toDate(), 'PPP');
     }
+    // Handle JavaScript Date objects
     if (date instanceof Date) {
         return format(date, 'PPP');
     }
+    // Handle string dates (ISO, etc.)
     if (typeof date === 'string') {
         const parsedDate = new Date(date);
         if (!isNaN(parsedDate.getTime())) {
@@ -58,7 +61,6 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
     const checkUniqueness = async (): Promise<{ isUnique: boolean, reason: string }> => {
         // In a real app, this would query a 'sentToCaspio' collection or check a flag.
         // For this demo, we'll simulate it by checking against other mock applications.
-        // We'll pretend 'app-002' has a Medi-Cal number that was already sent.
         const duplicate = mockApplications.find(app => 
             app.id !== application.id && 
             (app as any).MemberMediCalNumber === application.MemberMediCalNumber &&
@@ -90,14 +92,26 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
         }
 
         try {
+            // Prepare the data. Convert any Date or Timestamp objects to ISO strings.
+            const payload = JSON.stringify(application, (key, value) => {
+                if (value && typeof value === 'object' && value.toDate instanceof Function) {
+                    return value.toDate().toISOString();
+                }
+                if (value instanceof Date) {
+                    return value.toISOString();
+                }
+                return value;
+            });
+            
             const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(application),
+                body: payload,
             });
 
             if (!response.ok) {
-                throw new Error(`Webhook server responded with status ${response.status}.`);
+                const errorText = await response.text();
+                throw new Error(`Webhook server responded with status ${response.status}: ${errorText}`);
             }
             
             // In a real app, you would now update the application doc in Firestore
@@ -116,8 +130,9 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
             toast({
                 variant: 'destructive',
                 title: 'Webhook Error',
-                description: err.message || 'Failed to send data to Caspio.',
+                description: err.message || 'Failed to send data to Caspio. See console for details.',
             });
+            console.error("Caspio Webhook Error:", err);
         } finally {
             setIsSending(false);
         }
