@@ -111,6 +111,15 @@ export const formSchema = z.object({
   }, {
     message: "If member does not have capacity, a legal representative must be designated.",
     path: ["hasLegalRep"],
+  })
+  .refine(data => {
+    if (data.healthPlan === 'Other') {
+        return !!data.switchingHealthPlan;
+    }
+    return true;
+  }, {
+      message: "You must select whether the member is switching health plans.",
+      path: ["switchingHealthPlan"],
   });
 
 
