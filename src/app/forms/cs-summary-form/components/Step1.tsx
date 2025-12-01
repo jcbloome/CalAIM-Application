@@ -27,10 +27,12 @@ export default function Step1() {
   const memberLastName = watch('memberLastName');
 
   const isRepPrimaryContact = watch('isRepPrimaryContact');
-  const repName = watch('repName');
-  const repPhone = watch('repPhone');
-  const repEmail = watch('repEmail');
-  const repRelationship = watch('repRelationship');
+  
+  const bestContactFirstName = watch('bestContactFirstName');
+  const bestContactLastName = watch('bestContactLastName');
+  const bestContactPhone = watch('bestContactPhone');
+  const bestContactEmail = watch('bestContactEmail');
+  const bestContactRelationship = watch('bestContactRelationship');
 
 
   useEffect(() => {
@@ -73,15 +75,12 @@ export default function Step1() {
 
   useEffect(() => {
     if (isRepPrimaryContact) {
-        const [firstName, ...lastNameParts] = (repName || '').split(' ');
-        setValue('bestContactType', 'other', { shouldValidate: true });
-        setValue('bestContactFirstName', firstName, { shouldValidate: true });
-        setValue('bestContactLastName', lastNameParts.join(' '), { shouldValidate: true });
-        setValue('bestContactPhone', repPhone, { shouldValidate: true });
-        setValue('bestContactEmail', repEmail, { shouldValidate: true });
-        setValue('bestContactRelationship', repRelationship, { shouldValidate: true });
+      setValue('repName', `${bestContactFirstName || ''} ${bestContactLastName || ''}`.trim(), { shouldValidate: true });
+      setValue('repPhone', bestContactPhone, { shouldValidate: true });
+      setValue('repEmail', bestContactEmail, { shouldValidate: true });
+      setValue('repRelationship', bestContactRelationship, { shouldValidate: true });
     }
-  }, [isRepPrimaryContact, repName, repPhone, repEmail, repRelationship, setValue]);
+  }, [isRepPrimaryContact, bestContactFirstName, bestContactLastName, bestContactPhone, bestContactEmail, bestContactRelationship, setValue]);
 
 
   return (
@@ -467,45 +466,45 @@ export default function Step1() {
 
             <div className="p-4 border rounded-md space-y-4">
                 <h3 className="font-medium">Representative's Contact Info</h3>
+                <FormField
+                    control={control}
+                    name="isRepPrimaryContact"
+                    render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                        <FormLabel>Representative contact info is same as primary contact</FormLabel>
+                        <FormDescription>
+                            If checked, the primary contact's information will be copied here.
+                        </FormDescription>
+                        </div>
+                    </FormItem>
+                    )}
+                />
                 <p className="text-sm text-muted-foreground">If the member does not have a legal representative, please enter N/A in the following fields.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repName" render={({ field }) => (
-                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Phone</FormLabel>
-                            <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><PhoneInput {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl>
                             <FormDescription>(xxx) xxx-xxxx</FormDescription>
                             <FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
-                <FormField
-                    control={control}
-                    name="isRepPrimaryContact"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
-                        <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                        <FormLabel>Is the Legal Representative also the Primary Contact Person?</FormLabel>
-                        <FormDescription>
-                            If checked, the representative's information will be copied to the primary contact section.
-                        </FormDescription>
-                        </div>
-                    </FormItem>
-                    )}
-                />
             </div>
         </CardContent>
       </Card>
