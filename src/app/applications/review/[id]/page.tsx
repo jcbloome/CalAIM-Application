@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, 'useMemo', 'useState'} from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams, notFound } from 'next/navigation';
 import {
@@ -13,7 +13,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, Send, Edit, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, Send, Edit, Lock, Info } from 'lucide-react';
 import { Header } from '@/components/Header';
 import type { Application } from '@/lib/definitions';
 import { useDoc, useUser, useFirestore } from '@/firebase';
@@ -51,6 +51,13 @@ function ApplicationReviewPageContent() {
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
 
+  useEffect(() => {
+    if (!isLoading && !application) {
+        notFound();
+    }
+  }, [isLoading, application]);
+
+
   const handleSubmitForReview = async () => {
     if (!applicationDocRef || !application) return;
 
@@ -81,7 +88,7 @@ function ApplicationReviewPageContent() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !application) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -97,19 +104,35 @@ function ApplicationReviewPageContent() {
       </div>
     );
   }
-
-  if (!application) {
-    if (!isLoading) {
-      notFound();
-    }
-    return (
-        <div className="flex items-center justify-center h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-4">Loading Application to Review...</p>
-        </div>
-    );
-  }
   
+  // This is a failsafe. If the user somehow gets here but the CS Summary form isn't done,
+  // we guide them back. This might happen if they bookmark the URL.
+  const isSummaryComplete = application.forms?.some(form => form.name === 'CS Member Summary' && form.status === 'Completed');
+  if (!isSummaryComplete) {
+      return (
+          <>
+            <Header />
+            <main className="flex-grow flex items-center justify-center p-4">
+                <Card className="max-w-lg text-center">
+                    <CardHeader>
+                        <CardTitle>Summary Not Complete</CardTitle>
+                        <CardDescription>
+                            The main summary form for this application hasn't been completed yet. Please complete the form to enable the review step.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href={`/forms/cs-summary-form?applicationId=${applicationId}`}>
+                                <Info className="mr-2 h-4 w-4" /> Go to Form
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </main>
+          </>
+      )
+  }
+
   const isLocked = application.status === 'Completed & Submitted' || application.status === 'Approved';
 
   return (

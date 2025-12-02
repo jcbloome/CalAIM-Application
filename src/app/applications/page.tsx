@@ -63,11 +63,11 @@ const ApplicationsTable = ({
   isLoading: boolean;
 }) => {
   const getActionLink = (app: ApplicationData) => {
+    // If the application is still being worked on, send the user back to the form to continue editing.
     if (app.status === 'In Progress' || app.status === 'Requires Revision') {
-      // If the summary form hasn't been filled out, go to the form. Otherwise, go to review.
-      const hasSummary = (app as any).memberFirstName && (app as any).memberLastName;
-      return hasSummary ? `/applications/review/${app.id}` : `/forms/cs-summary-form?applicationId=${app.id}`;
+      return `/forms/cs-summary-form?applicationId=${app.id}`;
     }
+    // For all other statuses, send them to the read-only review page.
     return `/applications/review/${app.id}`;
   };
 
