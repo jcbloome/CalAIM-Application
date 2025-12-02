@@ -33,7 +33,7 @@ const steps = [
       'hasCapacity',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan'] },
   { id: 4, name: 'ISP & Facility Selection', fields: ['ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty']},
 ];
 
@@ -343,5 +343,3 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
-
-    
