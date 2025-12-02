@@ -213,7 +213,7 @@ export default function MyApplicationsPage() {
                     )}
                     <Button asChild>
                     <Link href="/forms/cs-summary-form">
-                        <Plus className="mr-2 h-4 w-4" /> New App
+                        <Plus className="mr-2 h-4 w-4" /> Start New Application
                     </Link>
                     </Button>
                 </div>

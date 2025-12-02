@@ -3,10 +3,11 @@
 import { Application, Acronym, Activity } from './definitions';
 import { format } from 'date-fns';
 
-export const applications: (Application & { healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; })[] = [
+export const applications: (Application & { healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; memberMrn?: string; })[] = [
   {
     id: 'app-001',
     memberName: 'John Doe',
+    memberMrn: 'mrn-test-001',
     status: 'In Progress',
     healthPlan: 'Kaiser Permanente',
     lastUpdated: '2023-10-26',
@@ -28,6 +29,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
   {
     id: 'app-002',
     memberName: 'Jane Smith',
+    memberMrn: 'MRN-TEST-002',
     status: 'Requires Revision',
     healthPlan: 'Health Net',
     lastUpdated: '2023-10-25',
@@ -48,6 +50,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
   {
     id: 'd311d971-e3af-43ab-9fc2-89065ee78e8a',
     memberName: 'Jane Smith (Test)',
+    memberMrn: 'mrn-test-003',
     status: 'In Progress',
     healthPlan: 'Health Net',
     lastUpdated: '2023-09-28',
@@ -68,6 +71,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
   {
     id: 'app-003',
     memberName: 'Peter Jones',
+    memberMrn: 'mrn-test-004',
     status: 'Completed & Submitted',
     healthPlan: 'Kaiser Permanente',
     lastUpdated: '2023-09-24',
@@ -86,6 +90,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
   {
     id: 'app-004',
     memberName: 'Mary Johnson',
+    memberMrn: 'mrn-test-005',
     status: 'Approved',
     healthPlan: 'Health Net',
     lastUpdated: '2023-08-20',
@@ -104,6 +109,7 @@ export const applications: (Application & { healthPlan?: string; referrerName?: 
     {
     id: 'app-005',
     memberName: 'Chris Lee',
+    memberMrn: 'mrn-test-006',
     status: 'In Progress',
     healthPlan: 'Kaiser Permanente',
     lastUpdated: '2023-08-27',
