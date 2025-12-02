@@ -19,8 +19,8 @@ const fakeApplicationTemplate = {
     memberAge: 64,
     memberMediCalNum: '98765432A',
     confirmMemberMediCalNum: '98765432A',
-    memberMrn: 'mrn-test-005',
-    confirmMemberMrn: 'mrn-test-005',
+    memberMrn: 'mrn-test-005', // This will be overwritten
+    confirmMemberMrn: 'mrn-test-005', // This will be overwritten
     memberLanguage: 'English',
     referrerFirstName: 'Jason', // Populated by user profile
     referrerLastName: 'Bloome', // Populated by user profile
@@ -118,12 +118,17 @@ export default function DbToolPage() {
         try {
             const newAppId = doc(collection(firestore, `users/${user.uid}/applications`)).id;
             const docRef = doc(firestore, `users/${user.uid}/applications`, newAppId);
+            
+            // Generate a random MRN for each new fake application to prevent duplicates
+            const randomMrn = `MRN-TEST-${Math.floor(Math.random() * 100000)}`;
 
             const dataToSave = {
                 ...fakeApplicationTemplate,
-                // Overwrite with dynamic data
+                // Overwrite with dynamic and unique data
                 id: newAppId,
                 userId: user.uid,
+                memberMrn: randomMrn,
+                confirmMemberMrn: randomMrn,
                 referrerFirstName: user.displayName?.split(' ')[0] || 'User',
                 referrerLastName: user.displayName?.split(' ')[1] || 'Name',
                 referrerEmail: user.email || '',
