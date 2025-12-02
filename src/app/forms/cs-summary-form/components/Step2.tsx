@@ -119,22 +119,22 @@ export default function Step2() {
                 />
                 <div className="space-y-4">
                     <FormField control={control} name="customaryAddress" render={({ field }) => (
-                        <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Street Address {!copyAddress && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={control} name="customaryCity" render={({ field }) => (
-                            <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>City {!copyAddress && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={control} name="customaryState" render={({ field }) => (
-                            <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>State {!copyAddress && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={control} name="customaryZip" render={({ field }) => (
-                            <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>ZIP Code {!copyAddress && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
                         )} />
                          <FormField control={control} name="customaryCounty" render={({ field }) => (
-                            <FormItem><FormLabel>County</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>County {!copyAddress && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={copyAddress} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                 </div>
