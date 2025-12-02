@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock } from 'lucide-react';
+import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock, ShieldExclamation } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 import { cn } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 // This is a temporary solution for the demo to find the mock application data
@@ -426,6 +427,16 @@ export default function AdminApplicationDetailPage() {
                 </DialogContent>
               </Dialog>
           </div>
+
+        {localApplication.hasCapacity === 'No' && (
+            <Alert variant="destructive">
+                <ShieldExclamation className="h-4 w-4" />
+                <AlertTitle>Member Lacks Capacity</AlertTitle>
+                <AlertDescription>
+                This member has been identified as lacking the capacity to make their own decisions. Please ensure a legal representative is involved.
+                </AlertDescription>
+            </Alert>
+        )}
 
         <Card>
           <CardHeader>

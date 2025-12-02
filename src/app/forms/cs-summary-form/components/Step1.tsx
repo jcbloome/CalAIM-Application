@@ -514,7 +514,7 @@ export default function Step1() {
                     </FormItem>
                     )}
                 />
-                <p className="text-sm text-muted-foreground">If the member does not have a legal representative, please enter N/A in the following fields.</p>
+                <p className="text-sm text-muted-foreground">If the member does not have a legal representative, you can leave these fields blank.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repName" render={({ field }) => (
                         <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
