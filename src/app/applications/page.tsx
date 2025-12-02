@@ -62,6 +62,22 @@ const ApplicationsTable = ({
   selection?: string[];
   isLoading: boolean;
 }) => {
+  const getActionLink = (app: ApplicationData) => {
+    if (app.status === 'In Progress' || app.status === 'Requires Revision') {
+      // If the summary form hasn't been filled out, go to the form. Otherwise, go to review.
+      const hasSummary = (app as any).memberFirstName && (app as any).memberLastName;
+      return hasSummary ? `/applications/review/${app.id}` : `/forms/cs-summary-form?applicationId=${app.id}`;
+    }
+    return `/applications/review/${app.id}`;
+  };
+
+  const getActionText = (app: ApplicationData) => {
+     if (app.status === 'In Progress' || app.status === 'Requires Revision') {
+      return 'Continue';
+    }
+    return 'View';
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -112,15 +128,9 @@ const ApplicationsTable = ({
                    <TableCell className="hidden md:table-cell">{app.healthPlan || 'N/A'}</TableCell>
                   <TableCell className="hidden sm:table-cell">{app.lastUpdated ? format(app.lastUpdated.toDate(), 'PPP') : 'N/A'}</TableCell>
                   <TableCell className="text-right">
-                    {(app.status === 'In Progress' || app.status === 'Requires Revision') ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/applications/${app.id}`}>Continue</Link>
-                      </Button>
-                    ) : (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/applications/${app.id}`}>View</Link>
-                      </Button>
-                    )}
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={getActionLink(app)}>{getActionText(app)}</Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
