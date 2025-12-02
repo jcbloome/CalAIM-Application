@@ -51,12 +51,6 @@ function ApplicationReviewPageContent() {
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
 
-  useEffect(() => {
-    if (!isLoading && !application) {
-        notFound();
-    }
-  }, [isLoading, application]);
-
 
   const handleSubmitForReview = async () => {
     if (!applicationDocRef || !application) return;
@@ -88,7 +82,7 @@ function ApplicationReviewPageContent() {
     }
   };
 
-  if (isLoading || !application) {
+  if (isLoading || !applicationDocRef) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -103,6 +97,10 @@ function ApplicationReviewPageContent() {
         <p className="text-destructive">Error: {error.message}</p>
       </div>
     );
+  }
+  
+  if (!application) {
+    return notFound();
   }
   
   // This is a failsafe. If the user somehow gets here but the CS Summary form isn't done,
