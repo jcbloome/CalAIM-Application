@@ -118,7 +118,7 @@ function CsSummaryFormComponent() {
     fetchApplicationData();
   }, [applicationId, user, firestore, reset]);
 
-  const saveProgress = async (isNavigating: boolean = false) => {
+  const saveProgress = async (isNavigating: boolean = false): Promise<string | null> => {
     if (!user || !firestore) {
         return null;
     }
@@ -126,10 +126,12 @@ function CsSummaryFormComponent() {
     const currentData = getValues();
     let docId = applicationId;
   
+    // Ensure we have an ID before saving, create one if it's a new form.
     if (!docId) {
       docId = doc(collection(firestore, `users/${user.uid}/applications`)).id;
       setApplicationId(docId);
-       if (isNavigating) {
+      // Update URL without a full reload to keep state
+      if (isNavigating) {
         router.replace(`/forms/cs-summary-form?applicationId=${docId}`, { scroll: false });
       }
     }
@@ -153,13 +155,13 @@ function CsSummaryFormComponent() {
        if (!isNavigating) {
          toast({ title: 'Progress Saved', description: 'Your changes have been saved.' });
        }
-       return docId;
+       return docId; // Return the ID on successful save
     } catch (error: any) {
       if (!isNavigating) {
         toast({ variant: "destructive", title: "Save Error", description: `Could not save your progress: ${error.message}` });
       }
     }
-    return null;
+    return null; // Return null on failure
   };
 
 
@@ -245,7 +247,8 @@ function CsSummaryFormComponent() {
       return;
     }
   
-    const finalAppId = await saveProgress(true);
+    // Save progress and get the final ID.
+    const finalAppId = await saveProgress(false);
 
     if (!finalAppId) {
          toast({ variant: "destructive", title: "Error", description: "Could not get an application ID to finalize submission." });
