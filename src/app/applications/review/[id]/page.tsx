@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams, notFound } from 'next/navigation';
 import {
@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 
-function ApplicationReviewPageContent() {
+function ApplicationReviewPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
@@ -50,7 +50,6 @@ function ApplicationReviewPageContent() {
   }, [user, firestore, applicationId]);
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
-
 
   const handleSubmitForReview = async () => {
     if (!applicationDocRef || !application) return;
@@ -84,10 +83,13 @@ function ApplicationReviewPageContent() {
 
   if (isLoading || !applicationDocRef) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-4">Loading Application to Review...</p>
-      </div>
+        <>
+            <Header />
+            <div className="flex-grow flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-4">Loading Application to Review...</p>
+            </div>
+      </>
     );
   }
 
@@ -103,8 +105,6 @@ function ApplicationReviewPageContent() {
     return notFound();
   }
   
-  // This is a failsafe. If the user somehow gets here but the CS Summary form isn't done,
-  // we guide them back. This might happen if they bookmark the URL.
   const isSummaryComplete = application.forms?.some(form => form.name === 'CS Member Summary' && form.status === 'Completed');
   if (!isSummaryComplete) {
       return (
@@ -211,16 +211,19 @@ function ApplicationReviewPageContent() {
   );
 }
 
-export default function ApplicationReviewPage() {
+// Wrap with Suspense for better UX, though the main loading is handled inside
+export default function ApplicationReviewPageWithSuspense() {
   return (
-    // The Suspense key is not strictly needed here with this structure but doesn't hurt.
-    <React.Suspense fallback={
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-4">Loading Application...</p>
-      </div>
+    <Suspense fallback={
+      <>
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4">Loading Application...</p>
+        </div>
+      </>
     }>
-      <ApplicationReviewPageContent />
-    </React.Suspense>
+      <ApplicationReviewPage />
+    </Suspense>
   );
 }
