@@ -16,7 +16,7 @@ export const formSchema = z.object({
     memberLastName: requiredString,
     memberDob: z.date({ required_error: 'Date of birth is required.' }),
     memberAge: z.number().optional(),
-    memberMediCalNum: z.string().regex(/^9\d{7}[a-zA-Z]$/, { message: 'Medi-Cal number must be a 9, then 7 digits, then a letter.' }),
+    memberMediCalNum: z.string().regex(/^[a-zA-Z0-9]{9}$/, { message: 'Medi-Cal number must be 9 characters.' }),
     confirmMemberMediCalNum: requiredString,
     memberMrn: requiredString,
     confirmMemberMrn: requiredString,
@@ -117,6 +117,25 @@ export const formSchema = z.object({
   }, {
       message: "You must select whether the member is switching health plans.",
       path: ["switchingHealthPlan"],
+  })
+  .superRefine((data, ctx) => {
+      if (data.copyAddress === false) {
+          if (!data.customaryAddress) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Street address is required.", path: ['customaryAddress'] });
+          }
+          if (!data.customaryCity) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "City is required.", path: ['customaryCity'] });
+          }
+           if (!data.customaryState) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "State is required.", path: ['customaryState'] });
+          }
+           if (!data.customaryZip) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "ZIP code is required.", path: ['customaryZip'] });
+          }
+          if (!data.customaryCounty) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "County is required.", path: ['customaryCounty'] });
+          }
+      }
   });
 
 
