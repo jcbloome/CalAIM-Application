@@ -24,6 +24,7 @@ export default function Step1() {
   const bestContactType = watch('bestContactType');
   const memberFirstName = watch('memberFirstName');
   const memberLastName = watch('memberLastName');
+  const hasCapacity = watch('hasCapacity');
 
   const isRepPrimaryContact = watch('isRepPrimaryContact');
   
@@ -453,7 +454,7 @@ export default function Step1() {
         <CardHeader>
           <CardTitle>Legal Representative</CardTitle>
           <CardDescription>
-            Information about legal capacity and representation. A legal representative (e.g., with Power of Attorney) is distinct from a contact person. If the legal representative is also the primary or secondary contact, please enter their information again here to confirm their legal role.
+            Information about legal capacity and representation. A legal representative (e.g., with Power of Attorney) is distinct from a contact person.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -479,7 +480,10 @@ export default function Step1() {
                 name="hasLegalRep"
                 render={({ field }) => (
                     <FormItem className="space-y-3 p-4 border rounded-md">
-                    <FormLabel>Does member have a legal representative? (e.g., power of attorney)</FormLabel>
+                    <FormLabel>
+                        Does member have a legal representative? (e.g., power of attorney)
+                        {hasCapacity === 'No' && <span className="text-destructive">*</span>}
+                    </FormLabel>
                     <FormControl>
                         <RadioGroup onValueChange={field.onChange} value={field.value ?? ''} className="flex items-center space-x-4">
                             <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
@@ -494,7 +498,7 @@ export default function Step1() {
 
             <div className="p-4 border rounded-md space-y-4">
                 <h3 className="font-medium">Representative's Contact Info</h3>
-                <FormField
+                 <FormField
                     control={control}
                     name="isRepPrimaryContact"
                     render={({ field }) => (

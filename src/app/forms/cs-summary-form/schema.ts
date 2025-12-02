@@ -50,7 +50,7 @@ export const formSchema = z.object({
 
     // Step 1 - Legal Rep
     hasCapacity: z.enum(['Yes', 'No'], { required_error: 'This field is required.' }),
-    hasLegalRep: optionalString,
+    hasLegalRep: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     repName: optionalString,
     repRelationship: optionalString,
     repPhone: optionalPhone,
