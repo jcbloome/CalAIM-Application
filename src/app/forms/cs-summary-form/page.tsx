@@ -32,7 +32,7 @@ const steps = [
       'referrerPhone', 'referrerRelationship', 'bestContactType',
       'hasCapacity',
   ]},
-  { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
+  { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan'] },
   { id: 4, name: 'ISP & Facility Selection', fields: ['ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty']},
 ];
@@ -72,6 +72,7 @@ function CsSummaryFormComponent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       copyAddress: false,
+      hasLegalRep: undefined, // Explicitly set to undefined
     },
     mode: 'onBlur',
   });
@@ -101,6 +102,7 @@ function CsSummaryFormComponent() {
             setApplicationId(null);
             reset({
               copyAddress: false,
+              hasLegalRep: undefined,
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
@@ -109,6 +111,7 @@ function CsSummaryFormComponent() {
       } else if (user && !applicationId) { // Handles case where it's a new form from the start
           reset({
               copyAddress: false,
+              hasLegalRep: undefined,
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
@@ -274,7 +277,7 @@ function CsSummaryFormComponent() {
     const finalData = {
       ...sanitizedData,
       forms: requiredForms,
-      status: 'In Progress' as const, // The user should now be sent to the review page
+      status: 'Completed & Submitted' as const,
       lastUpdated: serverTimestamp(),
     };
   
@@ -347,7 +350,7 @@ function CsSummaryFormComponent() {
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit">Review &amp; Continue</Button>
+                  <Button type="submit">Complete & Continue to Pathway</Button>
                 )}
               </div>
               

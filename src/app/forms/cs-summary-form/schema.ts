@@ -118,24 +118,16 @@ export const formSchema = z.object({
       message: "You must select whether the member is switching health plans.",
       path: ["switchingHealthPlan"],
   })
-  .superRefine((data, ctx) => {
+  .refine(data => {
       if (data.copyAddress === false) {
-          if (!data.customaryAddress) {
-              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Street address is required.", path: ['customaryAddress'] });
-          }
-          if (!data.customaryCity) {
-              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "City is required.", path: ['customaryCity'] });
-          }
-           if (!data.customaryState) {
-              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "State is required.", path: ['customaryState'] });
-          }
-           if (!data.customaryZip) {
-              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "ZIP code is required.", path: ['customaryZip'] });
-          }
-          if (!data.customaryCounty) {
-              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "County is required.", path: ['customaryCounty'] });
-          }
+          return !!data.customaryAddress && !!data.customaryCity && !!data.customaryState && !!data.customaryZip && !!data.customaryCounty;
       }
+      return true;
+  }, {
+      message: 'Customary address fields are required when not the same as current location.',
+      // This path is not directly used for highlighting but is good practice.
+      // The individual field messages will be handled by re-validating them.
+      path: ['customaryAddress']
   });
 
 
