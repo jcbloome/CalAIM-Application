@@ -121,6 +121,14 @@ function CsSummaryFormComponent() {
     fetchApplicationData();
   }, [applicationId, user, firestore, reset]);
 
+  // Dismiss validation toast when errors are resolved
+  useEffect(() => {
+    if (Object.keys(errors).length === 0 && activeToastId.current) {
+      dismiss(activeToastId.current);
+      activeToastId.current = null;
+    }
+  }, [errors, dismiss]);
+
   const saveProgress = async (isNavigating: boolean = false): Promise<string | null> => {
     if (!user || !firestore) {
         return null;
@@ -173,12 +181,13 @@ function CsSummaryFormComponent() {
     if (currentStep === 2) {
         const { copyAddress, customaryAddress, customaryCity, customaryState, customaryZip, customaryCounty } = getValues();
         if (!copyAddress && (!customaryAddress || !customaryCity || !customaryState || !customaryZip || !customaryCounty)) {
-             toast({
+             const { id } = toast({
                 id: 'customary-address-error',
                 variant: "destructive",
                 title: "Validation Error",
                 description: "Customary address is required. Please fill out all address fields or check 'Same as current location'.",
             });
+            activeToastId.current = id;
             return; // Stop advancement
         }
     }
@@ -187,6 +196,7 @@ function CsSummaryFormComponent() {
     const isValidStep = await trigger(fieldsToValidate as (keyof FormValues)[]);
 
     if (isValidStep) {
+        if (activeToastId.current) dismiss(activeToastId.current);
         await saveProgress(true);
         if (currentStep < steps.length) {
             setCurrentStep(currentStep + 1);
@@ -223,21 +233,25 @@ function CsSummaryFormComponent() {
 
   const onInvalid = (errors: any) => {
     const firstErrorStep = findFirstErrorStep(errors);
-    if (firstErrorStep) {
+    if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
-        toast({
+        if (activeToastId.current) dismiss(activeToastId.current);
+        const { id } = toast({
             variant: 'destructive',
             title: 'Validation Error',
             description: `Please correct the errors on Step ${firstErrorStep}: ${steps[firstErrorStep - 1].name}.`,
         });
+        activeToastId.current = id;
         return;
     }
 
-    toast({
+    if (activeToastId.current) dismiss(activeToastId.current);
+    const { id } = toast({
       variant: 'destructive',
       title: 'Submission Failed',
       description: 'Please check the form for errors and try again.',
     });
+    activeToastId.current = id;
   };
 
   const checkForDuplicates = async (data: FormValues): Promise<boolean> => {
