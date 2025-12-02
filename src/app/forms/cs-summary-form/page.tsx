@@ -248,7 +248,7 @@ function CsSummaryFormComponent() {
     }
   
     // Save progress and get the final ID.
-    const finalAppId = await saveProgress(false);
+    const finalAppId = await saveProgress(true);
 
     if (!finalAppId) {
          toast({ variant: "destructive", title: "Error", description: "Could not get an application ID to finalize submission." });
@@ -267,15 +267,15 @@ function CsSummaryFormComponent() {
     const finalData = {
       ...sanitizedData,
       forms: requiredForms,
-      status: 'Completed & Submitted' as const,
+      status: 'In Progress' as const,
       lastUpdated: serverTimestamp(),
     };
   
     try {
       await setDoc(docRef, finalData, { merge: true });
       toast({
-        title: 'Application Submitted!',
-        description: 'Your application has been sent for review.',
+        title: 'Summary Complete!',
+        description: 'You can now proceed to the next steps.',
       });
       router.push(`/pathway?applicationId=${finalAppId}`);
     } catch (error: any) {
@@ -340,7 +340,7 @@ function CsSummaryFormComponent() {
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit">Submit</Button>
+                  <Button type="submit">Review &amp; Continue</Button>
                 )}
               </div>
               
