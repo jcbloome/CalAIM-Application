@@ -51,6 +51,7 @@ export default function Step3() {
                       <FormItem>
                           <FormLabel>If other, name of existing health plan</FormLabel>
                           <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                          <FormDescription>If not applicable, please enter "N/A".</FormDescription>
                           <FormMessage />
                       </FormItem>
                   )}
@@ -151,7 +152,7 @@ export default function Step3() {
                         <FormItem>
                         <FormLabel>Reason for SNF Diversion</FormLabel>
                             <FormDescription>
-                            This is required if 'SNF Diversion' is the selected pathway. Otherwise, enter "N/A".
+                            This is required if 'SNF Diversion' is the selected pathway. Otherwise, please enter "N/A".
                         </FormDescription>
                         <FormControl>
                             <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for why the member is at risk for institutionalization..." />

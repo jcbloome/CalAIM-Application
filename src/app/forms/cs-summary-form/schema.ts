@@ -130,11 +130,11 @@ export const formSchema = z.object({
       if (!data.existingHealthPlan) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Please specify the existing health plan.',
+          message: 'Please specify the existing health plan or enter "N/A".',
           path: ['existingHealthPlan'],
         });
       }
-      if (!data.switchingHealthPlan || data.switchingHealthPlan === 'N/A') {
+      if (!data.switchingHealthPlan) {
         ctx.addIssue({
           code: 'custom',
           message: 'Please select if the member will be switching plans.',
@@ -144,10 +144,10 @@ export const formSchema = z.object({
     }
     
     // SNF Diversion conditional validation
-    if (data.pathway === 'SNF Diversion' && (!data.snfDiversionReason || data.snfDiversionReason.toLowerCase() === 'n/a' || data.snfDiversionReason.trim() === '')) {
+    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Reason for SNF Diversion must be provided for this pathway.',
+        message: 'Reason for SNF Diversion must be provided or enter "N/A".',
         path: ['snfDiversionReason'],
       });
     }
