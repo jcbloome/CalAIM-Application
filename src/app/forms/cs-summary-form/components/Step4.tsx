@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,9 +12,29 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function Step4() {
-  const { control, watch, setValue } = useFormContext<FormValues>();
+  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
   
   const ispCopyCurrent = watch('ispCopyCurrent');
+
+  useEffect(() => {
+    if (ispCopyCurrent) {
+        const values = getValues();
+        setValue('ispLocationType', values.currentLocation, { shouldValidate: true });
+        setValue('ispAddress', values.currentAddress, { shouldValidate: true });
+        setValue('ispCity', values.currentCity, { shouldValidate: true });
+        setValue('ispState', values.currentState, { shouldValidate: true });
+        setValue('ispZip', values.currentZip, { shouldValidate: true });
+        setValue('ispCounty', values.currentCounty, { shouldValidate: true });
+    } else {
+        // Optionally clear fields when unchecked if that is the desired behavior
+        setValue('ispLocationType', '', { shouldValidate: true });
+        setValue('ispAddress', '', { shouldValidate: true });
+        setValue('ispCity', '', { shouldValidate: true });
+        setValue('ispState', '', { shouldValidate: true });
+        setValue('ispZip', '', { shouldValidate: true });
+        setValue('ispCounty', '', { shouldValidate: true });
+    }
+  }, [ispCopyCurrent, setValue, getValues]);
 
 
   return (
@@ -60,7 +81,7 @@ export default function Step4() {
                       <FormItem>
                         <FormLabel>Type of Location <span className="text-destructive">*</span></FormLabel>
                         <FormControl>
-                            <Input {...field} value={field.value ?? ''} placeholder="e.g., SNF, Home, Hospital" />
+                            <Input {...field} value={field.value ?? ''} placeholder="e.g., SNF, Home, Hospital" disabled={ispCopyCurrent} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -84,21 +105,21 @@ export default function Step4() {
                     <FormItem><FormLabel>Facility Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={control} name="ispAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Street Address {!ispCopyCurrent && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Street Address <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField control={control} name="ispCity" render={({ field }) => (
-                        <FormItem><FormLabel>City {!ispCopyCurrent && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>City <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispState" render={({ field }) => (
-                        <FormItem><FormLabel>State {!ispCopyCurrent && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>State <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="ispZip" render={({ field }) => (
-                        <FormItem><FormLabel>ZIP Code {!ispCopyCurrent && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>ZIP Code <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <FormField control={control} name="ispCounty" render={({ field }) => (
-                    <FormItem><FormLabel>County {!ispCopyCurrent && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>County <span className="text-destructive">*</span></FormLabel><FormControl><Input {...field} value={field.value ?? ''} disabled={ispCopyCurrent} /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
           </CardContent>
