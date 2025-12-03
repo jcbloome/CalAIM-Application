@@ -10,7 +10,7 @@ import { doc, setDoc, serverTimestamp, collection, Timestamp } from 'firebase/fi
 import { useToast } from '@/hooks/use-toast';
 import { Database, Loader2 } from 'lucide-react';
 
-// A complete sample application record that satisfies all validation
+// An "in-progress" sample application record
 const fakeApplicationTemplate = {
     // Step 1: Member & Contact Info
     memberFirstName: 'Test',
@@ -22,9 +22,9 @@ const fakeApplicationTemplate = {
     memberMrn: 'mrn-test-005', // This will be overwritten
     confirmMemberMrn: 'mrn-test-005', // This will be overwritten
     memberLanguage: 'English',
-    referrerFirstName: 'Jason', // Populated by user profile
-    referrerLastName: 'Bloome', // Populated by user profile
-    referrerEmail: 'jason.bloome@example.com', // Populated by user profile
+    referrerFirstName: 'Jason',
+    referrerLastName: 'Bloome',
+    referrerEmail: 'jason.bloome@example.com',
     referrerPhone: '(555) 123-4567',
     referrerRelationship: 'Social Worker',
     memberPhone: '(555) 987-6543',
@@ -96,14 +96,25 @@ const fakeApplicationTemplate = {
     ],
 };
 
+const fakeCompletedApplicationTemplate = {
+    ...fakeApplicationTemplate,
+    memberFirstName: 'Complete',
+    memberLastName: 'Test',
+    memberCounty: 'San Diego',
+    switchingHealthPlan: null,
+    meetsPathwayCriteria: true,
+    hasPrefRCFE: 'Yes'
+};
+
 
 export default function DbToolPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingComplete, setIsLoadingComplete] = useState(false);
 
-    const handleLoadFakeData = async () => {
+    const handleLoadFakeData = async (template: typeof fakeApplicationTemplate, setLoading: (loading: boolean) => void, type: string) => {
         if (!user || !firestore) {
             toast({
                 variant: 'destructive',
@@ -113,19 +124,17 @@ export default function DbToolPage() {
             return;
         }
 
-        setIsLoading(true);
-        console.log('Attempting to create fake application...');
+        setLoading(true);
+        console.log(`Attempting to create fake ${type} application...`);
 
         try {
             const newAppId = doc(collection(firestore, `users/${user.uid}/applications`)).id;
             const docRef = doc(firestore, `users/${user.uid}/applications`, newAppId);
             
-            // Generate a random MRN for each new fake application to prevent duplicates
-            const randomMrn = `MRN-TEST-${Math.floor(Math.random() * 100000)}`;
+            const randomMrn = `MRN-${type.toUpperCase()}-${Math.floor(Math.random() * 100000)}`;
 
             const dataToSave = {
-                ...fakeApplicationTemplate,
-                // Overwrite with dynamic and unique data
+                ...template,
                 id: newAppId,
                 userId: user.uid,
                 memberMrn: randomMrn,
@@ -135,28 +144,27 @@ export default function DbToolPage() {
                 referrerEmail: user.email || '',
                 lastUpdated: serverTimestamp(),
             };
-             // Sanitize data: convert undefined to null
-            const sanitizedData = Object.fromEntries(
+             const sanitizedData = Object.fromEntries(
                 Object.entries(dataToSave).map(([key, value]) => [key, value === undefined ? null : value])
             );
 
             await setDoc(docRef, sanitizedData);
-            console.log(`Successfully created fake application with ID: ${newAppId}`);
+            console.log(`Successfully created fake ${type} application with ID: ${newAppId}`);
 
             toast({
                 title: 'Success!',
-                description: `Fake application (ID: ${newAppId}) has been added to your account.`,
+                description: `Fake ${type} application (ID: ${newAppId}) has been added to your account.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
         } catch (error: any) {
-            console.error('Error seeding database:', error);
+            console.error(`Error seeding ${type} database:`, error);
             toast({
                 variant: 'destructive',
                 title: 'Database Error',
-                description: error.message || 'Could not save the fake application.',
+                description: error.message || `Could not save the fake ${type} application.`,
             });
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
@@ -175,24 +183,32 @@ export default function DbToolPage() {
                                 Use this tool to load sample data into your Firestore database for testing purposes.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2 p-4 border rounded-lg">
+                                <h3 className="font-semibold">In-Progress Application</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    Clicking the button below will create a new "In Progress" application under your user account with pre-filled data.
-                                    This is useful for testing the "My Applications" page and the "Pathway" page without having to fill out the form manually each time.
+                                    Creates a new "In Progress" application with some data pre-filled. Useful for testing the form completion process.
                                 </p>
-                                <Button onClick={handleLoadFakeData} disabled={isLoading || isUserLoading} className="w-full">
+                                <Button onClick={() => handleLoadFakeData(fakeApplicationTemplate, setIsLoading, 'in-progress')} disabled={isLoading || isUserLoading} className="w-full">
                                     {isLoading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Adding Data...
-                                        </>
-                                    ) : (
-                                        'Load Fake Application'
-                                    )}
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding Data...</>
+                                    ) : ( 'Load Fake Application' )}
                                 </Button>
-                                {isUserLoading && <p className="text-sm text-center text-muted-foreground">Waiting for user session...</p>}
                             </div>
+
+                             <div className="space-y-2 p-4 border rounded-lg">
+                                <h3 className="font-semibold">Complete Application</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Creates a new application with ALL fields filled out to pass validation. Useful for debugging form progression and submission.
+                                </p>
+                                <Button onClick={() => handleLoadFakeData(fakeCompletedApplicationTemplate, setIsLoadingComplete, 'complete')} disabled={isLoadingComplete || isUserLoading} className="w-full" variant="secondary">
+                                    {isLoadingComplete ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding Data...</>
+                                    ) : ( 'Load Fake Complete Application' )}
+                                </Button>
+                            </div>
+
+                            {isUserLoading && <p className="text-sm text-center text-muted-foreground">Waiting for user session...</p>}
                         </CardContent>
                     </Card>
                 </div>

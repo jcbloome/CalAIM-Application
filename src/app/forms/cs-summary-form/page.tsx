@@ -176,12 +176,12 @@ function CsSummaryFormComponent() {
 
 
   const nextStep = async () => {
-    console.log(`Attempting to advance from Step ${currentStep}.`);
+    console.log(`[Form Debug] Attempting to advance from Step ${currentStep}.`);
     const fieldsToValidate = steps[currentStep - 1].fields;
-    console.log('Fields to validate:', fieldsToValidate);
+    console.log('[Form Debug] Fields to validate:', fieldsToValidate);
 
     const isValidStep = await trigger(fieldsToValidate as (keyof FormValues)[]);
-    console.log(`Validation for Step ${currentStep} was: ${isValidStep ? 'Successful' : 'Failed'}`);
+    console.log(`[Form Debug] Validation for Step ${currentStep} was: ${isValidStep ? 'Successful' : 'Failed'}`);
 
     if (isValidStep) {
         if (activeToastId.current) dismiss(activeToastId.current);
@@ -192,6 +192,8 @@ function CsSummaryFormComponent() {
         }
     } else {
         if (activeToastId.current) dismiss(activeToastId.current);
+        // Log the errors to the console for debugging
+        console.error('[Form Debug] Validation failed. Errors:', errors);
         const { id } = toast({
             variant: "destructive",
             title: "Validation Error",
@@ -220,7 +222,7 @@ function CsSummaryFormComponent() {
   }
 
   const onInvalid = (errors: any) => {
-    console.log('Form submission is invalid. Errors:', errors);
+    console.error('[Form Debug] Form submission is invalid. Errors:', errors);
     const firstErrorStep = findFirstErrorStep(errors);
     if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
