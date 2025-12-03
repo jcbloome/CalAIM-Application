@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navLinks = [
     { href: "/info", label: "Program Information" },
@@ -27,12 +27,23 @@ const navLinks = [
     { href: "/db-tool", label: "DB Tool" },
 ];
 
+const ADMIN_EMAIL = 'jason@carehomefinders.com';
+
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
   const logo = PlaceHolderImages.find(p => p.id === 'calaim-logo');
   const [isSheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    // If the user is logged in and is the admin, log them out because they are on the user-facing side.
+    if (user && user.email === ADMIN_EMAIL && auth) {
+      auth.signOut().then(() => {
+        router.push('/'); // Redirect to home after signing out.
+      });
+    }
+  }, [user, auth, router]);
 
   const handleSignOut = async () => {
     if (auth) {
