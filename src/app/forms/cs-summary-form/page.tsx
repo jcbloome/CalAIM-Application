@@ -81,7 +81,6 @@ function CsSummaryFormComponent() {
     defaultValues: {
       meetsPathwayCriteria: false,
     },
-    mode: 'onBlur',
   });
 
   const { formState: { errors }, trigger, getValues, handleSubmit, reset } = methods;
