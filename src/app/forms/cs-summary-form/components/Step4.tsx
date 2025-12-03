@@ -9,17 +9,11 @@ import { Input } from '@/components/ui/input';
 import { type FormValues } from '../schema';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useEffect } from 'react';
 
 export default function Step4() {
   const { control, watch, setValue } = useFormContext<FormValues>();
   
   const ispCopyCurrent = watch('ispCopyCurrent');
-  const currentAddress = watch('currentAddress');
-  const currentCity = watch('currentCity');
-  const currentState = watch('currentState');
-  const currentZip = watch('currentZip');
-  const currentCounty = watch('currentCounty');
 
 
   return (
@@ -185,5 +179,3 @@ export default function Step4() {
     </div>
   );
 }
-
-    

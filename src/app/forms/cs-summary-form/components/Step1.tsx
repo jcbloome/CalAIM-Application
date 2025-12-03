@@ -22,17 +22,7 @@ export default function Step1() {
   const { control, watch, setValue } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
   const bestContactType = watch('bestContactType');
-  const memberFirstName = watch('memberFirstName');
-  const memberLastName = watch('memberLastName');
-
   const isRepPrimaryContact = watch('isRepPrimaryContact');
-  
-  const bestContactFirstName = watch('bestContactFirstName');
-  const bestContactLastName = watch('bestContactLastName');
-  const bestContactPhone = watch('bestContactPhone');
-  const bestContactEmail = watch('bestContactEmail');
-  const bestContactRelationship = watch('bestContactRelationship');
-
 
   useEffect(() => {
     if (memberDob) {
@@ -518,5 +508,3 @@ export default function Step1() {
     </div>
   );
 }
-
-    

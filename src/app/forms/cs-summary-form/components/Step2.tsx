@@ -1,31 +1,16 @@
 
 'use client';
 
-import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import type { FormValues } from '../page';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Step2() {
   const { control, watch, setValue } = useFormContext<FormValues>();
-  const { dismiss } = useToast();
   const copyAddress = watch('copyAddress');
-  const currentAddress = watch('currentAddress');
-  const currentCity = watch('currentCity');
-  const currentState = watch('currentState');
-  const currentZip = watch('currentZip');
-  const currentCounty = watch('currentCounty');
-
-  // Watch for changes to dismiss the toast
-  const customaryFields = watch(['customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty', 'copyAddress']);
-  useEffect(() => {
-      dismiss('customary-address-error');
-  }, [customaryFields, dismiss]);
-
 
   return (
     <div className="space-y-6">
@@ -118,5 +103,3 @@ export default function Step2() {
     </div>
   );
 }
-
-    
