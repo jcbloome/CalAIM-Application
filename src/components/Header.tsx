@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from 'next/navigation';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useState } from 'react';
 
 const navLinks = [
@@ -96,6 +96,10 @@ export function Header() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full max-w-xs">
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>Mobile Menu</SheetTitle>
+                        <SheetDescription>Navigation links for mobile view.</SheetDescription>
+                    </SheetHeader>
                     <div className="flex flex-col h-full">
                         <nav className="flex flex-col gap-4 py-8">
                              {navLinks.map(link => (
