@@ -67,12 +67,11 @@ export const formSchema = z.object({
     currentState: requiredString,
     currentZip: requiredString,
     currentCounty: requiredString,
-    copyAddress: z.boolean().optional(),
-    customaryAddress: optionalString,
-    customaryCity: optionalString,
-    customaryState: optionalString,
-    customaryZip: optionalString,
-    customaryCounty: optionalString,
+    customaryAddress: requiredString,
+    customaryCity: requiredString,
+    customaryState: requiredString,
+    customaryZip: requiredString,
+    customaryCounty: requiredString,
 
     // Step 3 - Health Plan & Pathway
     healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.'}),
@@ -124,15 +123,6 @@ export const formSchema = z.object({
       if (!data.bestContactEmail) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Email is required.", path: ["bestContactEmail"] });
       else if (!z.string().email().safeParse(data.bestContactEmail).success) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid email address.", path: ["bestContactEmail"] });
       if (!data.bestContactLanguage) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Language is required.", path: ["bestContactLanguage"] });
-    }
-
-    // Customary Residence conditional validation
-    if (data.copyAddress !== true) {
-      if (!data.customaryAddress) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryAddress'] });
-      if (!data.customaryCity) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryCity'] });
-      if (!data.customaryState) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryState'] });
-      if (!data.customaryZip) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryZip'] });
-      if (!data.customaryCounty) ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryCounty'] });
     }
 
     // Health Plan conditional validation
