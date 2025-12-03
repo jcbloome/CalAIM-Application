@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from 'next/navigation';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useState, useEffect } from 'react';
 
@@ -29,11 +28,16 @@ const navLinks = [
 
 const ADMIN_EMAIL = 'jason@carehomefinders.com';
 
+const logo = {
+  imageUrl: "https://images.squarespace-cdn.com/content/v1/5513063be4b069b54e721157/dd3e4275-cb6d-4d51-a580-3b61a9c635ad/calaimlogopdf.png?format=2500w",
+  description: "The CalAIM Connections Care Home Consultants logo.",
+};
+
+
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
-  const logo = PlaceHolderImages.find(p => p.id === 'calaim-logo');
   const [isSheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -107,9 +111,9 @@ export function Header() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full max-w-xs">
-                    <SheetHeader className="sr-only">
-                        <SheetTitle>Mobile Menu</SheetTitle>
-                        <SheetDescription>Navigation links for mobile view.</SheetDescription>
+                    <SheetHeader>
+                        <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                        <SheetDescription className="sr-only">Navigation links for mobile view.</SheetDescription>
                     </SheetHeader>
                     <div className="flex flex-col h-full">
                         <nav className="flex flex-col gap-4 py-8">
