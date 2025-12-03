@@ -17,6 +17,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useState, useEffect } from 'react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const navLinks = [
     { href: "/info", label: "Program Information" },
@@ -28,17 +29,14 @@ const navLinks = [
 
 const ADMIN_EMAIL = 'jason@carehomefinders.com';
 
-const logo = {
-  imageUrl: "https://images.squarespace-cdn.com/content/v1/5513063be4b069b54e721157/dd3e4275-cb6d-4d51-a580-3b61a9c635ad/calaimlogopdf.png?format=2500w",
-  description: "The CalAIM Connections Care Home Consultants logo.",
-};
-
 
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
   const [isSheetOpen, setSheetOpen] = useState(false);
+
+  const logo = PlaceHolderImages.find(p => p.id === 'calaim-logo');
 
   useEffect(() => {
     // If the user is logged in and is the admin, log them out because they are on the user-facing side.
