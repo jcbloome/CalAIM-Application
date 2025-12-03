@@ -27,23 +27,6 @@ export default function Step2() {
   }, [customaryFields, dismiss]);
 
 
-  useEffect(() => {
-    if (copyAddress) {
-      setValue('customaryAddress', currentAddress, { shouldValidate: true });
-      setValue('customaryCity', currentCity, { shouldValidate: true });
-      setValue('customaryState', currentState, { shouldValidate: true });
-      setValue('customaryZip', currentZip, { shouldValidate: true });
-      setValue('customaryCounty', currentCounty, { shouldValidate: true });
-    } else {
-      setValue('customaryAddress', '', { shouldValidate: true });
-      setValue('customaryCity', '', { shouldValidate: true });
-      setValue('customaryState', '', { shouldValidate: true });
-      setValue('customaryZip', '', { shouldValidate: true });
-      setValue('customaryCounty', '', { shouldValidate: true });
-    }
-  }, [copyAddress, currentAddress, currentCity, currentState, currentZip, currentCounty, setValue]);
-
-
   return (
     <div className="space-y-6">
       <Card className="border-l-4 border-accent">
@@ -135,3 +118,5 @@ export default function Step2() {
     </div>
   );
 }
+
+    

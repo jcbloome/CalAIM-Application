@@ -56,30 +56,6 @@ export default function Step1() {
       setValue('memberAge', undefined, { shouldValidate: true });
     }
   }, [memberDob, setValue]);
-  
-  useEffect(() => {
-    if (bestContactType === 'member') {
-        setValue('bestContactFirstName', memberFirstName, { shouldValidate: true });
-        setValue('bestContactLastName', memberLastName, { shouldValidate: true });
-        setValue('bestContactRelationship', 'Self', { shouldValidate: true });
-    } else if (bestContactType === 'other') {
-        // Clear fields only if they were previously set to the member's details
-        if (watch('bestContactRelationship') === 'Self') {
-            setValue('bestContactFirstName', '', { shouldValidate: true });
-            setValue('bestContactLastName', '', { shouldValidate: true });
-            setValue('bestContactRelationship', '', { shouldValidate: true });
-        }
-    }
-  }, [bestContactType, memberFirstName, memberLastName, setValue, watch]);
-
-  useEffect(() => {
-    if (isRepPrimaryContact) {
-      setValue('repName', `${bestContactFirstName || ''} ${bestContactLastName || ''}`.trim(), { shouldValidate: true });
-      setValue('repPhone', bestContactPhone, { shouldValidate: true });
-      setValue('repEmail', bestContactEmail, { shouldValidate: true });
-      setValue('repRelationship', bestContactRelationship, { shouldValidate: true });
-    }
-  }, [isRepPrimaryContact, bestContactFirstName, bestContactLastName, bestContactPhone, bestContactEmail, bestContactRelationship, setValue]);
 
 
   return (
@@ -542,3 +518,5 @@ export default function Step1() {
     </div>
   );
 }
+
+    

@@ -21,25 +21,6 @@ export default function Step4() {
   const currentZip = watch('currentZip');
   const currentCounty = watch('currentCounty');
 
-  useEffect(() => {
-    if (ispCopyCurrent) {
-      setValue('ispAddress', currentAddress, { shouldValidate: true });
-      setValue('ispCity', currentCity, { shouldValidate: true });
-      setValue('ispState', currentState, { shouldValidate: true });
-      setValue('ispZip', currentZip, { shouldValidate: true });
-      setValue('ispCounty', currentCounty, { shouldValidate: true });
-    } else {
-        // Clear fields if the user unchecks, unless they've manually entered data
-        if (watch('ispAddress') === currentAddress) {
-          setValue('ispAddress', '', { shouldValidate: true });
-          setValue('ispCity', '', { shouldValidate: true });
-          setValue('ispState', '', { shouldValidate: true });
-          setValue('ispZip', '', { shouldValidate: true });
-          setValue('ispCounty', '', { shouldValidate: true });
-        }
-    }
-  }, [ispCopyCurrent, currentAddress, currentCity, currentState, currentZip, currentCounty, setValue, watch]);
-
 
   return (
     <div className="space-y-6">
@@ -204,3 +185,5 @@ export default function Step4() {
     </div>
   );
 }
+
+    
