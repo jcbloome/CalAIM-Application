@@ -78,9 +78,7 @@ export const formSchema = z.object({
     existingHealthPlan: optionalString,
     switchingHealthPlan: z.enum(['Yes', 'No', 'N/A']).optional().nullable(),
     pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
-    meetsPathwayCriteria: z.literal(true, {
-        errorMap: () => ({ message: "You must confirm the criteria have been met." })
-    }),
+    meetsPathwayCriteria: z.boolean(),
     snfDiversionReason: optionalString,
 
     // Step 4 - ISP & RCFE
@@ -112,6 +110,15 @@ export const formSchema = z.object({
   .refine(data => data.memberMrn === data.confirmMemberMrn, {
     message: "MRN numbers don't match.",
     path: ["confirmMemberMrn"],
+  })
+  .refine(data => {
+      if (data.pathway) {
+          return data.meetsPathwayCriteria === true;
+      }
+      return true;
+  }, {
+      message: "You must confirm the criteria have been met.",
+      path: ["meetsPathwayCriteria"],
   })
   .superRefine((data, ctx) => {
     // Primary Contact conditional validation

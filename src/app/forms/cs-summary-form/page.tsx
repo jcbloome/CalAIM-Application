@@ -186,7 +186,6 @@ function CsSummaryFormComponent() {
     const isValid = await trigger(fields as FieldPath<FormValues>[], { shouldFocus: true });
     
     if (!isValid) {
-      console.error(`[Form Debug] Validation failed on Step ${currentStep}. Errors:`, errors);
       if (activeToastId.current) dismiss(activeToastId.current);
       const { id } = toast({
         variant: "destructive",
@@ -225,7 +224,6 @@ function CsSummaryFormComponent() {
   }
 
   const onInvalid = (errors: any) => {
-    console.error("[Form Debug] Full form submission failed. Errors:", errors);
     const firstErrorStep = findFirstErrorStep(errors);
     if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
