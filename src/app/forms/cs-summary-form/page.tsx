@@ -84,7 +84,7 @@ function CsSummaryFormComponent() {
     },
   });
 
-  const { formState: { errors }, trigger, getValues, handleSubmit, reset } = methods;
+  const { formState: { errors, isValid }, trigger, getValues, handleSubmit, reset } = methods;
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -128,10 +128,10 @@ function CsSummaryFormComponent() {
 
   // Dismiss validation error when errors are resolved
   useEffect(() => {
-    if (Object.keys(errors).length === 0 && validationError) {
+    if (isValid && validationError) {
       setValidationError(null);
     }
-  }, [errors, validationError]);
+  }, [isValid, validationError]);
 
   const saveProgress = async (isNavigating: boolean = false): Promise<string | null> => {
     if (!user || !firestore) {
@@ -283,6 +283,7 @@ function CsSummaryFormComponent() {
       toast({
         title: 'Summary Complete!',
         description: 'Please review your information before continuing to the pathway.',
+        duration: 2000,
       });
       router.push(`/forms/cs-summary-form/review?applicationId=${finalAppId}`);
     } catch (error: any) {
