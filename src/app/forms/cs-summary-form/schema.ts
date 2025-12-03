@@ -8,7 +8,7 @@ const optionalPhone = z.string().refine(val => val === '' || !val || phoneRegex.
     message: 'Invalid phone number format. Expected (xxx) xxx-xxxx.',
 }).optional().nullable();
 const requiredPhone = z.string().regex(phoneRegex, { message: 'Phone number must be in (xxx) xxx-xxxx format.' });
-const optionalEmail = z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal('')).nullable();
+const optionalEmail = z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal(''));
 
 export const formSchema = z.object({
     // Step 1 - Member Info

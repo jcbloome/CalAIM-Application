@@ -33,7 +33,7 @@ const steps = [
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan', 'existingHealthPlan'] },
-  { id: 4, name: 'ISP & Facility Selection', fields: ['ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty']},
+  { id: 4, name: 'ISP & Facility Selection', fields: ['ispFirstName', 'ispLastName', 'ispRelationship', 'ispPhone', 'ispEmail', 'ispCopyCurrent', 'ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty', 'onALWWaitlist', 'hasPrefRCFE', 'rcfeName', 'rcfeAddress', 'rcfeAdminName', 'rcfeAdminPhone', 'rcfeAdminEmail']},
 ];
 
 const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatusType[] => {
@@ -176,12 +176,8 @@ function CsSummaryFormComponent() {
 
 
   const nextStep = async () => {
-    console.log(`[Form Debug] Attempting to advance from Step ${currentStep}.`);
     const fieldsToValidate = steps[currentStep - 1].fields;
-    console.log('[Form Debug] Fields to validate:', fieldsToValidate);
-
     const isValidStep = await trigger(fieldsToValidate as (keyof FormValues)[]);
-    console.log(`[Form Debug] Validation for Step ${currentStep} was: ${isValidStep ? 'Successful' : 'Failed'}`);
 
     if (isValidStep) {
         if (activeToastId.current) dismiss(activeToastId.current);
@@ -192,8 +188,6 @@ function CsSummaryFormComponent() {
         }
     } else {
         if (activeToastId.current) dismiss(activeToastId.current);
-        // Log the errors to the console for debugging
-        console.error('[Form Debug] Validation failed. Errors:', errors);
         const { id } = toast({
             variant: "destructive",
             title: "Validation Error",
@@ -222,7 +216,6 @@ function CsSummaryFormComponent() {
   }
 
   const onInvalid = (errors: any) => {
-    console.error('[Form Debug] Form submission is invalid. Errors:', errors);
     const firstErrorStep = findFirstErrorStep(errors);
     if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
@@ -266,7 +259,6 @@ function CsSummaryFormComponent() {
   };
 
   const onSubmit = async (data: FormValues) => {
-    console.log('[Form Debug] Form submitted successfully. Data:', data);
     if (!user || !firestore) {
       toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
       return;
