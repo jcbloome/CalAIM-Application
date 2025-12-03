@@ -81,8 +81,9 @@ function CsSummaryFormComponent() {
     defaultValues: {
       copyAddress: false,
       hasLegalRep: undefined,
+      meetsPathwayCriteria: false,
     },
-    mode: 'onSubmit', // Validate on submit only
+    mode: 'onSubmit',
   });
 
   const { formState: { errors }, trigger, getValues, handleSubmit, reset } = methods;
@@ -111,6 +112,7 @@ function CsSummaryFormComponent() {
             reset({
               copyAddress: false,
               hasLegalRep: undefined,
+               meetsPathwayCriteria: false,
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
@@ -120,6 +122,7 @@ function CsSummaryFormComponent() {
           reset({
               copyAddress: false,
               hasLegalRep: undefined,
+              meetsPathwayCriteria: false,
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
