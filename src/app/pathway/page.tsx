@@ -22,6 +22,7 @@ import {
   UploadCloud,
   Send,
   Download,
+  Printer,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -41,14 +42,14 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'liability-waiver', title: 'Liability Waiver', description: 'Review and sign the Participant Liability Waiver & Hold Harmless Agreement.', type: 'online-form', href: '/forms/liability-waiver', icon: File },
     { id: 'freedom-of-choice', title: 'Freedom of Choice Waiver', description: 'Acknowledge your choice to accept or decline Community Supports services.', type: 'online-form', href: '/forms/freedom-of-choice', icon: File },
     { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: null },
-    { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, have the physician complete, and upload the report.", type: 'upload', icon: UploadCloud, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
+    { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "To download this form, go to the Printable Forms page, then return here to upload the completed document.", type: 'upload', href: '/forms/printable-package', icon: Printer },
     { id: 'med-list', title: "Medicine List", description: "Upload a current list of all medications.", type: 'upload', icon: UploadCloud, href: null },
   ];
 
   if (pathway === 'SNF Diversion') {
     return [
       ...commonRequirements,
-      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'Required for SNF Diversion. Download the form, have it signed by a physician, and upload it here.', type: 'upload', href: '/forms/declaration-of-eligibility/printable', icon: UploadCloud },
+      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'To download this form, go to the Printable Forms page, then return here to upload the completed document.', type: 'upload', href: '/forms/printable-package', icon: Printer },
     ];
   }
 
@@ -167,7 +168,7 @@ function PathwayPageContent() {
 
 
   const getFormAction = (req: (typeof pathwayRequirements)[0], isCompleted: boolean) => {
-    const href = req.href ? `${req.href}?applicationId=${applicationId}` : '#';
+    const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
     if (isReadOnly) {
        return (
@@ -193,6 +194,7 @@ function PathwayPageContent() {
                 </Button>
             );
         case 'upload':
+            const isDownloadAction = req.icon === Printer;
              return (
                 <div className="space-y-2">
                     <Label htmlFor={req.id} className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
@@ -202,8 +204,9 @@ function PathwayPageContent() {
                     <Input id={req.id} type="file" className="sr-only" />
                     {req.href && (
                          <Button asChild variant="link" className="w-full text-xs h-auto py-0">
-                            <Link href={req.href} target="_blank" download>
-                                <Download className="mr-1 h-3 w-3" /> Download Blank Form
+                            <Link href={req.href} target={isDownloadAction ? "" : "_blank"}>
+                                {isDownloadAction ? <Printer className="mr-1 h-3 w-3" /> : <Download className="mr-1 h-3 w-3" />}
+                                {isDownloadAction ? 'Go to Printable Forms' : 'Download Blank Form'}
                             </Link>
                         </Button>
                     )}
