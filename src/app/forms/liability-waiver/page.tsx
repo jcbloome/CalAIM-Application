@@ -143,6 +143,20 @@ function LiabilityWaiverFormComponent() {
                             
                             <PrintableLiabilityWaiverContent />
 
+                             <div className="mt-8 pt-6 border-t">
+                                <h3 className="text-base font-semibold text-gray-800">Signature</h3>
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-4 text-sm">
+                                    <div>
+                                        <p className="text-gray-500">Signed by (Full Name)</p>
+                                        <p className="font-semibold">{user?.displayName || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500">Date Signed</p>
+                                        <p className="font-semibold">{new Date().toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="p-4 border-t mt-6">
                                 <p className="text-sm text-muted-foreground">
                                     By clicking "Acknowledge and Complete" you are electronically signing and agreeing to the terms outlined in this Liability Waiver.

@@ -169,9 +169,9 @@ function PathwayPageContent() {
     
     if (isReadOnly) {
        return (
-            <Button asChild variant="outline" className="w-full bg-slate-50" disabled>
+            <Button asChild variant="outline" className="w-full bg-slate-50">
                 <Link href={href}>
-                    <Lock className="mr-2 h-4 w-4" /> View (Locked)
+                    View
                 </Link>
             </Button>
         );
