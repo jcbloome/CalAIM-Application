@@ -88,11 +88,11 @@ export const formSchema = z.object({
     ispEmail: optionalEmail,
     ispCopyCurrent: z.boolean().optional(),
     ispLocationType: requiredString,
-    ispAddress: requiredString,
-    ispCity: requiredString,
-    ispState: requiredString,
-    ispZip: requiredString,
-    ispCounty: requiredString,
+    ispAddress: optionalString,
+    ispCity: optionalString,
+    ispState: optionalString,
+    ispZip: optionalString,
+    ispCounty: optionalString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     hasPrefRCFE: optionalString,
     rcfeName: optionalString,
@@ -108,6 +108,15 @@ export const formSchema = z.object({
   .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
       message: "Medi-Cal Numbers don't match",
       path: ["confirmMemberMediCalNum"],
+  })
+  .refine(data => {
+    if (!data.ispCopyCurrent) {
+        return !!data.ispAddress && !!data.ispCity && !!data.ispState && !!data.ispZip && !!data.ispCounty;
+    }
+    return true;
+    }, {
+        message: 'ISP address fields are required when not copying current location.',
+        path: ['ispAddress'], // You can associate the error with one of the fields
   });
 
 
