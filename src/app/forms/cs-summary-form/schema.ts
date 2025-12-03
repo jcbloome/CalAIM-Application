@@ -8,7 +8,8 @@ const requiredPhone = z.string().regex(phoneRegex, { message: 'Phone number must
 const optionalPhone = z.string().optional().nullable().refine(val => val === '' || !val || phoneRegex.test(val), {
   message: "Phone number must be in (xxx) xxx-xxxx format or empty.",
 });
-const optionalEmail = z.string().email({ message: 'Invalid email format.' }).optional().or(z.literal(''));
+const optionalEmail = z.string().email().nullable().optional().or(z.literal(''));
+
 
 export const formSchema = z.object({
     // Step 1 - Member Info
@@ -136,7 +137,7 @@ export const formSchema = z.object({
       if (!data.customaryZip) {
           ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryZip'] });
       }
-      if (!data.customaryCounty) {
+       if (!data.customaryCounty) {
           ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryCounty'] });
       }
     }
@@ -147,6 +148,26 @@ export const formSchema = z.object({
         if (!data.switchingHealthPlan) {
             ctx.addIssue({ code: 'custom', message: 'Please select if the member will be switching plans.', path: ['switchingHealthPlan'] });
         }
+    }
+     if (data.ispCopyCurrent === false) {
+      if (!data.ispLocationType) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispLocationType'] });
+      }
+      if (!data.ispAddress) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispAddress'] });
+      }
+      if (!data.ispCity) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispCity'] });
+      }
+       if (!data.ispState) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispState'] });
+      }
+       if (!data.ispZip) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispZip'] });
+      }
+       if (!data.ispCounty) {
+          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispCounty'] });
+      }
     }
   });
 
