@@ -32,7 +32,7 @@ const steps = [
       'hasCapacity',
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
-  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan'] },
+  { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan', 'existingHealthPlan'] },
   { id: 4, name: 'ISP & Facility Selection', fields: ['ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty']},
 ];
 
@@ -266,7 +266,7 @@ function CsSummaryFormComponent() {
   };
 
   const onSubmit = async (data: FormValues) => {
-    console.log('Form submitted successfully. Data:', data);
+    console.log('[Form Debug] Form submitted successfully. Data:', data);
     if (!user || !firestore) {
       toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
       return;

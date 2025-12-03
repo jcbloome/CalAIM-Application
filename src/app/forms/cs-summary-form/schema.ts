@@ -108,15 +108,6 @@ export const formSchema = z.object({
   .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
       message: "Medi-Cal Numbers don't match",
       path: ["confirmMemberMediCalNum"],
-  })
-  .refine(data => {
-    if (data.healthPlan === 'Other') {
-        return !!data.switchingHealthPlan;
-    }
-    return true;
-  }, {
-      message: "You must select whether the member is switching health plans.",
-      path: ["switchingHealthPlan"],
   });
 
 
