@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, FileCheck2 } from 'lucide-react';
@@ -35,6 +35,11 @@ function FreedomOfChoiceFormComponent() {
     const applicationId = searchParams.get('applicationId');
     const { user } = useUser();
     const firestore = useFirestore();
+    const [signatureDate, setSignatureDate] = useState('');
+
+    useEffect(() => {
+        setSignatureDate(new Date().toLocaleDateString());
+    }, []);
 
     const applicationDocRef = useMemo(() => {
         if (user && firestore && applicationId) {
@@ -160,7 +165,7 @@ function FreedomOfChoiceFormComponent() {
                                     </div>
                                     <div>
                                         <p className="text-gray-500">Date Signed</p>
-                                        <p className="font-semibold">{new Date().toLocaleDateString()}</p>
+                                        <p className="font-semibold">{signatureDate}</p>
                                     </div>
                                 </div>
                             </div>
