@@ -94,7 +94,7 @@ export const formSchema = z.object({
     ispZip: requiredString,
     ispCounty: requiredString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
-    hasPrefRCFE: optionalString,
+    hasPrefRCFE: z.enum(['Yes', 'No']).optional().nullable(),
     rcfeName: optionalString,
     rcfeAdminName: optionalString,
     rcfeAdminPhone: optionalPhone,
@@ -108,7 +108,43 @@ export const formSchema = z.object({
   .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
       message: "Medi-Cal Numbers don't match",
       path: ["confirmMemberMediCalNum"],
-  });
+  })
+  .refine(data => {
+      if (data.healthPlan === 'Other') {
+        return data.switchingHealthPlan !== undefined && data.switchingHealthPlan !== null;
+      }
+      return true;
+    }, {
+        message: 'You must specify if the member will be switching health plans.',
+        path: ['switchingHealthPlan'],
+    })
+    .refine(data => {
+      if (data.healthPlan === 'Other') {
+        return !!data.existingHealthPlan;
+      }
+      return true;
+    }, {
+        message: 'Please specify the existing health plan.',
+        path: ['existingHealthPlan'],
+    })
+   .refine(data => {
+      if (data.bestContactType === 'other') {
+        return !!data.bestContactFirstName && !!data.bestContactLastName && !!data.bestContactRelationship && !!data.bestContactPhone;
+      }
+      return true;
+    }, {
+        message: 'Primary contact details are required when "Another Contact Person" is selected.',
+        path: ['bestContactFirstName'], 
+    })
+    .refine(data => {
+      if (!data.copyAddress) {
+        return !!data.customaryAddress && !!data.customaryCity && !!data.customaryState && !!data.customaryZip && !!data.customaryCounty;
+      }
+      return true;
+    }, {
+        message: 'Customary address is required when not the same as current location.',
+        path: ['customaryAddress'],
+    });
 
 
 export type FormValues = z.infer<typeof formSchema>;

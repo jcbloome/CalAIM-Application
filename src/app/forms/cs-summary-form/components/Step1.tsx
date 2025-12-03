@@ -348,19 +348,19 @@ export default function Step1() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="bestContactFirstName" render={({ field }) => (
-                      <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>First Name {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={control} name="bestContactLastName" render={({ field }) => (
-                      <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Last Name {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
               <FormField control={control} name="bestContactRelationship" render={({ field }) => (
-                  <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Relationship {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={bestContactType === 'member'} /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={control} name="bestContactPhone" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone</FormLabel>
+                        <FormLabel>Phone {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel>
                         <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
                         <FormDescription>(xxx) xxx-xxxx</FormDescription>
                         <FormMessage />
