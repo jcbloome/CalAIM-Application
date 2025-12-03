@@ -4,11 +4,11 @@ import { z } from 'zod';
 const requiredString = z.string().min(1, { message: 'This field is required.' });
 const optionalString = z.string().optional().nullable();
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
-const requiredPhone = z.string().regex(phoneRegex, { message: 'Phone number must be in (xxx) xxx-xxxx format.' });
+const requiredPhone = z.string().regex(phoneRegex, { message: 'A valid phone number is required.' });
 const optionalPhone = z.string().optional().nullable().refine(val => val === '' || !val || phoneRegex.test(val), {
   message: "Phone number must be in (xxx) xxx-xxxx format or empty.",
 });
-const optionalEmail = z.string().email({ message: "Invalid email address." }).nullable().or(z.literal(''));
+const optionalEmail = z.string().email({ message: "Invalid email address." }).optional().nullable().or(z.literal(''));
 
 
 export const formSchema = z.object({
@@ -89,12 +89,12 @@ export const formSchema = z.object({
     ispPhone: optionalPhone,
     ispEmail: optionalEmail,
     ispCopyCurrent: z.boolean().optional(),
-    ispLocationType: requiredString,
-    ispAddress: requiredString,
-    ispCity: requiredString,
-    ispState: requiredString,
-    ispZip: requiredString,
-    ispCounty: requiredString,
+    ispLocationType: optionalString,
+    ispAddress: optionalString,
+    ispCity: optionalString,
+    ispState: optionalString,
+    ispZip: optionalString,
+    ispCounty: optionalString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     hasPrefRCFE: z.enum(['Yes', 'No']).optional().nullable(),
     rcfeName: optionalString,
@@ -152,5 +152,3 @@ export const formSchema = z.object({
 
 
 export type FormValues = z.infer<typeof formSchema>;
-
-    

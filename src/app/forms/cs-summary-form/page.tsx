@@ -31,7 +31,7 @@ const steps = [
       'referrerPhone', 'referrerRelationship', 'agency',
       'bestContactType', 'bestContactFirstName', 'bestContactLastName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
       'secondaryContactFirstName', 'secondaryContactLastName', 'secondaryContactRelationship', 'secondaryContactPhone', 'secondaryContactEmail', 'secondaryContactLanguage',
-      'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail', 'isRepPrimaryContact'
+      'hasCapacity', 'hasLegalRep', 'repName', 'repRelationship', 'repPhone', 'repEmail'
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'copyAddress', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan', 'existingHealthPlan', 'snfDiversionReason'] },
@@ -64,7 +64,6 @@ const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatus
 
 
 function CsSummaryFormComponent() {
-  const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast, dismiss } = useToast();
@@ -73,6 +72,9 @@ function CsSummaryFormComponent() {
   const firestore = useFirestore();
   
   const [applicationId, setApplicationId] = useState<string | null>(searchParams.get('applicationId'));
+  const initialStep = parseInt(searchParams.get('step') || '1', 10);
+  const [currentStep, setCurrentStep] = useState(initialStep);
+
 
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -80,7 +82,7 @@ function CsSummaryFormComponent() {
       copyAddress: false,
       hasLegalRep: undefined,
     },
-    mode: 'onSubmit', // Validate on submit
+    mode: 'onSubmit', // Validate on submit only
   });
 
   const { formState: { errors }, trigger, getValues, handleSubmit, reset } = methods;
@@ -290,8 +292,6 @@ function CsSummaryFormComponent() {
   
     const docRef = doc(firestore, `users/${user.uid}/applications`, finalAppId);
     
-    const requiredForms = getRequiredFormsForPathway(data.pathway);
-    
     // Sanitize data one last time before final save
     const sanitizedData = Object.fromEntries(
       Object.entries(data).map(([key, value]) => [key, value === undefined ? null : value])
@@ -299,8 +299,6 @@ function CsSummaryFormComponent() {
     
     const finalData = {
       ...sanitizedData,
-      forms: requiredForms,
-      status: 'Completed & Submitted' as const,
       lastUpdated: serverTimestamp(),
     };
   
@@ -308,9 +306,9 @@ function CsSummaryFormComponent() {
       await setDoc(docRef, finalData, { merge: true });
       toast({
         title: 'Summary Complete!',
-        description: 'You will now be taken to the pathway to complete the rest of the forms.',
+        description: 'Please review your information before continuing to the pathway.',
       });
-      router.push(`/pathway?applicationId=${finalAppId}`);
+      router.push(`/forms/cs-summary-form/review?applicationId=${finalAppId}`);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -373,7 +371,7 @@ function CsSummaryFormComponent() {
                     Next
                   </Button>
                 ) : (
-                  <Button type="submit">Complete & Continue to Pathway</Button>
+                  <Button type="submit">Review & Complete</Button>
                 )}
               </div>
               
