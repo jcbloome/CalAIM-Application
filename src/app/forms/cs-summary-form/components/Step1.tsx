@@ -47,17 +47,21 @@ export default function Step1() {
   }, [memberDob, setValue]);
 
   useEffect(() => {
-    const { memberFirstName, memberLastName } = getValues();
+    const { memberFirstName, memberLastName, memberPhone, memberEmail, memberLanguage } = getValues();
     if (bestContactType === 'member') {
       setValue('bestContactFirstName', memberFirstName, { shouldValidate: true });
       setValue('bestContactLastName', memberLastName, { shouldValidate: true });
       setValue('bestContactRelationship', 'Self', { shouldValidate: true });
+      setValue('bestContactPhone', memberPhone, { shouldValidate: true });
+      setValue('bestContactEmail', memberEmail, { shouldValidate: true });
+      setValue('bestContactLanguage', memberLanguage, { shouldValidate: true });
     } else if (bestContactType === 'other') {
       setValue('bestContactFirstName', '', { shouldValidate: true });
       setValue('bestContactLastName', '', { shouldValidate: true });
       setValue('bestContactRelationship', '', { shouldValidate: true });
       setValue('bestContactPhone', '', { shouldValidate: true });
       setValue('bestContactEmail', '', { shouldValidate: true });
+      setValue('bestContactLanguage', '', { shouldValidate: true });
     }
   }, [bestContactType, setValue, getValues]);
 
@@ -381,11 +385,11 @@ export default function Step1() {
                       </FormItem>
                   )} />
                   <FormField control={control} name="bestContactEmail" render={({ field }) => (
-                      <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Email {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
               </div>
               <FormField control={control} name="bestContactLanguage" render={({ field }) => (
-                  <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Language {bestContactType === 'other' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
           </div>
         </CardContent>
@@ -505,5 +509,3 @@ export default function Step1() {
     </div>
   );
 }
-
-    

@@ -8,6 +8,7 @@ const requiredPhone = z.string().regex(phoneRegex, { message: 'A valid phone num
 const optionalPhone = z.string().optional().nullable().refine(val => val === '' || !val || phoneRegex.test(val), {
   message: "Phone number must be in (xxx) xxx-xxxx format or empty.",
 });
+const requiredEmail = z.string().email({ message: "Invalid email address." }).min(1, { message: 'This field is required.' });
 const optionalEmail = z.string().email({ message: "Invalid email address." }).optional().nullable().or(z.literal(''));
 
 
@@ -89,12 +90,12 @@ export const formSchema = z.object({
     ispPhone: optionalPhone,
     ispEmail: optionalEmail,
     ispCopyCurrent: z.boolean().optional(),
-    ispLocationType: optionalString,
-    ispAddress: optionalString,
-    ispCity: optionalString,
-    ispState: optionalString,
-    ispZip: optionalString,
-    ispCounty: optionalString,
+    ispLocationType: requiredString,
+    ispAddress: requiredString,
+    ispCity: requiredString,
+    ispState: requiredString,
+    ispZip: requiredString,
+    ispCounty: requiredString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     hasPrefRCFE: z.enum(['Yes', 'No']).optional().nullable(),
     rcfeName: optionalString,
@@ -121,6 +122,12 @@ export const formSchema = z.object({
       }
       if (!data.bestContactPhone || !phoneRegex.test(data.bestContactPhone)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A valid phone number is required.", path: ["bestContactPhone"] });
+      }
+      if (!data.bestContactEmail) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Email is required.", path: ["bestContactEmail"] });
+      }
+       if (!data.bestContactLanguage) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Language is required.", path: ["bestContactLanguage"] });
       }
     }
     if (data.copyAddress === false) {
