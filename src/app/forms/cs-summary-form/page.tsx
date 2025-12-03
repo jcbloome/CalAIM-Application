@@ -79,9 +79,7 @@ function CsSummaryFormComponent() {
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      copyAddress: false,
-      hasLegalRep: undefined,
-      meetsPathwayCriteria: false, // Ensure this defaults to false
+      meetsPathwayCriteria: false,
     },
     mode: 'onSubmit',
   });
@@ -113,8 +111,6 @@ function CsSummaryFormComponent() {
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
-              copyAddress: false,
-              hasLegalRep: undefined,
               meetsPathwayCriteria: false,
             });
         }
@@ -123,8 +119,6 @@ function CsSummaryFormComponent() {
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
               referrerLastName: user?.displayName?.split(' ')[1] || '',
               referrerEmail: user?.email || '',
-              copyAddress: false,
-              hasLegalRep: undefined,
               meetsPathwayCriteria: false,
           });
       }

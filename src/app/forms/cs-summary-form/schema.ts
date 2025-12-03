@@ -138,7 +138,6 @@ export const formSchema = z.object({
       }
     }
     
-    // Updated logic for customary residence
     if (data.copyAddress !== true) {
       if (!data.customaryAddress) {
           ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['customaryAddress'] });
@@ -164,6 +163,14 @@ export const formSchema = z.object({
         if (!data.switchingHealthPlan) {
             ctx.addIssue({ code: 'custom', message: 'Please select if the member will be switching plans.', path: ['switchingHealthPlan'] });
         }
+    }
+
+    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
+        ctx.addIssue({
+            code: 'custom',
+            message: 'Reason for SNF Diversion must be provided for this pathway.',
+            path: ['snfDiversionReason'],
+        });
     }
   });
 
