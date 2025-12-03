@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
@@ -177,23 +176,12 @@ function CsSummaryFormComponent() {
 
 
   const nextStep = async () => {
-    // Manual validation for Step 2's customary address
-    if (currentStep === 2) {
-        const { copyAddress, customaryAddress, customaryCity, customaryState, customaryZip, customaryCounty } = getValues();
-        if (!copyAddress && (!customaryAddress || !customaryCity || !customaryState || !customaryZip || !customaryCounty)) {
-             const { id } = toast({
-                id: 'customary-address-error',
-                variant: "destructive",
-                title: "Validation Error",
-                description: "Customary address is required. Please fill out all address fields or check 'Same as current location'.",
-            });
-            activeToastId.current = id;
-            return; // Stop advancement
-        }
-    }
-    
+    console.log(`Attempting to advance from Step ${currentStep}.`);
     const fieldsToValidate = steps[currentStep - 1].fields;
+    console.log('Fields to validate:', fieldsToValidate);
+
     const isValidStep = await trigger(fieldsToValidate as (keyof FormValues)[]);
+    console.log(`Validation for Step ${currentStep} was: ${isValidStep ? 'Successful' : 'Failed'}`);
 
     if (isValidStep) {
         if (activeToastId.current) dismiss(activeToastId.current);
@@ -232,6 +220,7 @@ function CsSummaryFormComponent() {
   }
 
   const onInvalid = (errors: any) => {
+    console.log('Form submission is invalid. Errors:', errors);
     const firstErrorStep = findFirstErrorStep(errors);
     if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
@@ -275,6 +264,7 @@ function CsSummaryFormComponent() {
   };
 
   const onSubmit = async (data: FormValues) => {
+    console.log('Form submitted successfully. Data:', data);
     if (!user || !firestore) {
       toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
       return;

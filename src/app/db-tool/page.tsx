@@ -114,6 +114,7 @@ export default function DbToolPage() {
         }
 
         setIsLoading(true);
+        console.log('Attempting to create fake application...');
 
         try {
             const newAppId = doc(collection(firestore, `users/${user.uid}/applications`)).id;
@@ -140,6 +141,7 @@ export default function DbToolPage() {
             );
 
             await setDoc(docRef, sanitizedData);
+            console.log(`Successfully created fake application with ID: ${newAppId}`);
 
             toast({
                 title: 'Success!',
