@@ -33,10 +33,10 @@ export const formSchema = z.object({
 
     // Step 1 - Primary Contact Person
     bestContactType: z.enum(['member', 'other'], { required_error: 'Please select a primary contact type.'}),
-    bestContactFirstName: optionalString,
-    bestContactLastName: optionalString,
-    bestContactRelationship: optionalString,
-    bestContactPhone: optionalPhone,
+    bestContactFirstName: requiredString,
+    bestContactLastName: requiredString,
+    bestContactRelationship: requiredString,
+    bestContactPhone: requiredPhone,
     bestContactEmail: optionalEmail,
     bestContactLanguage: optionalString,
 
@@ -126,16 +126,7 @@ export const formSchema = z.object({
     }, {
         message: 'Please specify the existing health plan.',
         path: ['existingHealthPlan'],
-    })
-   .refine(data => {
-    if (data.bestContactType === 'other') {
-      return !!data.bestContactFirstName && !!data.bestContactLastName && !!data.bestContactRelationship && !!data.bestContactPhone;
-    }
-    return true;
-  }, {
-    message: "First Name, Last Name, Relationship, and Phone are required for the primary contact.",
-    path: ["bestContactFirstName"],
-  });
+    });
 
 
 export type FormValues = z.infer<typeof formSchema>;

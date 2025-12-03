@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -181,7 +181,8 @@ function CsSummaryFormComponent() {
     const isValid = await trigger(fields as FieldPath<FormValues>[], { shouldFocus: true });
     
     if (!isValid) {
-      console.error('[Form Debug] Validation failed on current step.', errors);
+      console.log(`[Form Debug] Validation failed on Step ${currentStep}.`);
+      console.log("[Form Debug] Errors object:", errors);
       if (activeToastId.current) dismiss(activeToastId.current);
       const { id } = toast({
         variant: "destructive",
@@ -189,7 +190,7 @@ function CsSummaryFormComponent() {
         description: "Please fix the errors on this page before continuing.",
       });
       activeToastId.current = id;
-      return; // Stop advancement
+      return;
     }
 
     console.log('[Form Debug] Step validation successful.');
