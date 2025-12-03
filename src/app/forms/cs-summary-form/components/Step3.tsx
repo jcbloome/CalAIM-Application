@@ -49,7 +49,7 @@ export default function Step3() {
                   name="existingHealthPlan"
                   render={({ field }) => (
                       <FormItem>
-                          <FormLabel>If other, name of existing health plan <span className="text-destructive">*</span></FormLabel>
+                          <FormLabel>If other, name of existing health plan</FormLabel>
                           <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
                           <FormMessage />
                       </FormItem>
@@ -60,7 +60,7 @@ export default function Step3() {
                   name="switchingHealthPlan"
                   render={({ field }) => (
                       <FormItem className="space-y-2">
-                          <FormLabel>Will member be switching Health Plan by end of month? <span className="text-destructive">*</span></FormLabel>
+                          <FormLabel>Will member be switching Health Plan by end of month?</FormLabel>
                           <FormControl>
                               <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex items-center space-x-4">
                                   <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
@@ -135,7 +135,7 @@ export default function Step3() {
                                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
-                                <FormLabel>All criteria for the selected pathway have been met. <span className="text-destructive">*</span></FormLabel>
+                                <FormLabel>I confirm that all criteria for the selected pathway have been met. <span className="text-destructive">*</span></FormLabel>
                                 <FormMessage />
                             </div>
                         </FormItem>
@@ -143,26 +143,24 @@ export default function Step3() {
                 />
             </div>
           
-            {pathway === 'SNF Diversion' && (
-                <div className="space-y-4 p-4 border rounded-md">
-                    <FormField
-                        control={control}
-                        name="snfDiversionReason"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Reason for SNF Diversion</FormLabel>
-                             <FormDescription>
-                                Reason for SNF Diversion must be included below if this is pathway selected.
-                            </FormDescription>
-                            <FormControl>
-                                <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for why the member is at risk for institutionalization..." />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                </div>
-            )}
+            <div className="space-y-4 p-4 border rounded-md">
+                <FormField
+                    control={control}
+                    name="snfDiversionReason"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Reason for SNF Diversion</FormLabel>
+                            <FormDescription>
+                            This is required if 'SNF Diversion' is the selected pathway. Otherwise, enter "N/A".
+                        </FormDescription>
+                        <FormControl>
+                            <Textarea {...field} value={field.value ?? ''} placeholder="Provide a brief explanation for why the member is at risk for institutionalization..." />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+            </div>
         </CardContent>
       </Card>
     </div>

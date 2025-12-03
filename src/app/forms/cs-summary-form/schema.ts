@@ -79,7 +79,7 @@ export const formSchema = z.object({
     switchingHealthPlan: z.enum(['Yes', 'No', 'N/A']).optional().nullable(),
     pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
     meetsPathwayCriteria: z.boolean().refine(val => val === true, {
-        message: 'You must confirm that all criteria have been met.',
+        message: 'You must confirm the criteria have been met.',
     }),
     snfDiversionReason: optionalString,
 
@@ -127,13 +127,29 @@ export const formSchema = z.object({
 
     // Health Plan conditional validation
     if (data.healthPlan === 'Other') {
-      if (!data.existingHealthPlan) ctx.addIssue({ code: 'custom', message: 'Please specify the existing health plan.', path: ['existingHealthPlan'] });
-      if (!data.switchingHealthPlan) ctx.addIssue({ code: 'custom', message: 'Please select if the member will be switching plans.', path: ['switchingHealthPlan'] });
+      if (!data.existingHealthPlan) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please specify the existing health plan.',
+          path: ['existingHealthPlan'],
+        });
+      }
+      if (!data.switchingHealthPlan || data.switchingHealthPlan === 'N/A') {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select if the member will be switching plans.',
+          path: ['switchingHealthPlan'],
+        });
+      }
     }
     
     // SNF Diversion conditional validation
-    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
-      ctx.addIssue({ code: 'custom', message: 'Reason for SNF Diversion must be provided for this pathway.', path: ['snfDiversionReason'] });
+    if (data.pathway === 'SNF Diversion' && (!data.snfDiversionReason || data.snfDiversionReason.toLowerCase() === 'n/a' || data.snfDiversionReason.trim() === '')) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Reason for SNF Diversion must be provided for this pathway.',
+        path: ['snfDiversionReason'],
+      });
     }
   });
 
