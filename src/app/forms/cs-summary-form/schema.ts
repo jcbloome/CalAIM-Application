@@ -126,7 +126,7 @@ export const formSchema = z.object({
 
     // Health Plan conditional validation
     if (data.healthPlan === 'Other') {
-      if (!data.existingHealthPlan) {
+      if (!data.existingHealthPlan || data.existingHealthPlan.trim() === '') {
         ctx.addIssue({
           code: 'custom',
           message: 'Please specify the existing health plan or enter "N/A".',
