@@ -76,10 +76,10 @@ export const formSchema = z.object({
     // Step 3 - Health Plan & Pathway
     healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.'}),
     existingHealthPlan: optionalString,
-    switchingHealthPlan: z.enum(['Yes', 'No']).optional().nullable(),
+    switchingHealthPlan: z.enum(['Yes', 'No', 'N/A']).optional().nullable(),
     pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: 'Please select a pathway.' }),
-    meetsPathwayCriteria: z.literal(true, {
-        errorMap: () => ({ message: "You must confirm that all criteria have been met." }),
+    meetsPathwayCriteria: z.boolean().refine(val => val === true, {
+        message: 'You must confirm that all criteria have been met.',
     }),
     snfDiversionReason: optionalString,
 

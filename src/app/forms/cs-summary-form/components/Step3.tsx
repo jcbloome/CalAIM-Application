@@ -13,7 +13,6 @@ import type { FormValues } from '../schema';
 
 export default function Step3() {
   const { control, watch } = useFormContext<FormValues>();
-  const healthPlan = watch('healthPlan');
   const pathway = watch('pathway');
   
   return (
@@ -44,37 +43,36 @@ export default function Step3() {
               </FormItem>
             )}
           />
-          {healthPlan === 'Other' && (
-            <div className="space-y-4 mt-4 p-4 border rounded-md bg-muted/50">
-                <FormField
-                    control={control}
-                    name="existingHealthPlan"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Name of existing health plan <span className="text-destructive">*</span></FormLabel>
-                            <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={control}
-                    name="switchingHealthPlan"
-                    render={({ field }) => (
-                        <FormItem className="space-y-2">
-                            <FormLabel>Will member be switching Health Plan by end of month? <span className="text-destructive">*</span></FormLabel>
-                            <FormControl>
-                                <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex items-center space-x-4">
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
-                                </RadioGroup>
-                            </FormControl>
-                             <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </div>
-          )}
+          <div className="space-y-4 mt-4 p-4 border rounded-md bg-muted/50">
+              <FormField
+                  control={control}
+                  name="existingHealthPlan"
+                  render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>If other, name of existing health plan <span className="text-destructive">*</span></FormLabel>
+                          <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )}
+              />
+              <FormField
+                  control={control}
+                  name="switchingHealthPlan"
+                  render={({ field }) => (
+                      <FormItem className="space-y-2">
+                          <FormLabel>Will member be switching Health Plan by end of month? <span className="text-destructive">*</span></FormLabel>
+                          <FormControl>
+                              <RadioGroup onValueChange={field.onChange} value={field.value ?? undefined} className="flex items-center space-x-4">
+                                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
+                                  <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="N/A" /></FormControl><FormLabel className="font-normal">N/A</FormLabel></FormItem>
+                              </RadioGroup>
+                          </FormControl>
+                           <FormMessage />
+                      </FormItem>
+                  )}
+              />
+          </div>
         </CardContent>
       </Card>
 
