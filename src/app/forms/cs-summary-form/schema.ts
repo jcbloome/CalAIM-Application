@@ -82,6 +82,27 @@ export const formSchema = z.object({
       message: "You must confirm the criteria have been met.",
     }),
     snfDiversionReason: optionalString,
+
+    // Step 4 - ISP & RCFE
+    ispFirstName: requiredString,
+    ispLastName: requiredString,
+    ispRelationship: requiredString,
+    ispFacilityName: requiredString,
+    ispPhone: requiredPhone,
+    ispEmail: requiredEmail,
+    ispLocationType: requiredString,
+    ispAddress: requiredString,
+    ispCity: requiredString,
+    ispState: requiredString,
+    ispZip: requiredString,
+    ispCounty: requiredString,
+    onALWWaitlist: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'Please select an option for ALW waitlist.' }),
+    hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: 'Please select an option for preferred RCFE.' }),
+    rcfeName: optionalString,
+    rcfeAddress: optionalString,
+    rcfeAdminName: optionalString,
+    rcfeAdminPhone: optionalPhone,
+    rcfeAdminEmail: optionalEmail,
   })
   .refine(data => data.memberMediCalNum === data.confirmMemberMediCalNum, {
     message: "Medi-Cal numbers don't match.",
@@ -122,12 +143,21 @@ export const formSchema = z.object({
     }
     
     // SNF Diversion conditional validation
-    if (data.pathway === 'SNF Diversion' && !data.snfDiversionReason) {
+    if (data.pathway === 'SNF Diversion' && (!data.snfDiversionReason || data.snfDiversionReason.trim() === '')) {
       ctx.addIssue({
         code: 'custom',
         message: 'Reason for SNF Diversion must be provided or enter "N/A".',
         path: ['snfDiversionReason'],
       });
+    }
+
+    // RCFE conditional validation
+    if (data.hasPrefRCFE === 'Yes') {
+        if (!data.rcfeName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Name is required.", path: ["rcfeName"] });
+        if (!data.rcfeAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Facility Address is required.", path: ["rcfeAddress"] });
+        if (!data.rcfeAdminName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Administrator Name is required.", path: ["rcfeAdminName"] });
+        if (!data.rcfeAdminPhone || !phoneRegex.test(data.rcfeAdminPhone)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A valid Administrator Phone is required.", path: ["rcfeAdminPhone"] });
+        if (!data.rcfeAdminEmail || !z.string().email().safeParse(data.rcfeAdminEmail).success) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A valid Administrator Email is required.", path: ["rcfeAdminEmail"] });
     }
   });
 
