@@ -22,7 +22,6 @@ export default function Step1() {
   const { control, watch, setValue, getValues } = useFormContext<FormValues>();
   const memberDob = watch('memberDob');
   const bestContactType = watch('bestContactType');
-  const isRepPrimaryContact = watch('isRepPrimaryContact');
 
   useEffect(() => {
     if (memberDob) {
@@ -48,21 +47,17 @@ export default function Step1() {
   }, [memberDob, setValue]);
 
   useEffect(() => {
-    const { memberFirstName, memberLastName, referrerPhone, referrerEmail } = getValues();
+    const { memberFirstName, memberLastName } = getValues();
     if (bestContactType === 'member') {
       setValue('bestContactFirstName', memberFirstName, { shouldValidate: true });
       setValue('bestContactLastName', memberLastName, { shouldValidate: true });
       setValue('bestContactRelationship', 'Self', { shouldValidate: true });
-      setValue('bestContactPhone', '', { shouldValidate: true });
-      setValue('bestContactEmail', '', { shouldValidate: true });
-      setValue('bestContactLanguage', '', { shouldValidate: true });
     } else if (bestContactType === 'other') {
       setValue('bestContactFirstName', '', { shouldValidate: true });
       setValue('bestContactLastName', '', { shouldValidate: true });
       setValue('bestContactRelationship', '', { shouldValidate: true });
       setValue('bestContactPhone', '', { shouldValidate: true });
       setValue('bestContactEmail', '', { shouldValidate: true });
-      setValue('bestContactLanguage', '', { shouldValidate: true });
     }
   }, [bestContactType, setValue, getValues]);
 
@@ -482,43 +477,26 @@ export default function Step1() {
 
             <div className="p-4 border rounded-md space-y-4">
                 <h3 className="font-medium">Representative's Contact Info</h3>
-                 <FormField
-                    control={control}
-                    name="isRepPrimaryContact"
-                    render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                        <FormLabel>Representative contact info is same as primary contact</FormLabel>
-                        <FormDescription>
-                            If checked, the primary contact's information will be copied here.
-                        </FormDescription>
-                        </div>
-                    </FormItem>
-                    )}
-                />
                 <p className="text-sm text-muted-foreground">If the member does not have a legal representative, you can leave these fields blank.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repName" render={({ field }) => (
-                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="repRelationship" render={({ field }) => (
-                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Relationship</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="repPhone" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Phone</FormLabel>
-                            <FormControl><PhoneInput {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl>
+                            <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
                             <FormDescription>(xxx) xxx-xxxx</FormDescription>
                             <FormMessage />
                         </FormItem>
                     )} />
                     <FormField control={control} name="repEmail" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} readOnly={isRepPrimaryContact} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
             </div>
@@ -527,3 +505,5 @@ export default function Step1() {
     </div>
   );
 }
+
+    

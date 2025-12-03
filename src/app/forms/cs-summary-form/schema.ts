@@ -8,7 +8,7 @@ const requiredPhone = z.string().regex(phoneRegex, { message: 'Phone number must
 const optionalPhone = z.string().optional().nullable().refine(val => val === '' || !val || phoneRegex.test(val), {
   message: "Phone number must be in (xxx) xxx-xxxx format or empty.",
 });
-const optionalEmail = z.string().email().nullable().optional().or(z.literal(''));
+const optionalEmail = z.string().email({ message: "Invalid email address." }).nullable().or(z.literal(''));
 
 
 export const formSchema = z.object({
@@ -33,7 +33,7 @@ export const formSchema = z.object({
     agency: optionalString,
 
     // Step 1 - Primary Contact Person
-    bestContactType: z.enum(['member', 'other']).optional().nullable(),
+    bestContactType: z.enum(['member', 'other'], { required_error: 'Please select a primary contact type.' }),
     bestContactFirstName: optionalString,
     bestContactLastName: optionalString,
     bestContactRelationship: optionalString,
@@ -50,13 +50,12 @@ export const formSchema = z.object({
     secondaryContactLanguage: optionalString,
 
     // Step 1 - Legal Rep
-    hasCapacity: z.enum(['Yes', 'No']).optional().nullable(),
+    hasCapacity: z.enum(['Yes', 'No'], { required_error: 'Please select an option for member capacity.' }),
     hasLegalRep: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     repName: optionalString,
     repRelationship: optionalString,
     repPhone: optionalPhone,
     repEmail: optionalEmail,
-    isRepPrimaryContact: z.boolean().optional().default(false),
 
     // Step 2 - Location
     currentLocation: requiredString,
@@ -90,12 +89,12 @@ export const formSchema = z.object({
     ispPhone: optionalPhone,
     ispEmail: optionalEmail,
     ispCopyCurrent: z.boolean().optional(),
-    ispLocationType: optionalString,
-    ispAddress: optionalString,
-    ispCity: optionalString,
-    ispState: optionalString,
-    ispZip: optionalString,
-    ispCounty: optionalString,
+    ispLocationType: requiredString,
+    ispAddress: requiredString,
+    ispCity: requiredString,
+    ispState: requiredString,
+    ispZip: requiredString,
+    ispCounty: requiredString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
     hasPrefRCFE: z.enum(['Yes', 'No']).optional().nullable(),
     rcfeName: optionalString,
@@ -149,27 +148,9 @@ export const formSchema = z.object({
             ctx.addIssue({ code: 'custom', message: 'Please select if the member will be switching plans.', path: ['switchingHealthPlan'] });
         }
     }
-     if (data.ispCopyCurrent === false) {
-      if (!data.ispLocationType) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispLocationType'] });
-      }
-      if (!data.ispAddress) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispAddress'] });
-      }
-      if (!data.ispCity) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispCity'] });
-      }
-       if (!data.ispState) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispState'] });
-      }
-       if (!data.ispZip) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispZip'] });
-      }
-       if (!data.ispCounty) {
-          ctx.addIssue({ code: 'custom', message: 'This field is required.', path: ['ispCounty'] });
-      }
-    }
   });
 
 
 export type FormValues = z.infer<typeof formSchema>;
+
+    
