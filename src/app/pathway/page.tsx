@@ -29,6 +29,8 @@ import type { Application, FormStatus as FormStatusType } from '@/lib/definition
 import { useDoc, useUser, useFirestore } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
@@ -38,7 +40,7 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'hipaa-auth', title: 'HIPAA Authorization', description: 'Authorize the use or disclosure of Protected Health Information (PHI).', type: 'online-form', href: '/forms/hipaa-authorization', icon: File },
     { id: 'liability-waiver', title: 'Liability Waiver', description: 'Review and sign the Participant Liability Waiver & Hold Harmless Agreement.', type: 'online-form', href: '/forms/liability-waiver', icon: File },
     { id: 'freedom-of-choice', title: 'Freedom of Choice Waiver', description: 'Acknowledge your choice to accept or decline Community Supports services.', type: 'online-form', href: '/forms/freedom-of-choice', icon: File },
-    { id: 'proof-of-income', title: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements showing Social Security income.", type: 'upload', icon: UploadCloud, href: null },
+    { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: null },
     { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, have the physician complete, and upload the report.", type: 'upload', icon: UploadCloud, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
     { id: 'med-list', title: "Medicine List", description: "Upload a current list of all medications.", type: 'upload', icon: UploadCloud, href: null },
   ];
@@ -200,9 +202,11 @@ function PathwayPageContent() {
                             </Link>
                         </Button>
                     )}
-                    <Button variant="outline" className="w-full bg-slate-50 hover:bg-slate-100">
-                         <UploadCloud className="mr-2 h-4 w-4" /> Upload Document
-                    </Button>
+                    <Label htmlFor={req.id} className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                        <UploadCloud className="mr-2 h-4 w-4" />
+                        <span>Upload File</span>
+                    </Label>
+                    <Input id={req.id} type="file" className="sr-only" />
                 </div>
             );
         default:
@@ -220,15 +224,15 @@ function PathwayPageContent() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
-                {application.pathway} ({application.healthPlan || 'N/A'})
+                Application for {application.memberFirstName} {application.memberLastName}
               </CardTitle>
               <CardDescription>
-                For members {application.pathway === 'SNF Diversion' ? 'living in the community who are at risk of institutionalization.' : 'currently in a Skilled Nursing Facility who want to move to a community setting.'}
+                {application.pathway} ({application.healthPlan})
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-                <div><strong>Member:</strong> {application.memberFirstName} {application.memberLastName}</div>
+                <div><strong>Applicant:</strong> {user?.displayName}</div>
                 <div className="truncate"><strong>Application ID:</strong> <span className="font-mono text-xs">{application.id}</span></div>
                 <div><strong>Status:</strong> <span className="font-semibold">{application.status}</span></div>
               </div>
@@ -297,3 +301,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
+    
