@@ -280,11 +280,6 @@ function CsSummaryFormComponent() {
   
     try {
       await setDoc(docRef, finalData, { merge: true });
-      toast({
-        title: 'Summary Complete!',
-        description: 'Please review your information before continuing to the pathway.',
-        duration: 2000,
-      });
       router.push(`/forms/cs-summary-form/review?applicationId=${finalAppId}`);
     } catch (error: any) {
       toast({
