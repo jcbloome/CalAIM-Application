@@ -3,9 +3,15 @@
 'use client';
 
 import { PrintableProgramInfo } from '@/app/info/components/PrintableProgramInfo';
-import { CsSummaryView } from './CsSummaryView';
+import dynamic from 'next/dynamic';
 import type { Application } from '@/lib/definitions';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2 } from 'lucide-react';
+
+const CsSummaryView = dynamic(() => import('./CsSummaryView').then(mod => mod.CsSummaryView), {
+  loading: () => <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+});
+
 
 // Since the content components are not exported from their parent pages,
 // we will redefine them here for use in the viewer. This is more direct.

@@ -13,12 +13,13 @@ import { acronyms } from '@/lib/data';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { BookOpen } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function GlossaryDialog() {
+export function GlossaryDialog({ className }: { className?: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={cn(className)}>
             <BookOpen className="mr-2 h-4 w-4" />
             View Acronym Glossary
         </Button>

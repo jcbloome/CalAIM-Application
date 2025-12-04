@@ -4,6 +4,7 @@
 
 import { notFound, useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -15,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
 import { applications as mockApplications, activities as mockActivities } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FormViewer } from './FormViewer';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { sendRevisionRequestEmail } from '@/app/actions/send-email';
@@ -24,6 +24,10 @@ import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 import { cn } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const FormViewer = dynamic(() => import('./FormViewer').then(mod => mod.FormViewer), {
+  loading: () => <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+});
 
 
 // This is a temporary solution for the demo to find the mock application data

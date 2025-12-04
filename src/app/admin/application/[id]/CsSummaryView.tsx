@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { applications as mockApplications } from '@/lib/data';
+import dynamic from 'next/dynamic';
 
 const Field = ({ label, value }: { label: string; value: any }) => (
     <div>
