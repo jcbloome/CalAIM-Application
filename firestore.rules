@@ -105,22 +105,6 @@ service cloud.firestore {
     }
 
     /**
-     * Validates required relational fields on User document creation.
-     * Ensures the document's internal ID matches the document ID in the path.
-     * @param userId The user's UID from the path.
-     */
-    function hasValidUserDataOnCreate(userId) {
-      return request.resource.data.id == userId;
-    }
-
-    /**
-     * Enforces immutability of the User's ID on update.
-     */
-    function hasValidUserDataOnUpdate() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    /**
      * Validates required relational fields on Application document creation.
      * Ensures the internal userId reference points to the correct owner.
      * @param userId The user's UID from the path.
@@ -159,16 +143,15 @@ service cloud.firestore {
     /**
      * @description Rules for a user's own profile document.
      * @path /users/{userId}
-     * @allow (create) An authenticated user creating their own profile document.
+     * @allow (read, write) An authenticated user can read and write to their own profile.
      * @deny (list) Any user attempting to list all user profiles.
-     * @principle Restricts access to a user's own data tree and allows self-creation of a profile.
+     * @principle Restricts access to a user's own data tree and allows self-creation and update of a profile.
      */
     match /users/{userId} {
       allow get: if isOwnerOrAdmin(userId);
+      allow write: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && hasValidUserDataOnCreate(userId);
-      allow update: if isExistingOwnerOrAdmin(userId);
-      allow delete: if isExistingOwnerOrAdmin(userId);
+      allow delete: if isOwnerOrAdmin(userId);
 
       /**
        * @description Rules for a user's CalAIM applications.
