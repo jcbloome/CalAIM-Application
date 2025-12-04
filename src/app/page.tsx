@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,11 +24,11 @@ export default function Home() {
                 width={200}
                 height={200}
                 data-ai-hint={mascot.imageHint}
-                className="w-48 h-48 object-contain rounded-full mb-6"
+                className="w-32 h-32 sm:w-48 sm:h-48 object-contain rounded-full mb-6"
               />
             )}
-            <CardTitle className="text-5xl font-bold">Connect CalAIM</CardTitle>
-            <CardDescription className="text-lg max-w-2xl mt-2">
+            <CardTitle className="text-3xl sm:text-5xl font-bold">Connect CalAIM</CardTitle>
+            <CardDescription className="text-md sm:text-lg max-w-2xl mt-2">
               The Connections Care Home Consultants application portal for the California
               Advancing and Innovating Medi-Cal (CalAIM) Community Support for Assisted
               Transitions (SNF Diversion/Transition) for Health Net and Kaiser.

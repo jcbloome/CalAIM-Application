@@ -58,7 +58,7 @@ export function Header() {
           <img 
             src="https://images.squarespace-cdn.com/content/v1/5513063be4b069b54e721157/e4e0f894-c7c1-4b7f-a715-6dab7fc055db/calaimlogosmall.jpg?format=2500w"
             alt="CalAIM Pathfinder Logo"
-            className="w-48 h-auto object-contain"
+            className="w-36 sm:w-48 h-auto object-contain"
           />
         </Link>
         <nav className="hidden md:flex items-center gap-2">

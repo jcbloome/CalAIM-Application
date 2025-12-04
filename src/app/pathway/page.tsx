@@ -35,8 +35,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
@@ -46,25 +44,21 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'freedom-of-choice', title: 'Freedom of Choice Waiver', description: 'Complete the online Freedom of Choice waiver.', type: 'online-form', href: '/forms/freedom-of-choice', icon: FileText },
     { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, complete, and upload the signed physician's report.", type: 'upload', icon: Printer, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
     { id: 'medicine-list', title: 'Medicine List', description: "Upload a current list of all prescribed medications.", type: 'upload', icon: UploadCloud, href: '#' },
+    { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' },
   ];
   
-  let requirements: typeof commonRequirements = [];
-
   if (pathway === 'SNF Diversion') {
-    requirements = [
+    return [
       ...commonRequirements,
       { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'Download the form, have it signed by a PCP, and upload it here.', type: 'upload', icon: Printer, href: '/forms/declaration-of-eligibility/printable' },
     ];
-  } else { // SNF Transition
-    requirements = [
-        ...commonRequirements,
-        { id: 'snf-facesheet', title: 'SNF Facesheet', description: "Upload the resident's facesheet from the Skilled Nursing Facility.", type: 'upload', icon: UploadCloud, href: '#' },
-    ];
   }
   
-  requirements.push({ id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' });
-
-  return requirements;
+  // SNF Transition
+  return [
+      ...commonRequirements,
+      { id: 'snf-facesheet', title: 'SNF Facesheet', description: "Upload the resident's facesheet from the Skilled Nursing Facility.", type: 'upload', icon: UploadCloud, href: '#' },
+  ];
 };
 
 
@@ -95,16 +89,9 @@ function PathwayPageContent() {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
-  const [logMessages, setLogMessages] = useState<string[]>([]);
-
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogMessages(prev => [`[${timestamp}] ${message}`, ...prev]);
-  };
 
   const applicationDocRef = useMemo(() => {
     if (user && firestore && applicationId) {
-      addLog(`Creating document reference: users/${user.uid}/applications/${applicationId}`);
       return doc(firestore, `users/${user.uid}/applications`, applicationId);
     }
     return null;
@@ -112,18 +99,6 @@ function PathwayPageContent() {
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
 
-  useEffect(() => {
-    addLog(`useDoc is loading...`);
-  }, []);
-
-  useEffect(() => {
-    if (application) {
-        addLog('Application data updated from Firestore.');
-        addLog(`Current forms status: ${JSON.stringify(application.forms, null, 2)}`);
-    }
-  }, [application]);
-
-  // This effect ensures the `forms` array is properly initialized in Firestore.
   useEffect(() => {
     if (application && applicationDocRef && application.pathway) {
       const pathwayRequirements = getPathwayRequirements(application.pathway);
@@ -142,7 +117,6 @@ function PathwayPageContent() {
       if (missingForms.length > 0) {
         const updatedForms = [...(application.forms || []), ...missingForms];
         
-        // Ensure CS Member Summary is always completed
         const summaryIndex = updatedForms.findIndex(f => f.name === 'CS Member Summary');
         if (summaryIndex !== -1) {
             updatedForms[summaryIndex].status = 'Completed';
@@ -155,16 +129,13 @@ function PathwayPageContent() {
 
 
   const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending', fileName?: string | null) => {
-      addLog(`handleFormStatusUpdate called for: ${formNames.join(', ')} with status: ${newStatus}`);
       if (!applicationDocRef || !application) {
-        addLog('Error: applicationDocRef or application data is missing.');
         return;
       }
 
       const existingForms = application.forms || [];
       const updatedForms = existingForms.map(form => {
           if (formNames.includes(form.name)) {
-            addLog(`Updating form: ${form.name}`);
             const update: Partial<FormStatusType> = { status: newStatus };
              if (newStatus === 'Completed') {
                 update.dateCompleted = Timestamp.now();
@@ -180,14 +151,11 @@ function PathwayPageContent() {
       });
       
       try {
-          addLog('Attempting to save updated forms array to Firestore...');
           await setDoc(applicationDocRef, {
               forms: updatedForms,
               lastUpdated: serverTimestamp(),
           }, { merge: true });
-          addLog('Firestore update successful.');
       } catch (e: any) {
-          addLog(`Error updating form status: ${e.message}`);
           console.error("Failed to update form status:", e);
       }
   };
@@ -195,19 +163,15 @@ function PathwayPageContent() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
     if (!event.target.files?.length) return;
     const file = event.target.files[0];
-    addLog(`handleFileUpload: Started for "${requirementTitle}" with file: ${file.name}`);
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
-    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    addLog('Calling handleFormStatusUpdate to mark as "Completed" with fileName.');
     await handleFormStatusUpdate([requirementTitle], 'Completed', file.name);
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
-    addLog(`handleFileUpload: Finished for "${requirementTitle}".`);
     event.target.value = '';
   };
   
@@ -275,7 +239,6 @@ function PathwayPageContent() {
   const getFormAction = (req: (typeof pathwayRequirements)[0]) => {
     const formInfo = formStatusMap.get(req.title);
     const isCompleted = formInfo?.status === 'Completed';
-    const fileName = formInfo?.fileName;
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
     if (isReadOnly && req.type !== 'online-form' && req.type !== 'info') {
@@ -497,23 +460,6 @@ function PathwayPageContent() {
                     </CardContent>
                 </Card>
             </div>
-            
-             <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>Debug Log</CardTitle>
-                <CardDescription>
-                  This log shows the real-time flow of data and events on this page.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-64 w-full rounded-md border p-4 bg-muted/50 font-mono text-xs">
-                  {logMessages.map((msg, index) => (
-                    <div key={index}>{msg}</div>
-                  ))}
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
         </div>
       </main>
     </>
