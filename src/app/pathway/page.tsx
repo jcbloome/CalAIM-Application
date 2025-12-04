@@ -95,39 +95,64 @@ function PathwayPageContent() {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [logMessages, setLogMessages] = useState<string[]>([]);
+
+  const log = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogMessages(prev => [`[${timestamp}] ${message}`, ...prev]);
+  };
 
   const applicationDocRef = useMemo(() => {
     if (user && firestore && applicationId) {
+      log(`Creating document reference: ${`users/${user.uid}/applications/${applicationId}`}`);
       return doc(firestore, `users/${user.uid}/applications`, applicationId);
     }
     return null;
   }, [user, firestore, applicationId]);
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
+  
+  useEffect(() => {
+    if (isLoading) log('useDoc is loading...');
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (application) {
+        log('Application data updated from Firestore.');
+        log(`Current forms status: ${JSON.stringify(application.forms, null, 2)}`);
+    }
+  }, [application]);
+
 
   // This effect ensures the `forms` array is properly initialized in Firestore.
   useEffect(() => {
     if (application && applicationDocRef && (!application.forms || application.forms.length === 0)) {
-      const pathwayRequirements = getPathwayRequirements(application.pathway).map(req => ({
-        name: req.title,
-        status: 'Pending' as 'Pending' | 'Completed',
-        type: req.type as FormStatusType['type'],
-        href: req.href || '#',
-      }));
+        log('Forms array is missing or empty. Initializing now...');
+        const pathwayRequirements = getPathwayRequirements(application.pathway).map(req => ({
+            name: req.title,
+            status: 'Pending' as 'Pending' | 'Completed',
+            type: req.type as FormStatusType['type'],
+            href: req.href || '#',
+        }));
 
-      // Set the CS Member Summary to completed by default if it's missing, as user must have passed review page
-      const summaryIndex = pathwayRequirements.findIndex(f => f.name === 'CS Member Summary');
-      if (summaryIndex !== -1) {
-        pathwayRequirements[summaryIndex].status = 'Completed';
-      }
-
-      setDoc(applicationDocRef, { forms: pathwayRequirements }, { merge: true });
+        const summaryIndex = pathwayRequirements.findIndex(f => f.name === 'CS Member Summary');
+        if (summaryIndex !== -1) {
+            pathwayRequirements[summaryIndex].status = 'Completed';
+        }
+        log(`Generated ${pathwayRequirements.length} required forms for pathway.`);
+        setDoc(applicationDocRef, { forms: pathwayRequirements }, { merge: true }).then(() => {
+            log('Successfully saved initialized forms to Firestore.');
+        });
     }
   }, [application, applicationDocRef]);
 
 
   const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending', fileName?: string | null) => {
-      if (!applicationDocRef || !application) return;
+      log(`handleFormStatusUpdate called for: ${formNames.join(', ')} with status: ${newStatus}`);
+      if (!applicationDocRef || !application) {
+        log('Error: applicationDocRef or application data is missing.');
+        return;
+      }
 
       const existingForms = application.forms || [];
       const updatedForms = existingForms.map(form => {
@@ -147,43 +172,39 @@ function PathwayPageContent() {
       });
       
       try {
+          log('Attempting to save updated forms array to Firestore...');
           await setDoc(applicationDocRef, {
               forms: updatedForms,
               lastUpdated: serverTimestamp(),
           }, { merge: true });
+          log('Firestore update successful.');
       } catch (e: any) {
+          log(`Error: Failed to update form status in Firestore: ${e.message}`);
           console.error("Failed to update form status:", e);
       }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string, isBundle: boolean = false) => {
-    if (!event.target.files?.length || !application) return;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
+    if (!event.target.files?.length) return;
     const file = event.target.files[0];
     
+    log(`handleFileUpload: Started for "${requirementTitle}" with file: ${file.name}`);
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
     // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    let formsToUpdate = [requirementTitle];
-    if (isBundle) {
-        if (requirementTitle === "Waivers Bundle") {
-            formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
-        } else if (requirementTitle === "Medical Documents Bundle") {
-            formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
-            if (application.pathway === 'SNF Transition') formsToUpdate.push('SNF Facesheet');
-            if (application.pathway === 'SNF Diversion') formsToUpdate.push('Declaration of Eligibility');
-        }
-    }
-    
-    await handleFormStatusUpdate(formsToUpdate, 'Completed', file.name);
+    log('Calling handleFormStatusUpdate to mark as "Completed" with fileName.');
+    await handleFormStatusUpdate([requirementTitle], 'Completed', file.name);
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
+    log(`handleFileUpload: Finished for "${requirementTitle}".`);
     
     event.target.value = '';
   };
   
   const handleFileRemove = async (requirementTitle: string) => {
+    log(`handleFileRemove: Called for "${requirementTitle}".`);
     await handleFormStatusUpdate([requirementTitle], 'Pending', null);
   };
 
@@ -275,7 +296,7 @@ function PathwayPageContent() {
              if (isCompleted) {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                        <span className="truncate flex-1 text-green-800 font-medium">{fileName || 'Document Uploaded'}</span>
+                        <span className="truncate flex-1 text-green-800 font-medium">Completed</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
                             <X className="h-4 w-4" />
                             <span className="sr-only">Remove file</span>
@@ -425,7 +446,7 @@ function PathwayPageContent() {
                             {uploading["Waivers Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                             <span>{uploading["Waivers Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
                         </Label>
-                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers Bundle", true)} disabled={uploading["Waivers Bundle"] || isReadOnly} />
+                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers Bundle")} disabled={uploading["Waivers Bundle"] || isReadOnly} />
                     </CardContent>
                 </Card>
 
@@ -463,11 +484,24 @@ function PathwayPageContent() {
                             {uploading["Medical Documents Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                             <span>{uploading["Medical Documents Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
                         </Label>
-                        <Input id="medical-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Medical Documents Bundle", true)} disabled={uploading["Medical Documents Bundle"] || isReadOnly} />
+                        <Input id="medical-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Medical Documents Bundle")} disabled={uploading["Medical Documents Bundle"] || isReadOnly} />
                     </CardContent>
                 </Card>
             </div>
             
+            <Card>
+              <CardHeader>
+                <CardTitle>Debug Log</CardTitle>
+                <CardDescription>Real-time flow of data and events on this page.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-64 w-full rounded-md border p-4 bg-muted/50 font-mono text-xs">
+                  {logMessages.map((msg, index) => (
+                    <div key={index}>{msg}</div>
+                  ))}
+                </ScrollArea>
+              </CardContent>
+            </Card>
         </div>
       </main>
     </>
@@ -486,3 +520,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
+    
