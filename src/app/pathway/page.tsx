@@ -50,7 +50,7 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
   if (pathway === 'SNF Diversion') {
     return [
       ...commonRequirements,
-      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'To download this form, go to the Printable Forms page, then return here to upload the completed document.', type: 'upload', icon: Printer, href: '/forms/printable-package' },
+      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'To download this form, go to the Printable Forms page, then return here to upload the completed document.', type: 'upload', icon: Printer, href: '/forms/declaration-of-eligibility/printable' },
     ];
   }
 
