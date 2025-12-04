@@ -21,7 +21,6 @@ import {
   Loader2,
   UploadCloud,
   Send,
-  Download,
   Printer,
   Package,
   X,
@@ -63,7 +62,6 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     ];
   }
   
-  // Add proof of income at the end
   requirements.push({ id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' });
 
   return requirements;
@@ -119,6 +117,8 @@ function PathwayPageContent() {
             }
              if (fileName !== undefined) {
                 update.fileName = fileName;
+            } else if (newStatus === 'Pending') {
+                update.fileName = null;
             }
             return { ...form, ...update };
           }
@@ -141,7 +141,6 @@ function PathwayPageContent() {
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
-    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     let formsToUpdate = [requirementTitle];
@@ -159,7 +158,6 @@ function PathwayPageContent() {
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
-    // Reset file input so user can upload same file again if they remove it
     event.target.value = '';
   };
   
@@ -250,10 +248,10 @@ function PathwayPageContent() {
                 </Button>
             );
         case 'upload':
-             if (isCompleted) {
+             if (isCompleted && formInfo?.fileName) {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                        <span className="truncate flex-1 text-green-800 font-medium">Document Uploaded</span>
+                        <span className="truncate flex-1 text-green-800 font-medium">Uploaded</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
                             <X className="h-4 w-4" />
                         </Button>
@@ -380,12 +378,12 @@ function PathwayPageContent() {
                                 <div key={form.name} className="space-y-2">
                                     <div className="flex items-center space-x-2">
                                         <Checkbox 
-                                            id={`waiver-${form.name}`} 
+                                            id={`waiver-bundle-${form.name}`} 
                                             checked={formStatusMap.get(form.name)?.status === 'Completed'}
                                             onCheckedChange={(checked) => handleFormStatusUpdate([form.name], checked ? 'Completed' : 'Pending')}
                                             disabled={isReadOnly}
                                         />
-                                        <Label htmlFor={`waiver-${form.name}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        <Label htmlFor={`waiver-bundle-${form.name}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             {form.name}
                                         </Label>
                                     </div>
@@ -462,3 +460,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
+    
