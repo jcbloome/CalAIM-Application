@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const locationOptions = ["Home", "SNF", "RCFE", "Hospital", "Sub-Acute", "Unhoused", "Other"];
 
 export default function Step4() {
-  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
+  const { control, watch, setValue, getValues, clearErrors } = useFormContext<FormValues>();
   
   const hasPrefRCFE = watch('hasPrefRCFE');
   const ispCopyCurrent = watch('ispCopyCurrent');
@@ -28,6 +28,7 @@ export default function Step4() {
         setValue('ispState', getValues('currentState'));
         setValue('ispZip', getValues('currentZip'));
         setValue('ispCounty', getValues('currentCounty'));
+        clearErrors(['ispLocationType', 'ispAddress', 'ispCity', 'ispState', 'ispZip', 'ispCounty']);
     } else {
         setValue('ispLocationType', '');
         setValue('ispAddress', '');
@@ -36,7 +37,7 @@ export default function Step4() {
         setValue('ispZip', '');
         setValue('ispCounty', '');
     }
-  }, [ispCopyCurrent, getValues, setValue]);
+  }, [ispCopyCurrent, getValues, setValue, clearErrors]);
 
 
   return (

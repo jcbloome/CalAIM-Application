@@ -214,7 +214,7 @@ export default function MyApplicationsPage() {
                         Welcome, <strong>{user.displayName || user.email}</strong>.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 self-start sm:self-center">
+                <div className="flex items-center gap-2 self-stretch sm:self-center flex-wrap">
                     {selected.length > 0 && (
                     <Button variant="destructive" onClick={handleDelete}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete ({selected.length})

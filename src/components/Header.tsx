@@ -16,6 +16,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const navLinks = [
     { href: "/info", label: "Program Information" },
@@ -42,10 +43,13 @@ export function Header() {
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-40">
       <div className="container mx-auto flex items-center justify-between h-20 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
-          <img 
+          <Image 
             src="https://images.squarespace-cdn.com/content/v1/5513063be4b069b54e721157/e4e0f894-c7c1-4b7f-a715-6dab7fc055db/calaimlogosmall.jpg?format=2500w"
             alt="CalAIM Pathfinder Logo"
-            className="w-36 sm:w-48 h-auto object-contain"
+            width={144}
+            height={40}
+            className="w-36 h-auto object-contain"
+            priority
           />
         </Link>
         <nav className="hidden md:flex items-center gap-2">

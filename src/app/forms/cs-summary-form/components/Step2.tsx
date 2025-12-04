@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 const locationOptions = ["Home", "SNF", "RCFE", "Hospital", "Sub-Acute", "Unhoused", "Other"];
 
 export default function Step2() {
-  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
+  const { control, watch, setValue, getValues, clearErrors } = useFormContext<FormValues>();
   const copyAddress = watch('copyAddress');
 
   useEffect(() => {
@@ -23,6 +23,8 @@ export default function Step2() {
       setValue('customaryState', getValues('currentState'));
       setValue('customaryZip', getValues('currentZip'));
       setValue('customaryCounty', getValues('currentCounty'));
+      // Clear any validation errors on these fields when the box is checked
+      clearErrors(['customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty']);
     } else {
         // Optionally clear fields when unchecked
         setValue('customaryAddress', '');
@@ -31,7 +33,7 @@ export default function Step2() {
         setValue('customaryZip', '');
         setValue('customaryCounty', '');
     }
-  }, [copyAddress, getValues, setValue]);
+  }, [copyAddress, getValues, setValue, clearErrors]);
 
 
   return (
