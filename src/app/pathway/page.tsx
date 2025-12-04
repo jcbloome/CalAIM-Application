@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Suspense, useMemo, useState } from 'react';
@@ -50,25 +49,23 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'medicine-list', title: 'Medicine List', description: "Upload a current list of all prescribed medications.", type: 'upload', icon: UploadCloud, href: '#' },
   ];
   
-  const proofOfIncome = { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' };
-
   let requirements: typeof commonRequirements = [];
 
   if (pathway === 'SNF Diversion') {
     requirements = [
-      ...commonRequirements.slice(0, 5),
+      ...commonRequirements,
       { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'Download the form, have it signed by a PCP, and upload it here.', type: 'upload', icon: Printer, href: '/forms/declaration-of-eligibility/printable' },
-      ...commonRequirements.slice(5),
     ];
   } else { // SNF Transition
     requirements = [
-        ...commonRequirements.slice(0, 5),
+        ...commonRequirements,
         { id: 'snf-facesheet', title: 'SNF Facesheet', description: "Upload the resident's facesheet from the Skilled Nursing Facility.", type: 'upload', icon: UploadCloud, href: '#' },
-        ...commonRequirements.slice(5),
     ];
   }
   
-  requirements.push(proofOfIncome);
+  // Add proof of income at the end
+  requirements.push({ id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' });
+
   return requirements;
 };
 
@@ -116,9 +113,7 @@ function PathwayPageContent() {
       const existingForms = application.forms || [];
       const updatedForms = existingForms.map(form => {
           if (formNames.includes(form.name)) {
-            const update: Partial<FormStatusType> = { 
-                status: newStatus,
-            };
+            const update: Partial<FormStatusType> = { status: newStatus };
              if (newStatus === 'Completed') {
                 update.dateCompleted = Timestamp.now();
             }
@@ -155,9 +150,8 @@ function PathwayPageContent() {
             formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
         } else if (requirementTitle === "Medical Documents Bundle") {
             formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
-            if (application.pathway === 'SNF Transition') {
-                formsToUpdate.push('SNF Facesheet');
-            }
+            if (application.pathway === 'SNF Transition') formsToUpdate.push('SNF Facesheet');
+            if (application.pathway === 'SNF Diversion') formsToUpdate.push('Declaration of Eligibility');
         }
     }
     
@@ -169,19 +163,8 @@ function PathwayPageContent() {
     event.target.value = '';
   };
   
-  const handleFileRemove = async (requirementTitle: string, isBundle: boolean = false) => {
-    let formsToUpdate = [requirementTitle];
-     if (isBundle) {
-        if (requirementTitle === "Waivers Bundle") {
-            formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
-        } else if (requirementTitle === "Medical Documents Bundle") {
-            formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
-            if (application.pathway === 'SNF Transition') {
-                formsToUpdate.push('SNF Facesheet');
-            }
-        }
-    }
-    await handleFormStatusUpdate(formsToUpdate, 'Pending', null);
+  const handleFileRemove = async (requirementTitle: string) => {
+    await handleFormStatusUpdate([requirementTitle], 'Pending', null);
   };
 
   const handleSubmitApplication = async () => {
@@ -231,17 +214,12 @@ function PathwayPageContent() {
   const pathwayRequirements = getPathwayRequirements(application.pathway);
   const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName}]));
   
-  const requiredForProgress = pathwayRequirements;
-
-  const completedCount = requiredForProgress.reduce((acc, req) => {
-    const formName = req.title;
-    if (formStatusMap.get(formName)?.status === 'Completed') {
-        return acc + 1;
-    }
+  const completedCount = pathwayRequirements.reduce((acc, req) => {
+    if (formStatusMap.get(req.title)?.status === 'Completed') return acc + 1;
     return acc;
   }, 0);
   
-  const totalCount = requiredForProgress.length;
+  const totalCount = pathwayRequirements.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allRequiredFormsComplete = completedCount === totalCount;
 
@@ -250,50 +228,45 @@ function PathwayPageContent() {
     const isCompleted = formInfo?.status === 'Completed';
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
-    if (isReadOnly) {
-       return (
+    if (isReadOnly && req.type !== 'online-form' && req.type !== 'info') {
+       return <p className="text-sm text-muted-foreground">This item was completed.</p>
+    }
+    if (isReadOnly && (req.type === 'online-form' || req.type === 'info')) {
+        return (
             <Button asChild variant="outline" className="w-full bg-slate-50">
                 <Link href={href}>View</Link>
             </Button>
         );
     }
 
-    const uploadedFileName = formInfo?.fileName;
-    if (isCompleted && uploadedFileName) {
-        return (
-            <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                <FileText className="h-4 w-4 text-green-600 shrink-0" />
-                <span className="truncate flex-1 text-green-800 font-medium">{uploadedFileName}</span>
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)} disabled={isReadOnly}>
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
-        )
-    }
-
     const isUploading = uploading[req.title];
     
     switch (req.type) {
         case 'online-form':
-            return (
-                <Button asChild variant="outline" className="w-full bg-slate-50 hover:bg-slate-100">
-                    <Link href={href}>{isCompleted ? 'View/Edit Form' : 'Start Form'} &rarr;</Link>
-                </Button>
-            );
         case 'info':
             return (
                 <Button asChild variant="outline" className="w-full bg-slate-50 hover:bg-slate-100">
-                    <Link href="/info">Review Information &rarr;</Link>
+                    <Link href={href}>{isCompleted ? 'View/Edit' : 'Start'} &rarr;</Link>
                 </Button>
             );
         case 'upload':
+             if (isCompleted) {
+                 return (
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
+                        <span className="truncate flex-1 text-green-800 font-medium">Document Uploaded</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                 )
+             }
              return (
                 <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                         <Checkbox 
                             id={`bundle-check-${req.id}`} 
                             onCheckedChange={(checked) => handleFormStatusUpdate([req.title], checked ? 'Completed' : 'Pending')}
-                            checked={isCompleted && !uploadedFileName}
+                            checked={isCompleted}
                             disabled={isReadOnly}
                         />
                         <Label htmlFor={`bundle-check-${req.id}`} className="text-xs text-muted-foreground">I included this in a bundle</Label>
@@ -489,5 +462,3 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
-
-
