@@ -1,6 +1,7 @@
+
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -23,6 +24,8 @@ import {
   Download,
   Printer,
   Package,
+  X,
+  FileText
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -37,7 +40,7 @@ import { Separator } from '@/components/ui/separator';
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
-    { id: 'cs-summary', title: 'CS Member Summary', description: 'This form MUST be completed online, as it provides the necessary data for the rest of the application.', type: 'online-form', href: '/forms/cs-summary-form/review', icon: File },
+    { id: 'cs-summary', title: 'CS Member Summary', description: 'This form MUST be completed online, as it provides the necessary data for the rest of the application.', type: 'online-form', href: '/forms/cs-summary-form/review', icon: FileText },
     { id: 'program-info', title: 'Program Information', description: 'Review important details about the CalAIM program and our services.', type: 'info', href: '/info', icon: Info },
     { id: 'hipaa-auth', title: 'HIPAA Authorization', description: 'Authorize the use or disclosure of Protected Health Information (PHI).', type: 'online-form', href: '/forms/hipaa-authorization', icon: File },
     { id: 'liability-waiver', title: 'Liability Waiver', description: 'Review and sign the Participant Liability Waiver & Hold Harmless Agreement.', type: 'online-form', href: '/forms/liability-waiver', icon: File },
@@ -45,8 +48,6 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' },
     { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, have the physician complete, and upload the signed report.", type: 'upload', icon: Printer, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
     { id: 'medicine-list', title: "Medicine List", description: "Upload a current list of all prescribed medications.", type: 'upload', icon: UploadCloud, href: '#' },
-    { id: 'medical-docs-bundle', title: 'Medical Documents Bundle', description: "Option to upload the Physician's Report, Medicine List, and SNF Facesheet in one package.", type: 'bundle', icon: Package, href: '#' },
-    { id: 'waivers-bundle', title: 'Waivers & Forms Bundle', description: "Upload signed copies of the HIPAA, Liability, and Freedom of Choice forms.", type: 'bundle', icon: Package, href: '/forms/printable-package/full-package' },
   ];
 
   if (pathway === 'SNF Diversion') {
@@ -91,6 +92,7 @@ function PathwayPageContent() {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, string>>({});
 
   const applicationDocRef = useMemo(() => {
     if (user && firestore && applicationId) {
@@ -101,16 +103,38 @@ function PathwayPageContent() {
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
   
-  const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending') => {
+    useEffect(() => {
+    if (application?.forms) {
+      const initialFiles: Record<string, string> = {};
+      application.forms.forEach(form => {
+        if (form.fileName) {
+          initialFiles[form.name] = form.fileName;
+        }
+      });
+      setUploadedFiles(initialFiles);
+    }
+  }, [application]);
+  
+  const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending', fileName?: string) => {
       if (!applicationDocRef || !application) return;
 
       const existingForms = application.forms || [];
-      const updatedForms = existingForms.map(form => 
-          formNames.includes(form.name) 
-          ? { ...form, status: newStatus, dateCompleted: newStatus === 'Completed' ? Timestamp.now() : undefined }
-          : form
-      );
-
+      const updatedForms = existingForms.map(form => {
+          if (formNames.includes(form.name)) {
+            const update: Partial<FormStatusType> = { 
+                status: newStatus,
+                dateCompleted: newStatus === 'Completed' ? Timestamp.now() : undefined,
+            };
+            if (newStatus === 'Completed' && fileName) {
+                update.fileName = fileName;
+            } else if (newStatus === 'Pending') {
+                update.fileName = undefined;
+            }
+            return { ...form, ...update };
+          }
+          return form;
+      });
+      
       try {
           await setDoc(applicationDocRef, {
               forms: updatedForms,
@@ -121,19 +145,32 @@ function PathwayPageContent() {
       }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementId: string) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
     if (!event.target.files?.length || !application) return;
-
-    setUploading(prev => ({...prev, [requirementId]: true}));
+    const file = event.target.files[0];
     
-    const req = getPathwayRequirements(application.pathway).find(r => r.id === requirementId);
-    if(req) {
-      await handleFormStatusUpdate([req.title], 'Completed');
-    }
+    setUploading(prev => ({...prev, [requirementTitle]: true}));
+    
+    // Simulate upload time
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    await handleFormStatusUpdate([requirementTitle], 'Completed', file.name);
+    setUploadedFiles(prev => ({ ...prev, [requirementTitle]: file.name }));
 
-    setUploading(prev => ({...prev, [requirementId]: false}));
+    setUploading(prev => ({...prev, [requirementTitle]: false}));
+    
+    // Clear the input value so the same file can be re-uploaded if needed
+    event.target.value = '';
   };
-
+  
+    const handleFileRemove = async (requirementTitle: string) => {
+    await handleFormStatusUpdate([requirementTitle], 'Pending');
+    setUploadedFiles(prev => {
+        const newFiles = { ...prev };
+        delete newFiles[requirementTitle];
+        return newFiles;
+    });
+  };
 
   const handleSubmitApplication = async () => {
     if (!applicationDocRef) return;
@@ -200,7 +237,7 @@ function PathwayPageContent() {
   const getFormAction = (req: (typeof pathwayRequirements)[0], isCompleted: boolean) => {
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
-    if (isReadOnly && req.type !== 'bundle') {
+    if (isReadOnly) {
        return (
             <Button asChild variant="outline" className="w-full bg-slate-50">
                 <Link href={href}>View</Link>
@@ -222,14 +259,28 @@ function PathwayPageContent() {
                 </Button>
             );
         case 'upload':
-             const isUploading = uploading[req.id];
+             const isUploading = uploading[req.title];
+             const uploadedFileName = uploadedFiles[req.title];
+
+             if (uploadedFileName) {
+                return (
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
+                        <FileText className="h-4 w-4 text-green-600 shrink-0" />
+                        <span className="truncate flex-1 text-green-800 font-medium">{uploadedFileName}</span>
+                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)} disabled={isReadOnly}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )
+             }
+
              return (
                 <div className="space-y-2">
                     <Label htmlFor={req.id} className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", isUploading && "opacity-50 pointer-events-none")}>
                         {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                         <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
                     </Label>
-                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.id)} disabled={isUploading || isReadOnly} />
+                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.title)} disabled={isUploading || isReadOnly} />
                     {req.href && req.href.startsWith('http') && (
                          <Button asChild variant="link" className="w-full text-xs h-auto py-0">
                             <Link href={req.href} target="_blank">
@@ -297,7 +348,7 @@ function PathwayPageContent() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pathwayRequirements.filter(req => req.type !== 'bundle').map((req) => {
+            {pathwayRequirements.map((req) => {
                 const status = (req.type === 'info') ? 'Completed' : (formStatusMap.get(req.title) || 'Pending');
                 const isCompleted = status === 'Completed';
                 
@@ -322,6 +373,7 @@ function PathwayPageContent() {
             <Separator />
             <h2 className="text-xl font-semibold text-center text-muted-foreground">Bundle Upload Options</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                  {/* Waivers Bundle Card */}
                 <Card className="flex flex-col shadow-sm hover:shadow-md transition-shadow border-2 border-dashed border-primary/50">
                     <CardHeader className="pb-4">

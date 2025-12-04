@@ -29,6 +29,7 @@ export type FormStatus = {
   downloadHref?: string;
   dateCompleted?: Timestamp;
   choice?: 'accept' | 'decline';
+  fileName?: string;
 };
 
 export type Acronym = {
