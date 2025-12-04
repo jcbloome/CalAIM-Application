@@ -37,7 +37,7 @@ export default function ApplicationCompletedPage() {
                 width={150}
                 height={150}
                 data-ai-hint={mascot.imageHint}
-                className="w-40 h-40 object-contain rounded-full mb-6 animate-bounce"
+                className="w-40 h-40 object-contain rounded-full mb-6"
               />
             )}
             <CardTitle className="text-4xl font-bold text-primary">Congratulations!</CardTitle>
