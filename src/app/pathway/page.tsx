@@ -140,25 +140,48 @@ function PathwayPageContent() {
       }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string, isBundle: boolean = false) => {
     if (!event.target.files?.length || !application) return;
     const file = event.target.files[0];
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
+    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     let formsToUpdate = [requirementTitle];
+    if (isBundle) {
+        if (requirementTitle === "Waivers & Forms Bundle") {
+            formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
+        } else if (requirementTitle === "Medical Documents Bundle") {
+            formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
+            if (application.pathway === 'SNF Transition') {
+                formsToUpdate.push('SNF Facesheet');
+            }
+        }
+    }
     
     await handleFormStatusUpdate(formsToUpdate, 'Completed', file.name);
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
+    // Reset file input so user can upload same file again if they remove it
     event.target.value = '';
   };
   
-  const handleFileRemove = async (requirementTitle: string) => {
-    await handleFormStatusUpdate([requirementTitle], 'Pending', null);
+  const handleFileRemove = async (requirementTitle: string, isBundle: boolean = false) => {
+    let formsToUpdate = [requirementTitle];
+     if (isBundle) {
+        if (requirementTitle === "Waivers & Forms Bundle") {
+            formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
+        } else if (requirementTitle === "Medical Documents Bundle") {
+            formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
+            if (application.pathway === 'SNF Transition') {
+                formsToUpdate.push('SNF Facesheet');
+            }
+        }
+    }
+    await handleFormStatusUpdate(formsToUpdate, 'Pending', null);
   };
 
   const handleSubmitApplication = async () => {
@@ -271,6 +294,7 @@ function PathwayPageContent() {
                             id={`bundle-check-${req.id}`} 
                             onCheckedChange={(checked) => handleFormStatusUpdate([req.title], checked ? 'Completed' : 'Pending')}
                             checked={isCompleted && !uploadedFileName}
+                            disabled={isReadOnly}
                         />
                         <Label htmlFor={`bundle-check-${req.id}`} className="text-xs text-muted-foreground">I included this in a bundle</Label>
                     </div>
@@ -400,6 +424,12 @@ function PathwayPageContent() {
                                 </div>
                             ))}
                         </div>
+                        <Separator />
+                         <Label htmlFor="waiver-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Waivers & Forms Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
+                            {uploading["Waivers & Forms Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                            <span>{uploading["Waivers & Forms Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
+                        </Label>
+                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers & Forms Bundle", true)} disabled={uploading["Waivers & Forms Bundle"] || isReadOnly} />
                     </CardContent>
                 </Card>
 
@@ -417,6 +447,7 @@ function PathwayPageContent() {
                                 {name: "LIC 602A - Physician's Report"},
                                 {name: "Medicine List"},
                                 application.pathway === 'SNF Transition' ? {name: "SNF Facesheet"} : null,
+                                application.pathway === 'SNF Diversion' ? {name: "Declaration of Eligibility"} : null,
                            ].filter(Boolean).map(form => (
                                 <div key={form!.name} className="flex items-center space-x-2">
                                      <Checkbox 
@@ -431,6 +462,12 @@ function PathwayPageContent() {
                                 </div>
                             ))}
                         </div>
+                         <Separator />
+                         <Label htmlFor="medical-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Medical Documents Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
+                            {uploading["Medical Documents Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                            <span>{uploading["Medical Documents Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
+                        </Label>
+                        <Input id="medical-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Medical Documents Bundle", true)} disabled={uploading["Medical Documents Bundle"] || isReadOnly} />
                     </CardContent>
                 </Card>
             </div>
@@ -452,3 +489,4 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
