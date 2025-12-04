@@ -19,6 +19,10 @@
           "type": "string",
           "description": "Last name of the user."
         },
+        "displayName": {
+          "type": "string",
+          "description": "The full display name of the user."
+        },
         "email": {
           "type": "string",
           "description": "Email address of the user.",

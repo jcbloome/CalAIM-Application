@@ -167,7 +167,7 @@ service cloud.firestore {
       allow get: if isOwnerOrAdmin(userId);
       allow list: if false;
       allow create: if isOwner(userId) && hasValidUserDataOnCreate(userId);
-      allow update: if isExistingOwnerOrAdmin(userId) && hasValidUserDataOnUpdate();
+      allow update: if isExistingOwnerOrAdmin(userId);
       allow delete: if isExistingOwnerOrAdmin(userId);
 
       /**
