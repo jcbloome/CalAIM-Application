@@ -68,7 +68,6 @@ export function Header() {
               alt={logo.description}
               width={250}
               height={50}
-              priority
               className="object-contain"
             />
           )}
