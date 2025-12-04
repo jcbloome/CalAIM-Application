@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Header } from '@/components/Header';
@@ -31,8 +30,9 @@ const uploadableDocs = [
 const bundleUploads = [
     { 
         id: 'waivers-bundle', 
-        name: 'All Waivers (HIPAA, Liability, Freedom of Choice)', 
-        description: 'Upload one file containing all signed waiver documents.'
+        name: 'Waivers Bundle (HIPAA, Liability, Freedom of Choice)',
+        description: 'Download the full package, get the waivers signed, and upload them here as a single file.',
+        downloadHref: '/forms/printable-package/full-package'
     },
     { 
         id: 'medical-docs-bundle', 
@@ -185,6 +185,13 @@ export default function ApplicationSubmissionPage() {
                                         <Label className="font-medium text-base">{doc.name}</Label>
                                         <p className='text-sm text-muted-foreground mt-1'>{doc.description}</p>
                                         <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                                             {doc.downloadHref && (
+                                                <Button asChild variant="secondary" className="flex-1">
+                                                    <Link href={doc.downloadHref} target="_blank">
+                                                        <Download className="mr-2 h-4 w-4" /> Download Blank Forms
+                                                    </Link>
+                                                </Button>
+                                            )}
                                             <div className="flex-1">
                                                 <Label htmlFor={doc.id} className="flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer">
                                                     <Package className="mr-2 h-4 w-4" />

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, Suspense } from 'react';
@@ -46,9 +45,10 @@ const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatus
     { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '/forms/liability-waiver' },
     { name: 'Freedom of Choice Waiver', status: 'Pending', type: 'online-form', href: '/forms/freedom-of-choice' },
     { name: 'Proof of Income', status: 'Pending', type: 'upload', href: '#' },
-    { name: "LIC 602A - Physician's Report", status: 'Pending', type: 'upload', href: '#' },
+    { name: "LIC 602A - Physician's Report", status: 'Pending', type: 'upload', href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
     { name: 'Medicine List', status: 'Pending', type: 'upload', href: '#' },
-    { name: 'Medical Documents Bundle', status: 'Pending', type: 'upload', href: '#' },
+    { name: 'Medical Documents Bundle', status: 'Pending', type: 'bundle', href: '#' },
+    { name: 'Waivers & Forms Bundle', status: 'Pending', type: 'bundle', href: '/forms/printable-package/full-package' },
   ];
 
   if (pathway === 'SNF Diversion') {

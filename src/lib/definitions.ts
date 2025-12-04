@@ -24,7 +24,7 @@ export type Application = {
 export type FormStatus = {
   name: string;
   status: 'Pending' | 'Completed';
-  type: 'Form' | 'Upload' | 'Info' | 'online-form';
+  type: 'Form' | 'Upload' | 'Info' | 'online-form' | 'bundle';
   href: string;
   downloadHref?: string;
   dateCompleted?: Timestamp;
