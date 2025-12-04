@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -32,7 +33,7 @@ interface ApplicationData {
   status: ApplicationStatus;
   lastUpdated: Timestamp;
   pathway: 'SNF Transition' | 'SNF Diversion';
-  healthPlan: 'Kaiser' | 'Health Net' | 'Other';
+  healthPlan: 'Kaiser' | 'Health Net' | 'Other' | 'Kaiser Permanente';
 }
 
 const getBadgeVariant = (status: ApplicationStatus) => {
@@ -91,6 +92,7 @@ const ApplicationsTable = ({
                 {onSelectionChange && <TableHead className="w-[50px]"></TableHead>}
                 <TableHead>Member / App ID</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Plan & Pathway</TableHead>
                 <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -98,7 +100,7 @@ const ApplicationsTable = ({
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={onSelectionChange ? 5 : 4} className="h-24 text-center">
+                  <TableCell colSpan={onSelectionChange ? 6 : 5} className="h-24 text-center">
                     Loading applications...
                   </TableCell>
                 </TableRow>
@@ -123,7 +125,8 @@ const ApplicationsTable = ({
                         {app.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{app.lastUpdated ? format(app.lastUpdated.toDate(), 'PPP') : 'N/A'}</TableCell>
+                    <TableCell className="hidden md:table-cell">{app.healthPlan} - {app.pathway}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{app.lastUpdated ? format(app.lastUpdated.toDate(), 'MM/dd/yyyy') : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">
                         <Link href={getActionLink(app)}>{getActionText(app)}</Link>
@@ -133,7 +136,7 @@ const ApplicationsTable = ({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={onSelectionChange ? 5 : 4} className="h-24 text-center">
+                  <TableCell colSpan={onSelectionChange ? 6 : 5} className="h-24 text-center">
                     No applications found.
                   </TableCell>
                 </TableRow>

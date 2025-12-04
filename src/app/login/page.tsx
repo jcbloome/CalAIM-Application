@@ -69,6 +69,7 @@ export default function LoginPage() {
       }
       toast({
         title: `Successfully ${isSigningIn ? 'signed in' : 'signed up'}!`,
+        duration: 2000,
       });
       router.push('/applications');
     } catch (err: any) {
