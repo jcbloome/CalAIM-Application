@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import imageData from '@/lib/placeholder-images.json';
 import { Header } from '@/components/Header';
 
 export default function Home() {
-  const mascot = PlaceHolderImages.find(p => p.id === 'fox-mascot');
+  const mascot = imageData.placeholderImages.find(p => p.id === 'fox-mascot');
 
   return (
     <>

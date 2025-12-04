@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar';
 import { useUser, useAuth } from '@/firebase';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import imageData from '@/lib/placeholder-images.json';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
-  const mascot = PlaceHolderImages.find(p => p.id === 'fox-mascot');
+  const mascot = imageData.placeholderImages.find(p => p.id === 'fox-mascot');
 
   const isSuperAdmin = user?.email === ADMIN_EMAIL;
 
