@@ -25,24 +25,11 @@ const navLinks = [
     { href: "/db-tool", label: "DB Tool" },
 ];
 
-const ADMIN_EMAIL = 'jason@carehomefinders.com';
-
 export function Header() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
   const [isSheetOpen, setSheetOpen] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.pathname === '/admin/login') {
-      return;
-    }
-    if (user && user.email === ADMIN_EMAIL && auth) {
-      auth.signOut().then(() => {
-        router.push('/'); 
-      });
-    }
-  }, [user, auth, router]);
 
   const handleSignOut = async () => {
     if (auth) {
