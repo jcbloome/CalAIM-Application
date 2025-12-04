@@ -248,12 +248,13 @@ function PathwayPageContent() {
                 </Button>
             );
         case 'upload':
-             if (isCompleted && formInfo?.fileName) {
+             if (isCompleted) {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                        <span className="truncate flex-1 text-green-800 font-medium">Uploaded</span>
+                        <span className="truncate flex-1 text-green-800 font-medium">Document Uploaded</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
                             <X className="h-4 w-4" />
+                            <span className="sr-only">Remove file</span>
                         </Button>
                     </div>
                  )
