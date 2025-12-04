@@ -82,7 +82,9 @@ export default function FaqPage() {
                     <h1 className="text-3xl font-bold">Frequently Asked Questions</h1>
                     <p className="text-muted-foreground mt-1">Answers to common questions about the CalAIM application process.</p>
                 </div>
-                <GlossaryDialog />
+                <div className="hidden sm:block">
+                    <GlossaryDialog />
+                </div>
             </div>
 
             <Card>
