@@ -46,6 +46,8 @@ const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatus
     { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '/forms/liability-waiver' },
     { name: 'Freedom of Choice Waiver', status: 'Pending', type: 'online-form', href: '/forms/freedom-of-choice' },
     { name: 'Proof of Income', status: 'Pending', type: 'upload', href: '#' },
+    { name: "LIC 602A - Physician's Report", status: 'Pending', type: 'upload', href: '#' },
+    { name: 'Medicine List', status: 'Pending', type: 'upload', href: '#' },
     { name: 'Medical Documents Bundle', status: 'Pending', type: 'upload', href: '#' },
   ];
 
@@ -55,7 +57,12 @@ const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatus
       { name: 'Declaration of Eligibility', status: 'Pending', type: 'upload', href: '/forms/declaration-of-eligibility/printable' },
     ];
   }
-  return commonForms;
+  
+    // SNF Transition
+  return [
+      ...commonForms,
+      { name: 'SNF Facesheet', status: 'Pending', type: 'upload', href: '#' },
+  ];
 };
 
 // Safely formats a date that might be a Firestore Timestamp

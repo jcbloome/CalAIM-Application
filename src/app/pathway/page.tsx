@@ -44,6 +44,8 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'liability-waiver', title: 'Liability Waiver', description: 'Review and sign the Participant Liability Waiver & Hold Harmless Agreement.', type: 'online-form', href: '/forms/liability-waiver', icon: File },
     { id: 'freedom-of-choice', title: 'Freedom of Choice Waiver', description: 'Acknowledge your choice to accept or decline Community Supports services.', type: 'online-form', href: '/forms/freedom-of-choice', icon: File },
     { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' },
+    { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, have the physician complete, and upload the signed report.", type: 'upload', icon: Printer, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
+    { id: 'medicine-list', title: "Medicine List", description: "Upload a current list of all prescribed medications.", type: 'upload', icon: UploadCloud, href: '#' },
     { id: 'medical-docs-bundle', title: 'Medical Documents Bundle', description: "Option to upload the Physician's Report, Medicine List, and SNF Facesheet in one package.", type: 'upload', icon: Package, href: '#' },
   ];
 
@@ -55,7 +57,10 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
   }
 
   // SNF Transition
-  return commonRequirements;
+  return [
+      ...commonRequirements,
+      { id: 'snf-facesheet', title: 'SNF Facesheet', description: "Upload the latest facesheet from the Skilled Nursing Facility.", type: 'upload', icon: UploadCloud, href: '#' },
+  ];
 };
 
 
@@ -308,3 +313,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
+    
