@@ -14,7 +14,7 @@ import { Loader2, ArrowLeft, Send, Edit, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import type { FormValues } from '../schema';
-import type { FormStatus as FormStatusType } from '@/lib/definitions';
+import type { FormStatus as FormStatusType, Application } from '@/lib/definitions';
 
 
 const Field = ({ label, value, fullWidth = false }: { label: string; value?: string | number | null; fullWidth?: boolean }) => (
@@ -24,13 +24,15 @@ const Field = ({ label, value, fullWidth = false }: { label: string; value?: str
     </div>
 );
 
-const Section = ({ title, children, editLink }: { title: string; children: React.ReactNode; editLink: string }) => (
+const Section = ({ title, children, editLink, isReadOnly }: { title: string; children: React.ReactNode; editLink: string, isReadOnly: boolean }) => (
     <div className="relative">
-        <Button asChild variant="ghost" size="sm" className="absolute top-0 right-0">
-            <Link href={editLink}>
-                <Edit className="mr-2 h-4 w-4" /> Edit
-            </Link>
-        </Button>
+        {!isReadOnly && (
+            <Button asChild variant="ghost" size="sm" className="absolute top-0 right-0">
+                <Link href={editLink}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                </Link>
+            </Button>
+        )}
         <h3 className="text-lg font-semibold mb-4">{title}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             {children}
@@ -41,7 +43,6 @@ const Section = ({ title, children, editLink }: { title: string; children: React
 const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatusType[] => {
   const commonForms: FormStatusType[] = [
     { name: 'CS Member Summary', status: 'Completed', type: 'online-form', href: '/forms/cs-summary-form' },
-    { name: 'Program Information', status: 'Pending', type: 'info', href: '/info' },
     { name: 'HIPAA Authorization', status: 'Pending', type: 'online-form', href: '/forms/hipaa-authorization' },
     { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '/forms/liability-waiver' },
     { name: 'Freedom of Choice Waiver', status: 'Pending', type: 'online-form', href: '/forms/freedom-of-choice' },
@@ -100,12 +101,12 @@ function ReviewPageComponent() {
         return null;
     }, [user, firestore, applicationId]);
 
-    const { data: application, isLoading } = useDoc<FormValues>(applicationDocRef);
+    const { data: application, isLoading } = useDoc<Application>(applicationDocRef);
 
     const handleConfirm = async () => {
         if (!applicationDocRef || !application) return;
 
-        const requiredForms = getRequiredFormsForPathway(application.pathway);
+        const requiredForms = getRequiredFormsForPathway(application.pathway as FormValues['pathway']);
         
         try {
             await setDoc(applicationDocRef, {
@@ -149,6 +150,7 @@ function ReviewPageComponent() {
         );
     }
     
+    const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
     const dobFormatted = formatDate(application.memberDob);
     const editLink = (step: number) => `/forms/cs-summary-form?applicationId=${applicationId}&step=${step}`;
 
@@ -159,9 +161,9 @@ function ReviewPageComponent() {
                 <div className="container mx-auto max-w-4xl px-4 sm:px-6 space-y-8">
                      <div className="mb-6">
                          <Button variant="outline" asChild>
-                            <Link href={`/forms/cs-summary-form?applicationId=${applicationId}&step=4`}>
+                            <Link href={isReadOnly ? `/pathway?applicationId=${applicationId}` : `/forms/cs-summary-form?applicationId=${applicationId}&step=4`}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Form
+                                Back to {isReadOnly ? 'Pathway' : 'Form'}
                             </Link>
                         </Button>
                     </div>
@@ -177,90 +179,92 @@ function ReviewPageComponent() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-8">
-                            <Section title="Member Information" editLink={editLink(1)}>
+                            <Section title="Member Information" editLink={editLink(1)} isReadOnly={isReadOnly}>
                                 <Field label="First Name" value={application.memberFirstName} />
                                 <Field label="Last Name" value={application.memberLastName} />
                                 <Field label="Date of Birth" value={dobFormatted} />
-                                <Field label="Age" value={application.memberAge} />
-                                <Field label="Medi-Cal Number" value={application.memberMediCalNum} />
+                                <Field label="Age" value={(application as any).memberAge} />
+                                <Field label="Medi-Cal Number" value={(application as any).memberMediCalNum} />
                                 <Field label="Medical Record Number (MRN)" value={application.memberMrn} />
-                                <Field label="Preferred Language" value={application.memberLanguage} />
+                                <Field label="Preferred Language" value={(application as any).memberLanguage} />
                                 <Field label="County" value={application.memberCounty} />
                             </Section>
 
                             <Separator />
 
-                            <Section title="Referrer Information" editLink={editLink(1)}>
-                                <Field label="First Name" value={application.referrerFirstName} />
-                                <Field label="Last Name" value={application.referrerLastName} />
-                                <Field label="Email" value={application.referrerEmail} />
-                                <Field label="Phone" value={application.referrerPhone} />
-                                <Field label="Relationship to Member" value={application.referrerRelationship} />
-                                <Field label="Agency" value={application.agency} />
+                            <Section title="Referrer Information" editLink={editLink(1)} isReadOnly={isReadOnly}>
+                                <Field label="First Name" value={(application as any).referrerFirstName} />
+                                <Field label="Last Name" value={(application as any).referrerLastName} />
+                                <Field label="Email" value={(application as any).referrerEmail} />
+                                <Field label="Phone" value={(application as any).referrerPhone} />
+                                <Field label="Relationship to Member" value={(application as any).referrerRelationship} />
+                                <Field label="Agency" value={(application as any).agency} />
                             </Section>
                             
                              <Separator />
 
-                            <Section title="Primary Contact" editLink={editLink(1)}>
-                                <Field label="First Name" value={application.bestContactFirstName} />
-                                <Field label="Last Name" value={application.bestContactLastName} />
-                                <Field label="Relationship" value={application.bestContactRelationship} />
-                                <Field label="Phone" value={application.bestContactPhone} />
-                                <Field label="Email" value={application.bestContactEmail} />
-                                <Field label="Language" value={application.bestContactLanguage} />
+                            <Section title="Primary Contact" editLink={editLink(1)} isReadOnly={isReadOnly}>
+                                <Field label="First Name" value={(application as any).bestContactFirstName} />
+                                <Field label="Last Name" value={(application as any).bestContactLastName} />
+                                <Field label="Relationship" value={(application as any).bestContactRelationship} />
+                                <Field label="Phone" value={(application as any).bestContactPhone} />
+                                <Field label="Email" value={(application as any).bestContactEmail} />
+                                <Field label="Language" value={(application as any).bestContactLanguage} />
                             </Section>
                             
                             <Separator />
                             
-                             <Section title="Legal Representative" editLink={editLink(1)}>
-                                <Field label="Member Has Capacity" value={application.hasCapacity} />
-                                <Field label="Has Legal Representative" value={application.hasLegalRep} />
-                                <Field label="Representative Name" value={application.repName} />
-                                <Field label="Representative Relationship" value={application.repRelationship} />
-                                <Field label="Representative Phone" value={application.repPhone} />
-                                <Field label="Representative Email" value={application.repEmail} />
+                             <Section title="Legal Representative" editLink={editLink(1)} isReadOnly={isReadOnly}>
+                                <Field label="Member Has Capacity" value={(application as any).hasCapacity} />
+                                <Field label="Has Legal Representative" value={(application as any).hasLegalRep} />
+                                <Field label="Representative Name" value={(application as any).repName} />
+                                <Field label="Representative Relationship" value={(application as any).repRelationship} />
+                                <Field label="Representative Phone" value={(application as any).repPhone} />
+                                <Field label="Representative Email" value={(application as any).repEmail} />
                             </Section>
 
                             <Separator />
 
-                            <Section title="Location Information" editLink={editLink(2)}>
-                                <Field label="Current Location" value={application.currentLocation} fullWidth />
-                                <Field label="Current Address" value={`${application.currentAddress}, ${application.currentCity}, ${application.currentState} ${application.currentZip}`} fullWidth />
-                                <Field label="Customary Residence" value={`${application.customaryAddress}, ${application.customaryCity}, ${application.customaryState} ${application.customaryZip}`} fullWidth />
+                            <Section title="Location Information" editLink={editLink(2)} isReadOnly={isReadOnly}>
+                                <Field label="Current Location" value={(application as any).currentLocation} fullWidth />
+                                <Field label="Current Address" value={`${(application as any).currentAddress}, ${(application as any).currentCity}, ${(application as any).currentState} ${(application as any).currentZip}`} fullWidth />
+                                <Field label="Customary Residence" value={`${(application as any).customaryAddress}, ${(application as any).customaryCity}, ${(application as any).customaryState} ${(application as any).customaryZip}`} fullWidth />
                             </Section>
 
                             <Separator />
 
-                            <Section title="Health Plan &amp; Pathway" editLink={editLink(3)}>
+                            <Section title="Health Plan &amp; Pathway" editLink={editLink(3)} isReadOnly={isReadOnly}>
                                 <Field label="Health Plan" value={application.healthPlan} />
                                 {application.healthPlan === 'Other' && (
                                     <>
-                                        <Field label="Existing Plan" value={application.existingHealthPlan} />
-                                        <Field label="Switching Plans?" value={application.switchingHealthPlan} />
+                                        <Field label="Existing Plan" value={(application as any).existingHealthPlan} />
+                                        <Field label="Switching Plans?" value={(application as any).switchingHealthPlan} />
                                     </>
                                 )}
                                 <Field label="Pathway" value={application.pathway} />
-                                <Field label="Meets Criteria" value={application.meetsPathwayCriteria ? 'Yes' : 'No'} fullWidth />
-                                {application.pathway === 'SNF Diversion' && <Field label="Reason for Diversion" value={application.snfDiversionReason} fullWidth />}
+                                <Field label="Meets Criteria" value={(application as any).meetsPathwayCriteria ? 'Yes' : 'No'} fullWidth />
+                                {application.pathway === 'SNF Diversion' && <Field label="Reason for Diversion" value={(application as any).snfDiversionReason} fullWidth />}
                             </Section>
                             
                             <Separator />
 
-                            <Section title="ISP &amp; RCFE Information" editLink={editLink(4)}>
-                                <Field label="ISP Contact Name" value={`${application.ispFirstName} ${application.ispLastName}`} />
-                                <Field label="ISP Contact Phone" value={application.ispPhone} />
-                                <Field label="ISP Assessment Location" value={`${application.ispAddress}, ${application.ispCity}, ${application.ispState}`} fullWidth />
-                                <Field label="On ALW Waitlist?" value={application.onALWWaitlist} />
-                                <Field label="Has Preferred RCFE?" value={application.hasPrefRCFE} />
-                                <Field label="RCFE Name" value={application.rcfeName} fullWidth />
+                            <Section title="ISP &amp; RCFE Information" editLink={editLink(4)} isReadOnly={isReadOnly}>
+                                <Field label="ISP Contact Name" value={`${(application as any).ispFirstName} ${(application as any).ispLastName}`} />
+                                <Field label="ISP Contact Phone" value={(application as any).ispPhone} />
+                                <Field label="ISP Assessment Location" value={`${(application as any).ispAddress}, ${(application as any).ispCity}, ${(application as any).ispState}`} fullWidth />
+                                <Field label="On ALW Waitlist?" value={(application as any).onALWWaitlist} />
+                                <Field label="Has Preferred RCFE?" value={(application as any).hasPrefRCFE} />
+                                <Field label="RCFE Name" value={(application as any).rcfeName} fullWidth />
                             </Section>
 
-                            <div className="pt-6 border-t">
-                                <Button className="w-full" size="lg" onClick={handleConfirm}>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    Confirm &amp; Continue to Pathway
-                                </Button>
-                            </div>
+                            {!isReadOnly && (
+                                <div className="pt-6 border-t">
+                                    <Button className="w-full" size="lg" onClick={handleConfirm}>
+                                        <Send className="mr-2 h-4 w-4" />
+                                        Confirm &amp; Continue to Pathway
+                                    </Button>
+                                </div>
+                            )}
 
                         </CardContent>
                     </Card>

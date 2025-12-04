@@ -24,7 +24,8 @@ import {
   Printer,
   Package,
   X,
-  FileText
+  FileText,
+  Lock,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
@@ -100,32 +103,23 @@ function PathwayPageContent() {
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
 
   useEffect(() => {
-    if (application && applicationDocRef && application.pathway) {
-      const pathwayRequirements = getPathwayRequirements(application.pathway);
-      const existingFormNames = new Set(application.forms?.map(f => f.name) || []);
-      
-      const missingForms = pathwayRequirements
-        .filter(req => !existingFormNames.has(req.title))
-        .map(req => ({
+    if (application && applicationDocRef && application.pathway && (!application.forms || application.forms.length === 0)) {
+        const pathwayRequirements = getPathwayRequirements(application.pathway);
+        const initialForms = pathwayRequirements.map(req => ({
             name: req.title,
-            status: 'Pending' as 'Pending' | 'Completed',
+            status: 'Pending' as 'Pending',
             type: req.type as FormStatusType['type'],
             href: req.href || '#',
-            fileName: null,
         }));
 
-      if (missingForms.length > 0) {
-        const updatedForms = [...(application.forms || []), ...missingForms];
-        
-        const summaryIndex = updatedForms.findIndex(f => f.name === 'CS Member Summary');
+        const summaryIndex = initialForms.findIndex(f => f.name === 'CS Member Summary');
         if (summaryIndex !== -1) {
-            updatedForms[summaryIndex].status = 'Completed';
+            initialForms[summaryIndex].status = 'Completed';
         }
 
-        setDoc(applicationDocRef, { forms: updatedForms }, { merge: true });
-      }
+        setDoc(applicationDocRef, { forms: initialForms }, { merge: true });
     }
-  }, [application, applicationDocRef]);
+}, [application, applicationDocRef]);
 
 
   const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending', fileName?: string | null) => {
@@ -241,11 +235,15 @@ function PathwayPageContent() {
     const isCompleted = formInfo?.status === 'Completed';
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
-    if (isReadOnly && req.type !== 'online-form' && req.type !== 'info') {
-       return <p className="text-sm text-muted-foreground">This item was completed.</p>
-    }
-    if (isReadOnly && (req.type === 'online-form' || req.type === 'info')) {
-        return (
+    if (isReadOnly) {
+       if (req.type === 'upload') {
+           return (
+                <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
+                    <span className="truncate flex-1 text-green-800 font-medium">{formInfo?.fileName || 'Completed'}</span>
+                </div>
+           );
+       }
+       return (
             <Button asChild variant="outline" className="w-full bg-slate-50">
                 <Link href={href}>View</Link>
             </Button>
@@ -266,7 +264,7 @@ function PathwayPageContent() {
              if (isCompleted) {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                        <span className="truncate flex-1 text-green-800 font-medium">Completed</span>
+                        <span className="truncate flex-1 text-green-800 font-medium">{formInfo?.fileName || 'Completed'}</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
                             <X className="h-4 w-4" />
                             <span className="sr-only">Remove file</span>
@@ -334,7 +332,17 @@ function PathwayPageContent() {
                 <Progress value={progress} className="h-2" />
               </div>
             </CardContent>
-            {(application.status === 'In Progress' || application.status === 'Requires Revision') && (
+            {isReadOnly ? (
+                 <CardFooter>
+                    <Alert variant="default" className="w-full bg-blue-50 border-blue-200 text-blue-800">
+                        <Lock className="h-4 w-4 !text-blue-800" />
+                        <AlertTitle>This Application is Locked</AlertTitle>
+                        <AlertDescription>
+                            This application has been submitted and is now read-only. Our team will review it and contact you with the next steps.
+                        </AlertDescription>
+                    </Alert>
+                </CardFooter>
+            ) : (application.status === 'In Progress' || application.status === 'Requires Revision') && (
                 <CardFooter>
                     <Button 
                         className="w-full" 
