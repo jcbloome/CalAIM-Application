@@ -29,7 +29,10 @@ export type FormStatus = {
   downloadHref?: string;
   dateCompleted?: Timestamp;
   choice?: 'accept' | 'decline';
-  fileName?: string;
+  fileName?: string | null;
+  signerType?: 'member' | 'representative' | null;
+  signerName?: string | null;
+  signerRelationship?: string | null;
 };
 
 export type Acronym = {

@@ -42,7 +42,7 @@ export function PrintableFreedomOfChoiceContent() {
                   />
                 </div>
 
-                <div className="prose prose-xs max-w-none text-gray-700 space-y-3">
+                <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
                     <p>I understand I have a choice to receive services in the community. Community Supports for Community Transition are available to help me. I can choose to accept or decline these services.</p>
                     <p>If I accept these services, I will receive assistance from Connections Care Home Consultants to move into a community-based setting like an assisted living facility. They will help me find a place, coordinate paperwork, and ensure I am settled in. This will be authorized and paid for by my Managed Care Plan.</p>
                     <p>If I decline these services, I am choosing to remain where I am, and I will not receive the transition support services offered by this program at this time.</p>
@@ -57,11 +57,15 @@ export function PrintableFreedomOfChoiceContent() {
               <div>
                 <SectionTitle>Signature</SectionTitle>
                 <p className="text-xs italic text-gray-600 my-2">By signing below, I acknowledge that under penalty of perjury, I am the member or an authorized representative legally empowered to sign on behalf of the member.</p>
+                <div className="flex gap-6 mt-2">
+                    <CheckboxField label="Member" />
+                    <CheckboxField label="Authorized Representative" />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2">
                     <Field label="Signature (Full Name)" />
                     <Field label="Date" />
                 </div>
-                <Field label="Relationship to Member" />
+                <Field label="If Authorized Representative, relationship to member:" />
               </div>
 
             </div>

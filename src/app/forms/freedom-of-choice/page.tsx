@@ -4,7 +4,7 @@
 import React, { useState, useMemo, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, FileCheck2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, FileCheck2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
@@ -14,6 +14,7 @@ import type { Application, FormStatus } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
@@ -37,6 +38,10 @@ function FreedomOfChoiceFormComponent() {
     const applicationId = searchParams.get('applicationId');
     const { user } = useUser();
     const firestore = useFirestore();
+
+    const [signerType, setSignerType] = useState<'member' | 'representative' | ''>('');
+    const [signerName, setSignerName] = useState('');
+    const [signerRelationship, setSignerRelationship] = useState('');
     const [signatureDate, setSignatureDate] = useState('');
 
     useEffect(() => {
@@ -52,22 +57,24 @@ function FreedomOfChoiceFormComponent() {
 
     const { data: application, isLoading: isLoadingApplication } = useDoc<Application>(applicationDocRef);
 
+    const isSignatureValid = () => {
+        if (!signerType || !signerName) return false;
+        if (signerType === 'representative' && !signerRelationship) return false;
+        return true;
+    };
+
     const handleSubmit = async () => {
-        if (!choice) {
+        if (!isSignatureValid() || !choice) {
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'You must make a choice to continue.',
+                title: 'Incomplete Form',
+                description: 'Please complete all signature fields and make a choice to continue.',
             });
             return;
         }
 
         if (!applicationId || !applicationDocRef) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Application ID is missing.',
-            });
+            toast({ variant: 'destructive', title: 'Error', description: 'Application ID is missing.' });
             return;
         }
 
@@ -76,39 +83,36 @@ function FreedomOfChoiceFormComponent() {
         const existingForms = application?.forms || [];
         const formIndex = existingForms.findIndex(form => form.name === 'Freedom of Choice Waiver');
 
+        const newFormData: Partial<FormStatus> = {
+            status: 'Completed',
+            choice,
+            signerType,
+            signerName,
+            signerRelationship: signerType === 'representative' ? signerRelationship : null,
+            dateCompleted: Timestamp.now(),
+        };
+
         let updatedForms: FormStatus[];
 
         if (formIndex > -1) {
             updatedForms = [
                 ...existingForms.slice(0, formIndex),
-                { ...existingForms[formIndex], status: 'Completed', choice, dateCompleted: Timestamp.now() },
+                { ...existingForms[formIndex], ...newFormData },
                 ...existingForms.slice(formIndex + 1),
             ];
         } else {
             updatedForms = [
                 ...existingForms,
-                { name: 'Freedom of Choice Waiver', status: 'Completed', type: 'online-form', href: '/forms/freedom-of-choice', choice, dateCompleted: Timestamp.now() }
+                { name: 'Freedom of Choice Waiver', type: 'online-form', href: '/forms/freedom-of-choice', ...newFormData } as FormStatus
             ];
         }
 
         try {
-            await setDoc(applicationDocRef, {
-                forms: updatedForms,
-                lastUpdated: Timestamp.now(),
-            }, { merge: true });
-
-            toast({
-                title: 'Freedom of Choice Waiver Completed',
-                description: 'Your choice has been recorded.',
-                className: 'bg-green-100 text-green-900 border-green-200',
-            });
+            await setDoc(applicationDocRef, { forms: updatedForms, lastUpdated: Timestamp.now() }, { merge: true });
+            toast({ title: 'Freedom of Choice Waiver Completed', description: 'Your choice has been recorded.', className: 'bg-green-100 text-green-900 border-green-200' });
             router.push(`/pathway?applicationId=${applicationId}`);
         } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Submission Error',
-                description: error.message || 'Could not save your choice.',
-            });
+            toast({ variant: 'destructive', title: 'Submission Error', description: error.message || 'Could not save your choice.' });
         } finally {
             setIsLoading(false);
         }
@@ -158,20 +162,6 @@ function FreedomOfChoiceFormComponent() {
 
                             <PrintableFreedomOfChoiceContent />
 
-                             <div className="mt-8 pt-6 border-t">
-                                <h3 className="text-base font-semibold text-gray-800">Signature</h3>
-                                <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-4 text-sm">
-                                    <div>
-                                        <p className="text-gray-500">Signed by (Full Name)</p>
-                                        <p className="font-semibold">{user?.displayName || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500">Date Signed</p>
-                                        <p className="font-semibold">{signatureDate}</p>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="p-4 border rounded-md space-y-3">
                                 <h3 className="font-medium text-base">My Choice</h3>
                                  <RadioGroup onValueChange={setChoice} value={choice}>
@@ -186,20 +176,52 @@ function FreedomOfChoiceFormComponent() {
                                 </RadioGroup>
                             </div>
 
+                             <div className="mt-8 pt-6 border-t">
+                                <h3 className="text-base font-semibold text-gray-800">Electronic Signature</h3>
+                                 <div className="space-y-4 mt-4">
+                                    <RadioGroup onValueChange={(v) => setSignerType(v as any)} value={signerType}>
+                                        <Label>I am the:</Label>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="member" id="signer-member" />
+                                                <Label htmlFor="signer-member">Member</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="representative" id="signer-rep" />
+                                                <Label htmlFor="signer-rep">Authorized Representative</Label>
+                                            </div>
+                                        </div>
+                                    </RadioGroup>
+                                    
+                                    {signerType === 'representative' && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="signer-relationship">Relationship to Member</Label>
+                                            <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator" />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="signer-name">Type Full Name to Sign</Label>
+                                        <Input id="signer-name" value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Your full legal name" />
+                                    </div>
+                                     <div>
+                                        <Label>Date Signed</Label>
+                                        <Input value={signatureDate} readOnly disabled className="bg-muted" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="p-4 border-t mt-6 space-y-4">
-                                <Alert variant="destructive">
-                                    <AlertTriangle className="h-4 w-4" />
+                                <Alert>
+                                    <AlertCircle className="h-4 w-4" />
                                     <AlertTitle>Legal Attestation</AlertTitle>
                                     <AlertDescription>
                                         By clicking the button below, I acknowledge that under penalty of perjury, I am the member or an authorized representative legally empowered to sign on behalf of the member.
                                     </AlertDescription>
                                 </Alert>
-                                <p className="text-sm text-muted-foreground">
-                                    By clicking "Acknowledge and Complete" you are electronically signing and agreeing to the choice you have made above.
-                                </p>
                             </div>
 
-                            <Button onClick={handleSubmit} disabled={isLoading || !choice} className="w-full">
+                            <Button onClick={handleSubmit} disabled={isLoading || !isSignatureValid() || !choice} className="w-full">
                                 {isLoading ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
                                 ) : (

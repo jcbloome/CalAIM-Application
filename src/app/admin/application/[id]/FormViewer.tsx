@@ -32,25 +32,38 @@ const FormHeader = ({ application }: { application: Partial<Application> & { [ke
 );
 
 
-const SignatureSection = ({ application }: { application: Partial<Application> & { [key: string]: any } }) => (
-    <div className="mt-8 pt-6 border-t">
-        <h3 className="text-base font-semibold text-gray-800">Signature</h3>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-4 text-sm">
-            <div>
-                <p className="text-gray-500">Signed by (Full Name)</p>
-                <p className="font-semibold">{application.MemberFirstName} {application.MemberLastName}</p>
-            </div>
-            <div>
-                <p className="text-gray-500">Date Signed</p>
-                <p className="font-semibold">{new Date().toLocaleDateString()}</p>
-            </div>
-             <div>
-                <p className="text-gray-500">Relationship to Member</p>
-                <p className="font-semibold">Self</p>
+const SignatureSection = ({ application, formName }: { application: Partial<Application> & { [key: string]: any }, formName: string }) => {
+    const form = application.forms?.find(f => f.name === formName);
+    const dateSigned = form?.dateCompleted 
+        ? new Date(form.dateCompleted.seconds * 1000).toLocaleDateString() 
+        : new Date().toLocaleDateString();
+
+    return (
+        <div className="mt-8 pt-6 border-t">
+            <h3 className="text-base font-semibold text-gray-800">Signature</h3>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-4 text-sm">
+                <div>
+                    <p className="text-gray-500">Signed by (Full Name)</p>
+                    <p className="font-semibold">{form?.signerName || `${application.MemberFirstName} ${application.MemberLastName}`}</p>
+                </div>
+                <div>
+                    <p className="text-gray-500">Date Signed</p>
+                    <p className="font-semibold">{dateSigned}</p>
+                </div>
+                <div>
+                    <p className="text-gray-500">Signed As</p>
+                    <p className="font-semibold capitalize">{form?.signerType || 'Member'}</p>
+                </div>
+                 {form?.signerType === 'representative' && (
+                    <div>
+                        <p className="text-gray-500">Relationship to Member</p>
+                        <p className="font-semibold">{form?.signerRelationship || 'N/A'}</p>
+                    </div>
+                )}
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 function PrintableHipaaFormContent({ application }: { application: Partial<Application> & { [key: string]: any } }) {
@@ -87,7 +100,7 @@ function PrintableHipaaFormContent({ application }: { application: Partial<Appli
                     <h3 className="font-semibold text-gray-800">Redisclosure:</h3>
                     <p>I understand that the person(s) or organization(s) I am authorizing to receive my information may not be required to protect it under federal privacy laws (HIPAA). Therefore, the information may be re-disclosed without my consent.</p>
                 </div>
-                <SignatureSection application={application} />
+                <SignatureSection application={application} formName="HIPAA Authorization" />
             </div>
         </>
     )
@@ -105,7 +118,7 @@ function PrintableLiabilityWaiverContent({ application }: { application: Partial
             <p><strong>No Insurance.</strong> Resident understands that the Company does not assume any responsibility for or obligation to provide financial assistance or other assistance, including but not limited to medical, health, or disability insurance, in the event of injury or illness. Resident understands that they are not covered by any medical, health, accident, or life insurance provided by the Company and is responsible for providing their own insurance.</p>
             <p><strong>Representations.</strong> Resident represents that they are in good health and in proper physical condition to safely participate in the Program. Resident further represents that they will participate safely and will not commit any act that will endanger their safety or the safety of others.</p>
             <p><strong>Acknowledgment.</strong> Resident acknowledges that they have read this Agreement in its entirety and understands its content. Resident is aware that this is a release of liability and a contract of indemnity, and they sign it of their own free will.</p>
-            <SignatureSection application={application} />
+            <SignatureSection application={application} formName="Liability Waiver" />
         </div>
     </>
   );
@@ -120,7 +133,7 @@ function PrintableFreedomOfChoiceContent({ application }: { application: Partial
             <p>I understand I have a choice to receive services in the community. Community Supports for Community Transition are available to help me. I can choose to accept or decline these services.</p>
             <p>If I accept these services, I will receive assistance from Connections Care Home Consultants to move into a community-based setting like an assisted living facility. They will help me find a place, coordinate paperwork, and ensure I am settled in. This will be authorized and paid for by my Managed Care Plan.</p>
             <p>If I decline these services, I am choosing to remain where I am, and I will not receive the transition support services offered by this program at this time.</p>
-            <SignatureSection application={application} />
+            <SignatureSection application={application} formName="Freedom of Choice Waiver" />
         </div>
     </>
   );

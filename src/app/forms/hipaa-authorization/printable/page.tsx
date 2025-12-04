@@ -44,7 +44,7 @@ export function PrintableHipaaFormContent() {
                 </div>
               </div>
 
-              <div className="prose prose-xs max-w-none text-gray-700 space-y-3">
+              <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
                   <p>This form, when completed and signed by you, authorizes the use and/or disclosure of your protected health information. The information authorized for release may include information related to HIV/AIDS, mental health, and substance use, unless specified otherwise.</p>
                   
                   <div>
@@ -93,11 +93,15 @@ export function PrintableHipaaFormContent() {
               <div>
                 <SectionTitle>Signature</SectionTitle>
                 <p className="text-xs italic text-gray-600 my-2">By signing below, I acknowledge that under penalty of perjury, I am the member or an authorized representative legally empowered to sign on behalf of the member.</p>
+                <div className="flex gap-6 mt-2">
+                    <CheckboxField label="Member" />
+                    <CheckboxField label="Authorized Representative" />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2">
                     <Field label="Signature (Full Name)" />
                     <Field label="Date" />
                 </div>
-                <Field label="Relationship to Member" />
+                <Field label="If Authorized Representative, relationship to member:" />
               </div>
 
             </div>

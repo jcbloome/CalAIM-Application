@@ -18,6 +18,13 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-base font-semibold text-gray-800 border-b pb-1 mb-2 mt-4">{children}</h2>
 );
 
+const CheckboxField = ({ label }: { label: string }) => (
+    <div className="flex items-center mt-2">
+        <div className="h-4 w-4 border border-gray-400 rounded-sm"></div>
+        <label className="ml-2 text-xs text-gray-700">{label}</label>
+    </div>
+);
+
 export function PrintableLiabilityWaiverContent() {
     return (
         <form className="page-break-after">
@@ -47,11 +54,15 @@ export function PrintableLiabilityWaiverContent() {
               <div>
                 <SectionTitle>Signature</SectionTitle>
                 <p className="text-xs italic text-gray-600 my-2">By signing below, I acknowledge that under penalty of perjury, I am the member or an authorized representative legally empowered to sign on behalf of the member.</p>
+                <div className="flex gap-6 mt-2">
+                    <CheckboxField label="Member" />
+                    <CheckboxField label="Authorized Representative" />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2">
                     <Field label="Signature (Full Name)" />
                     <Field label="Date" />
                 </div>
-                <Field label="Relationship to Resident" />
+                <Field label="If Authorized Representative, relationship to member:" />
               </div>
 
             </div>
