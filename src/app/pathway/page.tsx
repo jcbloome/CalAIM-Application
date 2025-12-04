@@ -151,7 +151,7 @@ function PathwayPageContent() {
     
     let formsToUpdate = [requirementTitle];
     if (isBundle) {
-        if (requirementTitle === "Waivers & Forms Bundle") {
+        if (requirementTitle === "Waivers Bundle") {
             formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
         } else if (requirementTitle === "Medical Documents Bundle") {
             formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
@@ -172,7 +172,7 @@ function PathwayPageContent() {
   const handleFileRemove = async (requirementTitle: string, isBundle: boolean = false) => {
     let formsToUpdate = [requirementTitle];
      if (isBundle) {
-        if (requirementTitle === "Waivers & Forms Bundle") {
+        if (requirementTitle === "Waivers Bundle") {
             formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
         } else if (requirementTitle === "Medical Documents Bundle") {
             formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
@@ -392,7 +392,7 @@ function PathwayPageContent() {
                 <Card className="flex flex-col shadow-sm hover:shadow-md transition-shadow border-2 border-dashed border-primary/50">
                     <CardHeader className="pb-4">
                         <div className="flex justify-between items-start gap-4">
-                            <CardTitle className="text-lg">Waivers & Forms Bundle</CardTitle>
+                            <CardTitle className="text-lg">Waivers Bundle</CardTitle>
                             <Package className="h-5 w-5 text-muted-foreground shrink-0" />
                         </div>
                         <CardDescription>Upload signed waivers as one package. Check the box for each included document.</CardDescription>
@@ -425,11 +425,11 @@ function PathwayPageContent() {
                             ))}
                         </div>
                         <Separator />
-                         <Label htmlFor="waiver-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Waivers & Forms Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
-                            {uploading["Waivers & Forms Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                            <span>{uploading["Waivers & Forms Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
+                         <Label htmlFor="waiver-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Waivers Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
+                            {uploading["Waivers Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                            <span>{uploading["Waivers Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
                         </Label>
-                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers & Forms Bundle", true)} disabled={uploading["Waivers & Forms Bundle"] || isReadOnly} />
+                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers Bundle", true)} disabled={uploading["Waivers Bundle"] || isReadOnly} />
                     </CardContent>
                 </Card>
 
@@ -489,4 +489,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
 
