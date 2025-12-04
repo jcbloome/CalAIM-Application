@@ -107,18 +107,27 @@ function CsSummaryFormComponent() {
           reset(data);
         } else {
             setApplicationId(null);
-            reset({
-              referrerFirstName: user?.displayName?.split(' ')[0] || '',
-              referrerLastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
-              referrerEmail: user?.email || '',
-              meetsPathwayCriteria: false,
-            });
+            // This case handles a bad application ID in the URL. Reset to new form state.
+            if (user) {
+                const nameParts = user.displayName?.split(' ') || [];
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.slice(1).join(' ') || '';
+                reset({
+                    referrerFirstName: firstName,
+                    referrerLastName: lastName,
+                    referrerEmail: user.email || '',
+                    meetsPathwayCriteria: false,
+                });
+            }
         }
       } else if (user && !applicationId) { // Handles case where it's a new form from the start
+          const nameParts = user.displayName?.split(' ') || [];
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
           reset({
-              referrerFirstName: user?.displayName?.split(' ')[0] || '',
-              referrerLastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
-              referrerEmail: user?.email || '',
+              referrerFirstName: firstName,
+              referrerLastName: lastName,
+              referrerEmail: user.email || '',
               meetsPathwayCriteria: false,
           });
       }
@@ -369,3 +378,5 @@ export default function CsSummaryFormPage() {
     </React.Suspense>
   );
 }
+
+    
