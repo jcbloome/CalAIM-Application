@@ -180,7 +180,7 @@ export default function MyApplicationsPage() {
   }
 
   const inProgressApps = (applications || []).filter(
-    app => app.status === 'In Progress' || app.status === 'Requires Revision'
+    app => app.status !== 'Completed & Submitted' && app.status !== 'Approved'
   );
   const completedApps = (applications || []).filter(
     app => app.status === 'Completed & Submitted' || app.status === 'Approved'

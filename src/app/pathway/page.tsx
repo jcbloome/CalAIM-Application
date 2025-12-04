@@ -150,11 +150,9 @@ function PathwayPageContent() {
 
   const pathwayRequirements = getPathwayRequirements(application.pathway);
   
-  // Create a map for quick status lookup
   const formStatusMap = new Map(application.forms?.map(f => [f.name, f.status]));
 
   const completedCount = pathwayRequirements.reduce((acc, req) => {
-    // Manually mark info as complete for progress, as it has no status
     if (req.type === 'info') return acc + 1;
     if (formStatusMap.get(req.title) === 'Completed') {
         return acc + 1;
