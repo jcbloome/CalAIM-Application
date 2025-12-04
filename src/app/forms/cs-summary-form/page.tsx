@@ -109,7 +109,7 @@ function CsSummaryFormComponent() {
             setApplicationId(null);
             reset({
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
-              referrerLastName: user?.displayName?.split(' ')[1] || '',
+              referrerLastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
               referrerEmail: user?.email || '',
               meetsPathwayCriteria: false,
             });
@@ -117,7 +117,7 @@ function CsSummaryFormComponent() {
       } else if (user && !applicationId) { // Handles case where it's a new form from the start
           reset({
               referrerFirstName: user?.displayName?.split(' ')[0] || '',
-              referrerLastName: user?.displayName?.split(' ')[1] || '',
+              referrerLastName: user?.displayName?.split(' ').slice(1).join(' ') || '',
               referrerEmail: user?.email || '',
               meetsPathwayCriteria: false,
           });
