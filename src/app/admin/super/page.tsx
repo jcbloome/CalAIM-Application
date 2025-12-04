@@ -154,6 +154,7 @@ const WebhookPreparer = () => {
 export default function SuperAdminPage() {
     const [staff, setStaff] = useState(initialStaff);
     const [newStaffEmail, setNewStaffEmail] = useState('');
+    const { toast } = useToast();
 
     const handleAddStaff = () => {
         if (newStaffEmail && !staff.find(s => s.email === newStaffEmail)) {
@@ -166,11 +167,28 @@ export default function SuperAdminPage() {
             };
             setStaff([...staff, newStaffMember]);
             setNewStaffEmail('');
+            toast({
+                title: "Staff Added",
+                description: `${newStaffEmail} has been invited.`,
+            });
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Invalid Email",
+                description: "This email is either invalid or already exists.",
+            });
         }
     };
     
     const handleRemoveStaff = (id: string) => {
+        const staffToRemove = staff.find(s => s.id === id);
         setStaff(staff.filter(s => s.id !== id));
+        if (staffToRemove) {
+            toast({
+                title: "Staff Removed",
+                description: `${staffToRemove.email} has had their access revoked.`,
+            });
+        }
     };
 
 
@@ -190,7 +208,7 @@ export default function SuperAdminPage() {
             <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="add-staff-email">Invite New Staff by Email</Label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <Input 
                             id="add-staff-email" 
                             type="email" 
@@ -198,7 +216,7 @@ export default function SuperAdminPage() {
                             value={newStaffEmail}
                             onChange={(e) => setNewStaffEmail(e.target.value)}
                         />
-                        <Button onClick={handleAddStaff}>
+                        <Button onClick={handleAddStaff} className="w-full sm:w-auto">
                             <UserPlus className="mr-2 h-4 w-4" /> Add
                         </Button>
                     </div>
@@ -220,15 +238,18 @@ export default function SuperAdminPage() {
                                     <p className="text-sm text-muted-foreground">{member.email}</p>
                                 </div>
                             </div>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-destructive hover:bg-destructive/10"
-                                onClick={() => handleRemoveStaff(member.id)}
-                                disabled={member.role === 'Super Admin'}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                             <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleRemoveStaff(member.id)}
+                                    disabled={member.role === 'Super Admin'}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     ))}
                 </div>
