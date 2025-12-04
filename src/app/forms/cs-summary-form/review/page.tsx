@@ -101,13 +101,13 @@ function ReviewPageComponent() {
         
         try {
             await setDoc(applicationDocRef, {
-                status: 'Completed & Submitted',
+                status: 'In Progress',
                 forms: requiredForms,
                 lastUpdated: serverTimestamp()
             }, { merge: true });
 
             toast({
-                title: "Application Submitted!",
+                title: "Information Saved!",
                 description: "You will now be taken to the next steps.",
                 duration: 2000,
             });
@@ -223,7 +223,7 @@ function ReviewPageComponent() {
 
                             <Separator />
 
-                            <Section title="Health Plan & Pathway" editLink={editLink(3)}>
+                            <Section title="Health Plan &amp; Pathway" editLink={editLink(3)}>
                                 <Field label="Health Plan" value={application.healthPlan} />
                                 {application.healthPlan === 'Other' && (
                                     <>
@@ -238,7 +238,7 @@ function ReviewPageComponent() {
                             
                             <Separator />
 
-                            <Section title="ISP & RCFE Information" editLink={editLink(4)}>
+                            <Section title="ISP &amp; RCFE Information" editLink={editLink(4)}>
                                 <Field label="ISP Contact Name" value={`${application.ispFirstName} ${application.ispLastName}`} />
                                 <Field label="ISP Contact Phone" value={application.ispPhone} />
                                 <Field label="ISP Assessment Location" value={`${application.ispAddress}, ${application.ispCity}, ${application.ispState}`} fullWidth />
@@ -250,7 +250,7 @@ function ReviewPageComponent() {
                             <div className="pt-6 border-t">
                                 <Button className="w-full" size="lg" onClick={handleConfirm}>
                                     <Send className="mr-2 h-4 w-4" />
-                                    Confirm & Continue to Pathway
+                                    Confirm &amp; Continue to Pathway
                                 </Button>
                             </div>
 
