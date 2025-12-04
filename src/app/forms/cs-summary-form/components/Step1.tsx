@@ -466,9 +466,25 @@ export default function Step1() {
                         <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
+                 <FormField
+                    control={control}
+                    name="isRepPrimaryContact"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>Is the Legal Rep also the Primary Contact?</FormLabel>
+                        </div>
+                        </FormItem>
+                    )}
+                />
             </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    

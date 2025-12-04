@@ -11,6 +11,7 @@ import { Trash2, UserPlus, Send, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp } from 'firebase/firestore';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 // Mock data - in a real app, this would come from Firestore
@@ -20,6 +21,85 @@ const initialStaff = [
   { id: '3', name: 'Bob Williams', email: 'bob@example.com', role: 'Admin', avatar: '/avatars/03.png' },
 ];
 
+const samplePayload = {
+    memberFirstName: 'John',
+    memberLastName: 'Doe',
+    memberDob: Timestamp.fromDate(new Date('1965-01-15')).toDate(),
+    memberAge: 59,
+    memberMediCalNum: '912345678',
+    confirmMemberMediCalNum: '912345678',
+    memberMrn: 'MRN123456789',
+    confirmMemberMrn: 'MRN123456789',
+    memberLanguage: 'English',
+    memberCounty: 'Los Angeles',
+    referrerFirstName: 'Admin',
+    referrerLastName: 'User',
+    referrerEmail: 'admin.user@example.com',
+    referrerPhone: '(555) 111-2222',
+    referrerRelationship: 'System Admin',
+    agency: 'Testing Agency',
+    bestContactType: 'other',
+    bestContactFirstName: 'Primary',
+    bestContactLastName: 'Contact',
+    bestContactRelationship: 'Spouse',
+    bestContactPhone: '(555) 333-4444',
+    bestContactEmail: 'primary@contact.com',
+    bestContactLanguage: 'English',
+    secondaryContactFirstName: 'Secondary',
+    secondaryContactLastName: 'Contact',
+    secondaryContactRelationship: 'Child',
+    secondaryContactPhone: '(555) 555-6666',
+    secondaryContactEmail: 'secondary@contact.com',
+    secondaryContactLanguage: 'Spanish',
+    hasCapacity: 'Yes',
+    hasLegalRep: 'Yes',
+    repName: 'Legal Representative',
+    repRelationship: 'Lawyer',
+    repPhone: '(555) 777-8888',
+    repEmail: 'legal@rep.com',
+    isRepPrimaryContact: false,
+    currentLocation: 'SNF',
+    currentAddress: '123 Test St',
+    currentCity: 'Testville',
+    currentState: 'CA',
+    currentZip: '90210',
+    currentCounty: 'Los Angeles',
+    copyAddress: false,
+    customaryAddress: '456 Home Ave',
+    customaryCity: 'Hometown',
+    customaryState: 'CA',
+    customaryZip: '90211',
+    customaryCounty: 'Los Angeles',
+    healthPlan: 'Kaiser',
+    existingHealthPlan: null,
+    switchingHealthPlan: null,
+    pathway: 'SNF Transition',
+    meetsPathwayCriteria: true,
+    snfDiversionReason: null,
+    ispFirstName: 'ISP',
+    ispLastName: 'Coordinator',
+    ispRelationship: 'Care Coordinator',
+    ispFacilityName: 'Test Facility',
+    ispPhone: '(555) 999-0000',
+    ispEmail: 'isp@coordinator.com',
+    ispCopyCurrent: false,
+    ispLocationType: 'Other',
+    ispAddress: '789 ISP Way',
+    ispCity: 'Ispville',
+    ispState: 'CA',
+    ispZip: '90213',
+    ispCounty: 'Los Angeles',
+    onALWWaitlist: 'No',
+    hasPrefRCFE: 'Yes',
+    rcfeName: 'Preferred RCFE',
+    rcfeAdminName: 'RCFE Admin',
+    rcfeAdminPhone: '(555) 123-9876',
+    rcfeAdminEmail: 'rcfe@admin.com',
+    rcfeAddress: '101 RCFE Blvd',
+    id: `test-payload-${Date.now()}`,
+    caspioSent: true,
+};
+
 const WebhookPreparer = () => {
     const [isSending, setIsSending] = useState(false);
     const { toast } = useToast();
@@ -27,84 +107,6 @@ const WebhookPreparer = () => {
     const handleSendTestWebhook = async () => {
         setIsSending(true);
         const webhookUrl = 'https://hook.us2.make.com/mqif1rouo1wh762k2eze1y7568gwq6kx';
-
-        // This object contains every field from the form schema to ensure Make.com can see them all.
-        const samplePayload = {
-            memberFirstName: 'John',
-            memberLastName: 'Doe',
-            memberDob: Timestamp.fromDate(new Date('1965-01-15')).toDate(),
-            memberAge: 59,
-            memberMrn: 'MRN123456789',
-            confirmMemberMrn: 'MRN123456789',
-            memberLanguage: 'English',
-            memberCounty: 'Los Angeles',
-            referrerFirstName: 'Admin',
-            referrerLastName: 'User',
-            referrerEmail: 'admin.user@example.com',
-            referrerPhone: '(555) 111-2222',
-            referrerRelationship: 'System Admin',
-            agency: 'Testing Agency',
-            bestContactType: 'other',
-            bestContactFirstName: 'Primary',
-            bestContactLastName: 'Contact',
-            bestContactRelationship: 'Spouse',
-            bestContactPhone: '(555) 333-4444',
-            bestContactEmail: 'primary@contact.com',
-            bestContactLanguage: 'English',
-            secondaryContactFirstName: 'Secondary',
-            secondaryContactLastName: 'Contact',
-            secondaryContactRelationship: 'Child',
-            secondaryContactPhone: '(555) 555-6666',
-            secondaryContactEmail: 'secondary@contact.com',
-            secondaryContactLanguage: 'Spanish',
-            hasCapacity: 'Yes',
-            hasLegalRep: 'Yes',
-            repName: 'Legal Representative',
-            repRelationship: 'Lawyer',
-            repPhone: '(555) 777-8888',
-            repEmail: 'legal@rep.com',
-            isRepPrimaryContact: false,
-            currentLocation: 'SNF',
-            currentAddress: '123 Test St',
-            currentCity: 'Testville',
-            currentState: 'CA',
-            currentZip: '90210',
-            currentCounty: 'Los Angeles',
-            copyAddress: false,
-            customaryAddress: '456 Home Ave',
-            customaryCity: 'Hometown',
-            customaryState: 'CA',
-            customaryZip: '90211',
-            customaryCounty: 'Los Angeles',
-            healthPlan: 'Kaiser',
-            existingHealthPlan: null,
-            switchingHealthPlan: null,
-            pathway: 'SNF Transition',
-            meetsPathwayCriteria: true,
-            snfDiversionReason: null,
-            ispFirstName: 'ISP',
-            ispLastName: 'Coordinator',
-            ispRelationship: 'Care Coordinator',
-            ispFacilityName: 'Test Facility',
-            ispPhone: '(555) 999-0000',
-            ispEmail: 'isp@coordinator.com',
-            ispCopyCurrent: false,
-            ispLocationType: 'Other',
-            ispAddress: '789 ISP Way',
-            ispCity: 'Ispville',
-            ispState: 'CA',
-            ispZip: '90213',
-            ispCounty: 'Los Angeles',
-            onALWWaitlist: 'No',
-            hasPrefRCFE: 'Yes',
-            rcfeName: 'Preferred RCFE',
-            rcfeAdminName: 'RCFE Admin',
-            rcfeAdminPhone: '(555) 123-9876',
-            rcfeAdminEmail: 'rcfe@admin.com',
-            rcfeAddress: '101 RCFE Blvd',
-            id: `test-payload-${Date.now()}`,
-            caspioSent: true,
-        };
         
         try {
             const response = await fetch(webhookUrl, {
@@ -145,6 +147,20 @@ const WebhookPreparer = () => {
                     {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                     Send Test Payload to Make.com
                 </Button>
+                <Separator />
+                <h4 className="font-semibold">Sample Payload Fields</h4>
+                 <ScrollArea className="h-64 border rounded-md p-4 bg-muted/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 text-sm">
+                        {Object.entries(samplePayload).map(([key, value]) => (
+                            <div key={key} className="flex gap-2">
+                                <span className="font-semibold text-primary">{key}:</span>
+                                <span className="text-muted-foreground truncate">
+                                    {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
             </CardContent>
         </Card>
     );
@@ -291,3 +307,5 @@ export default function SuperAdminPage() {
     </div>
   );
 }
+
+    
