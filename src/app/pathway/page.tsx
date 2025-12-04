@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -95,18 +95,43 @@ function PathwayPageContent() {
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  
+  const [logMessages, setLogMessages] = useState<string[]>([]);
+  const log = (message: string) => {
+    setLogMessages(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+  };
+
 
   const applicationDocRef = useMemo(() => {
     if (user && firestore && applicationId) {
+      log(`Creating document reference: users/${user.uid}/applications/${applicationId}`);
       return doc(firestore, `users/${user.uid}/applications`, applicationId);
     }
     return null;
   }, [user, firestore, applicationId]);
 
   const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
+
+  useEffect(() => {
+    if (application) {
+      log('Application data updated from Firestore.');
+      log(`Current forms status: ${JSON.stringify(application.forms, null, 2)}`);
+    }
+     if (isLoading) {
+      log('useDoc is loading...');
+    }
+    if (error) {
+      log(`useDoc Error: ${error.message}`);
+    }
+  }, [application, isLoading, error]);
+
   
   const handleFormStatusUpdate = async (formNames: string[], newStatus: 'Completed' | 'Pending', fileName?: string | null) => {
-      if (!applicationDocRef || !application) return;
+      if (!applicationDocRef || !application) {
+        log('handleFormStatusUpdate: Aborted - no application doc ref or data.');
+        return;
+      }
+      log(`handleFormStatusUpdate called for: ${formNames.join(', ')} with status: ${newStatus}`);
 
       const existingForms = application.forms || [];
       const updatedForms = existingForms.map(form => {
@@ -117,8 +142,10 @@ function PathwayPageContent() {
             }
              if (fileName !== undefined) {
                 update.fileName = fileName;
+                log(`Setting fileName for ${form.name} to: ${fileName}`);
             } else if (newStatus === 'Pending') {
                 update.fileName = null;
+                 log(`Clearing fileName for ${form.name}.`);
             }
             return { ...form, ...update };
           }
@@ -126,24 +153,33 @@ function PathwayPageContent() {
       });
       
       try {
+          log('Attempting to save updated forms array to Firestore...');
           await setDoc(applicationDocRef, {
               forms: updatedForms,
               lastUpdated: serverTimestamp(),
           }, { merge: true });
-      } catch (e) {
+          log('Firestore update successful.');
+      } catch (e: any) {
+          log(`Firestore update FAILED: ${e.message}`);
           console.error("Failed to update form status:", e);
       }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string, isBundle: boolean = false) => {
-    if (!event.target.files?.length || !application) return;
+    if (!event.target.files?.length || !application) {
+      log('handleFileUpload: Aborted - no file or application data.');
+      return;
+    }
     const file = event.target.files[0];
+    log(`handleFileUpload: Started for "${requirementTitle}" with file: ${file.name}`);
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
+    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     let formsToUpdate = [requirementTitle];
+    // This bundle logic might need adjustment, but for now it's here.
     if (isBundle) {
         if (requirementTitle === "Waivers Bundle") {
             formsToUpdate.push("HIPAA Authorization", "Liability Waiver", "Freedom of Choice Waiver");
@@ -154,14 +190,18 @@ function PathwayPageContent() {
         }
     }
     
+    log(`Calling handleFormStatusUpdate to mark as "Completed" with fileName.`);
     await handleFormStatusUpdate(formsToUpdate, 'Completed', file.name);
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
+    // Clear the input value to allow re-uploading the same file
     event.target.value = '';
+    log(`handleFileUpload: Finished for "${requirementTitle}".`);
   };
   
   const handleFileRemove = async (requirementTitle: string) => {
+    log(`handleFileRemove: Called for "${requirementTitle}".`);
     await handleFormStatusUpdate([requirementTitle], 'Pending', null);
   };
 
@@ -213,7 +253,8 @@ function PathwayPageContent() {
   const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName}]));
   
   const completedCount = pathwayRequirements.reduce((acc, req) => {
-    if (formStatusMap.get(req.title)?.status === 'Completed') return acc + 1;
+    const form = formStatusMap.get(req.title);
+    if (form?.status === 'Completed') return acc + 1;
     return acc;
   }, 0);
   
@@ -224,6 +265,7 @@ function PathwayPageContent() {
   const getFormAction = (req: (typeof pathwayRequirements)[0]) => {
     const formInfo = formStatusMap.get(req.title);
     const isCompleted = formInfo?.status === 'Completed';
+    const fileName = formInfo?.fileName;
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
     if (isReadOnly && req.type !== 'online-form' && req.type !== 'info') {
@@ -251,7 +293,7 @@ function PathwayPageContent() {
              if (isCompleted) {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
-                        <span className="truncate flex-1 text-green-800 font-medium">Document Uploaded</span>
+                        <span className="truncate flex-1 text-green-800 font-medium">{fileName || 'Document Uploaded'}</span>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-100 hover:text-red-600" onClick={() => handleFileRemove(req.title)}>
                             <X className="h-4 w-4" />
                             <span className="sr-only">Remove file</span>
@@ -443,6 +485,19 @@ function PathwayPageContent() {
                     </CardContent>
                 </Card>
             </div>
+            
+            <Card className="mt-8">
+                <CardHeader>
+                    <CardTitle>Debug Log</CardTitle>
+                    <CardDescription>Shows the real-time flow of data and events on this page.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <pre className="bg-muted text-muted-foreground p-4 rounded-lg text-xs h-64 overflow-y-auto">
+                        {logMessages.map((msg, i) => <div key={i}>{msg}</div>)}
+                    </pre>
+                </CardContent>
+            </Card>
+
         </div>
       </main>
     </>
