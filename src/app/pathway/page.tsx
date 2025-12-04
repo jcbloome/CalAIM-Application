@@ -24,6 +24,7 @@ import {
   Download,
   Printer,
   ExternalLink,
+  Package,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -43,21 +44,29 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
     { id: 'liability-waiver', title: 'Liability Waiver', description: 'Review and sign the Participant Liability Waiver & Hold Harmless Agreement.', type: 'online-form', href: '/forms/liability-waiver', icon: File },
     { id: 'freedom-of-choice', title: 'Freedom of Choice Waiver', description: 'Acknowledge your choice to accept or decline Community Supports services.', type: 'online-form', href: '/forms/freedom-of-choice', icon: File },
     { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'upload', icon: UploadCloud, href: '#' },
-    { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Click the 'Download Form' button below to get the required PDF, then return here to upload the completed document.", type: 'upload', icon: ExternalLink, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
-    { id: 'med-list', title: "Medicine List", description: "Upload a current list of all medications.", type: 'upload', icon: UploadCloud, href: '#' },
   ];
+
+  const medicalDocsBundle = { 
+      id: 'medical-docs-bundle', 
+      title: 'Medical Documents Bundle', 
+      description: "Upload the Physician's Report, Medicine List, and SNF Facesheet (if applicable) in one package.", 
+      type: 'upload', 
+      icon: Package, 
+      href: '#' 
+  };
 
   if (pathway === 'SNF Diversion') {
     return [
       ...commonRequirements,
-      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'To download this form, go to the Printable Forms page, then return here to upload the completed document.', type: 'upload', icon: Printer, href: '/forms/declaration-of-eligibility/printable' },
+      medicalDocsBundle,
+      { id: 'declaration-of-eligibility', title: 'Declaration of Eligibility', description: 'Download the form, have it signed by a PCP, and upload it here.', type: 'upload', icon: Printer, href: '/forms/declaration-of-eligibility/printable' },
     ];
   }
 
   // SNF Transition
   return [
       ...commonRequirements,
-      { id: 'snf-facesheet', title: 'SNF Facesheet', description: "Upload the Skilled Nursing Facility facesheet.", type: 'upload', icon: UploadCloud, href: '#' },
+      medicalDocsBundle
   ];
 };
 
@@ -212,9 +221,9 @@ function PathwayPageContent() {
                     )}
                     {req.href && !req.href.startsWith('http') && req.href !== '#' && (
                         <Button asChild variant="link" className="w-full text-xs h-auto py-0">
-                           <Link href={req.href}>
+                           <Link href={req.href} target="_blank">
                                <Printer className="mr-1 h-3 w-3" />
-                               Go to Printable Forms
+                               Download/Print Blank Form
                            </Link>
                        </Button>
                    )}

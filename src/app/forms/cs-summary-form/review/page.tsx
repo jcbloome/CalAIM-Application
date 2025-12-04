@@ -45,6 +45,8 @@ const getRequiredFormsForPathway = (pathway?: FormValues['pathway']): FormStatus
     { name: 'HIPAA Authorization', status: 'Pending', type: 'online-form', href: '/forms/hipaa-authorization' },
     { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '/forms/liability-waiver' },
     { name: 'Freedom of Choice Waiver', status: 'Pending', type: 'online-form', href: '/forms/freedom-of-choice' },
+    { name: 'Proof of Income', status: 'Pending', type: 'upload', href: '#' },
+    { name: 'Medical Documents Bundle', status: 'Pending', type: 'upload', href: '#' },
   ];
 
   if (pathway === 'SNF Diversion') {
