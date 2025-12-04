@@ -35,6 +35,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
@@ -520,5 +521,3 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
-
-    
