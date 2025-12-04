@@ -1,9 +1,6 @@
-
-
 'use client';
 
 import React from 'react';
-import 'use strict';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
