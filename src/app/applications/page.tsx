@@ -211,7 +211,7 @@ export default function MyApplicationsPage() {
                     <h1 className="text-3xl font-bold">My Applications</h1>
                     {user.displayName && (
                         <p className="text-muted-foreground mt-1">
-                            Welcome, <strong>{user.displayName}</strong>. Here are the applications you've created.
+                            Welcome, <strong>{user.displayName}</strong>.
                         </p>
                     )}
                 </div>
@@ -233,14 +233,14 @@ export default function MyApplicationsPage() {
 
         <div className="space-y-8">
           <ApplicationsTable
-            title="In Progress Applications"
+            title="In Progress"
             applications={inProgressApps}
             onSelectionChange={handleSelectionChange}
             selection={selected}
             isLoading={isLoadingApplications}
           />
           <ApplicationsTable
-            title="Completed & Submitted Applications"
+            title="Completed"
             applications={completedApps}
             isLoading={isLoadingApplications}
           />
