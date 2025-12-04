@@ -96,7 +96,6 @@ function PathwayPageContent() {
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-
   const applicationDocRef = useMemo(() => {
     if (user && firestore && applicationId) {
       return doc(firestore, `users/${user.uid}/applications`, applicationId);
@@ -118,7 +117,7 @@ function PathwayPageContent() {
              if (newStatus === 'Completed') {
                 update.dateCompleted = Timestamp.now();
             }
-             if (fileName !== undefined) { // Check for undefined to handle clearing the name
+             if (fileName !== undefined) {
                 update.fileName = fileName;
             }
             return { ...form, ...update };
@@ -142,9 +141,11 @@ function PathwayPageContent() {
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
+    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     let formsToUpdate = [requirementTitle];
+    // Special handling for bundles
     if (requirementTitle === 'Medical Documents Bundle') {
         formsToUpdate.push("LIC 602A - Physician's Report", "Medicine List");
         if (application.pathway === 'SNF Transition') {
@@ -159,10 +160,11 @@ function PathwayPageContent() {
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
+    // Clear the input value to allow re-uploading the same file
     event.target.value = '';
   };
   
-    const handleFileRemove = async (requirementTitle: string) => {
+  const handleFileRemove = async (requirementTitle: string) => {
     await handleFormStatusUpdate([requirementTitle], 'Pending', null);
   };
 
@@ -182,7 +184,6 @@ function PathwayPageContent() {
         setIsSubmitting(false);
     }
   };
-
 
   if (isLoading) {
     return (
@@ -228,7 +229,6 @@ function PathwayPageContent() {
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const allRequiredFormsComplete = completedCount === totalCount;
 
-
   const getFormAction = (req: (typeof pathwayRequirements)[0]) => {
     const formInfo = formStatusMap.get(req.title);
     const isCompleted = formInfo?.status === 'Completed';
@@ -273,6 +273,14 @@ function PathwayPageContent() {
         case 'upload':
              return (
                 <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                        <Checkbox 
+                            id={`bundle-check-${req.id}`} 
+                            onCheckedChange={(checked) => handleFormStatusUpdate([req.title], checked ? 'Completed' : 'Pending')}
+                            checked={isCompleted && !uploadedFileName}
+                        />
+                        <Label htmlFor={`bundle-check-${req.id}`} className="text-xs text-muted-foreground">I included this in a bundle</Label>
+                    </div>
                     <Label htmlFor={req.id} className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (isUploading || isReadOnly) && "opacity-50 pointer-events-none")}>
                         {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                         <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
@@ -374,25 +382,31 @@ function PathwayPageContent() {
                     </CardHeader>
                     <CardContent className="flex flex-col flex-grow justify-end gap-4">
                         <div className="space-y-3">
-                            {['HIPAA Authorization', 'Liability Waiver', 'Freedom of Choice Waiver'].map(formName => (
-                                <div key={formName} className="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id={`waiver-${formName}`} 
-                                        checked={formStatusMap.get(formName)?.status === 'Completed'}
-                                        onCheckedChange={(checked) => handleFormStatusUpdate([formName], checked ? 'Completed' : 'Pending')}
-                                        disabled={isReadOnly}
-                                    />
-                                    <Label htmlFor={`waiver-${formName}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                        {formName}
-                                    </Label>
+                            {[
+                                { name: 'HIPAA Authorization', href: '/forms/hipaa-authorization/printable' },
+                                { name: 'Liability Waiver', href: '/forms/liability-waiver/printable' },
+                                { name: 'Freedom of Choice Waiver', href: '/forms/freedom-of-choice/printable' },
+                            ].map(form => (
+                                <div key={form.name} className="space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id={`waiver-${form.name}`} 
+                                            checked={formStatusMap.get(form.name)?.status === 'Completed'}
+                                            onCheckedChange={(checked) => handleFormStatusUpdate([form.name], checked ? 'Completed' : 'Pending')}
+                                            disabled={isReadOnly}
+                                        />
+                                        <Label htmlFor={`waiver-${form.name}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                            {form.name}
+                                        </Label>
+                                    </div>
+                                    <Button asChild variant="link" className="w-full text-xs h-auto py-0 justify-start pl-8">
+                                       <Link href={form.href} target="_blank">
+                                           <Printer className="mr-1 h-3 w-3" /> Download/Print Blank Form
+                                       </Link>
+                                   </Button>
                                 </div>
                             ))}
                         </div>
-                         <Button asChild variant="link" className="w-full text-xs h-auto py-0 justify-center mt-2">
-                            <Link href={'/forms/printable-package/full-package'} target="_blank">
-                                <Printer className="mr-1 h-3 w-3" /> Download/Print All Waivers
-                            </Link>
-                        </Button>
                         <div>
                             <Label htmlFor="waiver-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", isReadOnly && "opacity-50 pointer-events-none")}>
                                 <UploadCloud className="mr-2 h-4 w-4" />
@@ -459,3 +473,5 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
+
+    
