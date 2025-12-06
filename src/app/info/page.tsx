@@ -112,11 +112,9 @@ const page3Sections = [
     }
 ];
 
-const allPages = [page1Sections, page2Sections, page3Sections];
-
 export default function ProgramInfoPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = allPages.length;
+  const totalPages = 3;
 
   const handleNext = () => {
     if (currentPage < totalPages) {
@@ -131,8 +129,43 @@ export default function ProgramInfoPage() {
       window.scrollTo(0, 0);
     }
   };
+  
+  const renderPageContent = () => {
+      let sections;
+      switch (currentPage) {
+          case 1:
+              sections = page1Sections;
+              break;
+          case 2:
+              sections = page2Sections;
+              break;
+          case 3:
+              sections = page3Sections;
+              break;
+          default:
+              sections = [];
+      }
 
-  const currentSections = allPages[currentPage - 1];
+      return (
+          <div className="space-y-4">
+              {sections.map((section, index) => (
+                  <Card key={index} className="bg-background/80">
+                      <CardHeader className="flex flex-row items-start gap-4 space-y-0">
+                          <div className="bg-primary/10 p-2 rounded-full">
+                              <section.icon className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                              <CardTitle className="text-lg text-gray-900">{section.title}</CardTitle>
+                          </div>
+                      </CardHeader>
+                      <CardContent>
+                          <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{__html: section.content }}/>
+                      </CardContent>
+                  </Card>
+              ))}
+          </div>
+      );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50/50 print:bg-white">
@@ -151,23 +184,8 @@ export default function ProgramInfoPage() {
                 <GlossaryDialog />
              </div>
 
-             <div className="space-y-4">
-                {currentSections.map((section, index) => (
-                    <Card key={index} className="bg-background/80">
-                        <CardHeader className="flex flex-row items-start gap-4 space-y-0">
-                            <div className="bg-primary/10 p-2 rounded-full">
-                                <section.icon className="h-6 w-6 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                                <CardTitle className="text-lg text-gray-900">{section.title}</CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{__html: section.content }}/>
-                        </CardContent>
-                    </Card>
-                ))}
-             </div>
+             {renderPageContent()}
+             
              <div className="mt-8 pt-5 border-t flex justify-between items-center">
                 
                 {currentPage === 1 ? (
