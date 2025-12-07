@@ -22,17 +22,9 @@ function getSdks(firebaseApp: FirebaseApp): FirebaseSdks {
 
 export function initializeFirebase(): FirebaseSdks {
   if (!getApps().length) {
-    let firebaseApp;
-    try {
-      // This will only work if the SDK is loaded from the hosting environment
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === 'production') {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      // Fallback to the explicit config for local dev or other environments
-      firebaseApp = initializeApp(firebaseConfig);
-    }
+    // Always initialize with the explicit config for consistent behavior
+    // across all environments.
+    const firebaseApp = initializeApp(firebaseConfig);
     return getSdks(firebaseApp);
   }
 
