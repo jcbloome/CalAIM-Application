@@ -23,49 +23,55 @@ import { GlossaryDialog } from '@/components/GlossaryDialog';
 import { PrintableProgramInfo } from './components/PrintableProgramInfo';
 import { Button } from '@/components/ui/button';
 
-const page1Sections = [
+const allSections = [
+    // Page 1
     {
+        page: 1,
         icon: HelpCircle,
         title: "What is the California Assisted Living and Innovating Medi-Cal (CalAIM) Program?",
-        content: "CalAIM is California's long-term initiative to transform the Medi-Cal program by improving quality outcomes, reducing health disparities, and creating a more seamless and consistent system. It aims to achieve this through a focus on \"whole person care,\" which includes addressing social determinants of health, integrating physical, mental, and social services, and launching new programs like Enhanced Care Management (ECM) and Community Supports. Community Supports (CS) are administered through managed care plans (MCPs)."
+        content: ["CalAIM is California's long-term initiative to transform the Medi-Cal program by improving quality outcomes, reducing health disparities, and creating a more seamless and consistent system. It aims to achieve this through a focus on \"whole person care,\" which includes addressing social determinants of health, integrating physical, mental, and social services, and launching new programs like Enhanced Care Management (ECM) and Community Supports. Community Supports (CS) are administered through managed care plans (MCPs)."]
     },
     {
+        page: 1,
         icon: Users,
         title: "Community Supports for Assisted Living Transitions",
-        content: "There are 14 Community Supports (CS) and Assisted Living Transitions is one of them. This CS gives eligible members the choice to reside in an assisted living setting—such as a Residential Care Facility for the Elderly (RCFE) or an Adult Residential Facility (ARF)—as a safe alternative to a skilled nursing facility, promoting greater independence and community integration."
+        content: ["There are 14 Community Supports (CS) and Assisted Living Transitions is one of them. This CS gives eligible members the choice to reside in an assisted living setting—such as a Residential Care Facility for the Elderly (RCFE) or an Adult Residential Facility (ARF)—as a safe alternative to a skilled nursing facility, promoting greater independence and community integration."]
     },
     {
+        page: 1,
         icon: HeartHandshake,
         title: "The Role of Connections Care Home Consultants",
-        content: "Connections is a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."
+        content: ["Connections is a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
     },
     {
+        page: 1,
         icon: Building,
         title: "Managed Care Plans We Work With",
-        content: "You must be a member of one of these plans to utilize our services for the CalAIM Community Support for Assisted Living Transitions.",
+        content: ["You must be a member of one of these plans to utilize our services for the CalAIM Community Support for Assisted Living Transitions."],
         list: [
             "Health Net: Serving members in Sacramento and Los Ángeles counties.",
             "Kaiser Permanente: Serving members in various counties throughout California."
         ]
     },
     {
+        page: 1,
         icon: Home,
         title: "Types of Assisted Living (RCFEs/ARFs)",
-        content: "Assisted living facilities in California (also known as residential care facilities for the elderly - RCFEs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:",
+        content: ["Assisted living facilities in California (also known as residential care facilities for the elderly - RCFEs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:"],
         list: [
             "Small, Home-Like Settings: These are typically 4-6 bed homes that provide a high staff-to-resident ratio. This environment offers more personalized attention and a quieter, more intimate living experience.",
             "Large, Community Settings: These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support."
         ]
     },
     {
+        page: 1,
         icon: KeyRound,
         title: "ARF vs. RCFE: What's the Difference?",
-        content: "In California, the key difference between an Adult Residential Facility (ARF) and a Residential Care Facility for the Elderly (RCFE) is the age of the residents they serve. ARFs provide non-medical care and supervision to adults aged 18 to 59, often with disabilities or other conditions. RCFEs, on the other hand, are specifically for individuals 60 years and older who need assistance with daily living activities."
-    }
-];
-
-const page2Sections = [
+        content: ["In California, the key difference between an Adult Residential Facility (ARF) and a Residential Care Facility for the Elderly (RCFE) is the age of the residents they serve. ARFs provide non-medical care and supervision to adults aged 18 to 59, often with disabilities or other conditions. RCFEs, on the other hand, are specifically for individuals 60 years and older who need assistance with daily living activities."]
+    },
+    // Page 2
     {
+        page: 2,
         icon: HelpCircle,
         title: "Medicare vs. Medi-Cal: A Quick Guide",
         content: [
@@ -75,6 +81,7 @@ const page2Sections = [
         ]
     },
     {
+        page: 2,
         icon: DollarSign,
         title: "'Room and Board' and 'Assisted Living' Payments",
         content: [
@@ -84,6 +91,7 @@ const page2Sections = [
         ]
     },
     {
+        page: 2,
         icon: DollarSign,
         title: "Medi-Cal Share of Cost (SOC)",
         content: [
@@ -94,6 +102,7 @@ const page2Sections = [
         ]
     },
     {
+        page: 2,
         icon: Building,
         title: "BenefitsCal Resource",
         content: [
@@ -101,6 +110,7 @@ const page2Sections = [
         ]
     },
     {
+        page: 2,
         icon: AlertTriangle,
         title: "Important Note on Switching to Health Net",
         content: [
@@ -108,21 +118,22 @@ const page2Sections = [
         ]
     },
     {
+        page: 2,
         icon: AlertTriangle,
         title: "Important Note on Switching to Health Net (when randomly assigned to Molina)",
         content: [
             'In California, Health Net and Molina co-share the managed Medi-Cal market. Sometimes, individuals who request to switch from another health plan to Health Net are randomly assigned to Molina. If this happens, you or the family/member will need to call Health Net Member Services at 800-675-6110 and specifically request to be switched to the Health Net full Medi-Cal managed care plan in order to access the CalAIM Community Supports.',
         ]
-    }
-];
-
-const page3Sections = [
+    },
+    // Page 3
     {
+        page: 3,
         icon: FileCheck2,
         title: "Next Steps: Starting the Application",
         content: ["Once you have reviewed all the program information, the next step is to begin the application process. You can start a new application or continue an existing one from your dashboard.", "Our portal will guide you through each required form and document upload. If you have any questions along the way, please don't hesitate to contact us. We are here to help you navigate the process and find the best care setting for your needs."]
     }
 ];
+
 
 export default function ProgramInfoPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,22 +154,7 @@ export default function ProgramInfoPage() {
   };
   
   const renderPageContent = () => {
-      let sections;
-      switch (currentPage) {
-          case 1:
-              sections = page1Sections;
-              break;
-          case 2:
-              sections = page2Sections;
-              break;
-          case 3:
-              sections = page3Sections;
-              break;
-          default:
-              sections = page1Sections;
-              break;
-      }
-
+      const sections = allSections.filter(section => section.page === currentPage);
       return (
           <div className="space-y-4">
               {sections.map((section, index) => (
@@ -249,3 +245,5 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
+
+    
