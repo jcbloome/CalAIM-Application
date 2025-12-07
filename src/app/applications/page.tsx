@@ -156,7 +156,7 @@ export default function MyApplicationsPage() {
 
   const applicationsQuery = useMemo(() => {
     if (user && firestore) {
-      return collection(firestore, `users/${user.uid}/applications`);
+      return collection(firestore, `users/${user.uid}/applications`) as Query<ApplicationData>;
     }
     return null;
   }, [user, firestore]);
