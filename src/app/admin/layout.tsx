@@ -45,21 +45,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isSuperAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
-    if (isUserLoading || !auth) return; // Wait until user status and auth service are resolved
+    // Wait until user status and auth service are resolved
+    if (isUserLoading || !auth) return; 
 
-    // If on the login page, do nothing.
+    // If we are on the login page, do nothing, allow the user to log in.
     if (pathname === '/admin/login') {
       return;
     }
 
-    // If not logged in, redirect to admin login
+    // If there is no user, redirect to the admin login page.
     if (!user) {
       router.push('/admin/login');
       return;
     }
 
-    // If logged in but not as the admin, sign out and redirect
-    // This logic should be updated later to check against a list of staff from firestore
+    // If a user is logged in, but they are not the designated admin,
+    // sign them out and redirect them to the login page.
+    // This logic should be updated later to check against a list of staff from Firestore.
     if (user.email !== ADMIN_EMAIL) {
       auth.signOut().then(() => {
         router.push('/admin/login');
@@ -75,14 +77,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
   
-  // If on the login page, just render children (the login page)
+  // If on the login page, just render children (the login page itself).
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  // If there's no user or the user is not the admin, we render a loader
+  // If there's no user, or the user is not the admin, we render a loader
   // while the useEffect handles the redirection. This avoids content flashing.
-  // This logic will need to be updated to support multiple staff members
   if (!user || user.email !== ADMIN_EMAIL) {
      return (
       <div className="flex items-center justify-center h-screen">
