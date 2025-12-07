@@ -4,18 +4,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  Info,
-  HelpCircle,
-  Users,
-  Building,
-  HeartHandshake,
-  KeyRound,
-  Home,
-  ArrowLeft,
-  ArrowRight,
-  DollarSign,
-  FileCheck2,
-  AlertTriangle
+    Info,
+    HelpCircle,
+    Users,
+    Building,
+    HeartHandshake,
+    KeyRound,
+    Home,
+    ArrowLeft,
+    ArrowRight,
+    DollarSign,
+    FileCheck2,
+    AlertTriangle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
@@ -157,8 +157,8 @@ export default function ProgramInfoPage() {
       const sections = allSections.filter(section => section.page === currentPage);
       return (
           <div className="space-y-4">
-              {sections.map((section, index) => (
-                  <Card key={index} className="bg-background/80">
+              {sections.map((section) => (
+                  <Card key={section.title} className="bg-background/80">
                       <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                           <div className="bg-primary/10 p-2 rounded-full">
                               <section.icon className="h-6 w-6 text-primary" />
@@ -168,11 +168,7 @@ export default function ProgramInfoPage() {
                           </div>
                       </CardHeader>
                       <CardContent className="prose prose-sm max-w-none text-gray-700">
-                          {Array.isArray(section.content) ? (
-                            section.content.map((paragraph, pIndex) => <p key={pIndex}>{paragraph}</p>)
-                          ) : (
-                            <p>{section.content}</p>
-                          )}
+                          {section.content.map((paragraph, pIndex) => <p key={pIndex}>{paragraph}</p>)}
                           {section.list && (
                               <ul className="list-disc pl-5 mt-2">
                                   {section.list.map((item, lIndex) => <li key={lIndex}>{item}</li>)}
@@ -245,5 +241,3 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
-
-    
