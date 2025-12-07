@@ -76,16 +76,17 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
  */
 function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
   let authObject: FirebaseAuthObject | null = null;
+  // This is a failsafe. In a client-side context, getAuth() should
+  // return the same initialized instance. The key is to not rely on it
+  // during server-side rendering or before the app is initialized.
   try {
-    // Safely attempt to get the current user.
-    const firebaseAuth = getAuth();
-    const currentUser = firebaseAuth.currentUser;
-    if (currentUser) {
-      authObject = buildAuthObject(currentUser);
+    const auth = getAuth();
+    if (auth.currentUser) {
+        authObject = buildAuthObject(auth.currentUser);
     }
-  } catch {
-    // This will catch errors if the Firebase app is not yet initialized.
-    // In this case, we'll proceed without auth information.
+  } catch (e) {
+    // If getAuth() fails (e.g., app not initialized), we proceed without auth info.
+    console.warn("Could not retrieve auth instance while building error: ", e);
   }
 
   return {
