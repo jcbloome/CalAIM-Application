@@ -1,38 +1,13 @@
 
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+// This file serves as the main entry point for all client-side Firebase functionality.
+// It should only export hooks, providers, and other modules that are safe to run in a client environment.
+// It MUST NOT contain any code that executes immediately upon import, such as initialization functions,
+// as this can cause server-side rendering (SSR) failures.
 
-// This is a local helper function and should not be exported.
-function getSdks(firebaseApp: FirebaseApp) {
-  const auth = getAuth(firebaseApp);
-  
-  return {
-    firebaseApp,
-    auth: auth,
-    firestore: getFirestore(firebaseApp)
-  };
-}
-
-export function initializeFirebase() {
-  if (!getApps().length) {
-    let firebaseApp;
-    try {
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-    return getSdks(firebaseApp);
-  }
-
-  return getSdks(getApp());
-}
+// Initialization logic has been moved to a separate file (e.g., client-init.ts) and is
+// called exclusively from the top-level client provider.
 
 export * from './provider';
 export * from './client-provider';

@@ -2,7 +2,7 @@
 
 import React, { useMemo, type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from './client-init'; // Correctly import from the new client-only file
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
