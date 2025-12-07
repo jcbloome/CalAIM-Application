@@ -14,7 +14,7 @@ export interface UserHookResult {
 export const useUser = (): UserHookResult => {
   const auth = useAuth();
   const [userState, setUserState] = useState<UserHookResult>({
-    user: auth?.currentUser || null,
+    user: null,
     isUserLoading: true,
     userError: null,
   });
