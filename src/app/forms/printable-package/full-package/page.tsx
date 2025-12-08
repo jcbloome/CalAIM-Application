@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
-import { PrintableCsSummaryFormContent } from '@/app/forms/cs-summary-form/printable/page';
+import { PrintableCsSummaryFormContent } from '@/app/forms/cs-summary-form/printable/PrintableCsSummaryFormContent';
 import { PrintableHipaaFormContent } from '@/app/forms/hipaa-authorization/printable/page';
 import { PrintableLiabilityWaiverContent } from '@/app/forms/liability-waiver/printable/page';
 import { PrintableFreedomOfChoiceContent } from '@/app/forms/freedom-of-choice/printable/page';
