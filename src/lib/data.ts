@@ -2,6 +2,8 @@
 
 import { Application, Acronym, Activity } from './definitions';
 import { format } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
+
 
 export const applications: (Omit<Application, 'userId'> & { id: string; userId: string; memberName?: string; healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; memberMrn?: string; })[] = [
   {
@@ -199,7 +201,8 @@ const calculateStats = (apps: typeof applications): Stats => {
 
     if (app.lastUpdated) {
         try {
-            const month = format(new Date(app.lastUpdated), 'MMM');
+            const date = app.lastUpdated instanceof Timestamp ? app.lastUpdated.toDate() : new Date(app.lastUpdated);
+            const month = format(date, 'MMM');
             monthly[month] = (monthly[month] || 0) + 1;
         } catch (e) {
             console.error(`Invalid date format for app ${app.id}: ${app.lastUpdated}`);
