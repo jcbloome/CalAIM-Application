@@ -254,7 +254,7 @@ function PathwayPageContent() {
     
     switch (req.type) {
         case 'online-form':
-        case 'info':
+        case 'Info':
             return (
                 <Button asChild variant="outline" className="w-full bg-slate-50 hover:bg-slate-100">
                     <Link href={href}>{isCompleted ? 'View/Edit' : 'Start'} &rarr;</Link>
