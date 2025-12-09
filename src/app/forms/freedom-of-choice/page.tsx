@@ -30,7 +30,7 @@ function PrintableFreedomOfChoiceContent() {
 
 
 function FreedomOfChoiceFormComponent() {
-    const [choice, setChoice] = useState('');
+    const [choice, setChoice] = useState<'accept' | 'decline' | ''>('');
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
@@ -190,7 +190,7 @@ function FreedomOfChoiceFormComponent() {
 
                             <div className="p-4 border rounded-md space-y-3">
                                 <h3 className="font-medium text-base">My Choice</h3>
-                                 <RadioGroup onValueChange={setChoice} value={choice} disabled={isReadOnly}>
+                                 <RadioGroup onValueChange={(value) => setChoice(value as 'accept' | 'decline')} value={choice} disabled={isReadOnly}>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="accept" id="accept" />
                                         <Label htmlFor="accept">I choose to accept Community Supports services for community transition.</Label>
