@@ -59,7 +59,7 @@ function Calendar({
       }}
       components={{
         Dropdown: ({ value, onChange, options, ...props }: DropdownProps) => {
-          const selectedOption = options?.find((option) => option.props.value === value)
+          const selectedOption = options?.find((option) => option.value === value)
           const handleChange = (newValue: string) => {
             const changeEvent = {
               target: { value: newValue },
@@ -74,16 +74,16 @@ function Calendar({
               }}
             >
               <SelectTrigger className="pr-1.5 focus:ring-0">
-                <SelectValue>{selectedOption?.props?.children}</SelectValue>
+                <SelectValue>{selectedOption?.label}</SelectValue>
               </SelectTrigger>
               <SelectContent position="popper">
                 <ScrollArea className="h-80">
                   {options?.map((option, id: number) => (
                     <SelectItem
-                      key={`${option.props.value}-${id}`}
-                      value={option.props.value?.toString() ?? ""}
+                      key={`${option.value}-${id}`}
+                      value={option.value?.toString() ?? ""}
                     >
-                      {option.props.children}
+                      {option.label}
                     </SelectItem>
                   ))}
                 </ScrollArea>
