@@ -62,7 +62,7 @@ function HipaaAuthorizationFormComponent() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const [signerType, setSignerType] = useState<'member' | 'representative' | ''>('');
+    const [signerType, setSignerType] = useState<'member' | 'representative' | null>(null);
     const [signerName, setSignerName] = useState('');
     const [signerRelationship, setSignerRelationship] = useState('');
     const [signatureDate, setSignatureDate] = useState('');
@@ -82,7 +82,7 @@ function HipaaAuthorizationFormComponent() {
         if (application) {
             const form = application.forms?.find(f => f.name === 'HIPAA Authorization');
             if (form && form.status === 'Completed') {
-                setSignerType(form.signerType || '');
+                setSignerType(form.signerType || null);
                 setSignerName(form.signerName || '');
                 setSignerRelationship(form.signerRelationship || '');
                 setSignatureDate(form.dateCompleted ? new Date(form.dateCompleted.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString());
@@ -212,7 +212,7 @@ function HipaaAuthorizationFormComponent() {
                             <div className="mt-8 pt-6 border-t">
                                 <h3 className="text-base font-semibold text-gray-800">Electronic Signature</h3>
                                 <div className="space-y-4 mt-4">
-                                    <RadioGroup onValueChange={(v) => setSignerType(v as any)} value={signerType} disabled={isReadOnly}>
+                                    <RadioGroup onValueChange={(v) => setSignerType(v as any)} value={signerType ?? ''} disabled={isReadOnly}>
                                         <Label>I am the:</Label>
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center space-x-2">
@@ -289,3 +289,5 @@ export default function HipaaAuthorizationPage() {
         </Suspense>
     );
 }
+
+    
