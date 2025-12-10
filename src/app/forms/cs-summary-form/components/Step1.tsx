@@ -20,6 +20,15 @@ import { PhoneInput } from '@/components/ui/phone-input';
 
 export default function Step1() {
   const { control, watch, setValue } = useFormContext<FormValues>();
+  
+  const memberDob = watch('memberDob');
+
+  useEffect(() => {
+    if (memberDob) {
+      const age = new Date().getFullYear() - new Date(memberDob).getFullYear();
+      setValue('memberAge', age);
+    }
+  }, [memberDob, setValue]);
 
   return (
     <div className="space-y-6">
@@ -61,12 +70,56 @@ export default function Step1() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <FormField
               control={control}
+              name="memberDob"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        captionLayout="dropdown-buttons"
+                        fromYear={1900}
+                        toYear={new Date().getFullYear()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
               name="memberAge"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} type="number" />
+                    <Input {...field} value={field.value ?? ''} type="number" readOnly className="bg-muted" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -423,5 +476,3 @@ export default function Step1() {
     </div>
   );
 }
-
-    
