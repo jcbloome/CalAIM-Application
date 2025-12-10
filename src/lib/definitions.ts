@@ -48,3 +48,5 @@ export type Activity = {
   details: string;
   applicationId?: string;
 };
+
+  

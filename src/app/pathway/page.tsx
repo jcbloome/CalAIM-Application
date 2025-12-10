@@ -37,6 +37,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { GlossaryDialog } from '@/components/GlossaryDialog';
 
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
@@ -156,13 +157,14 @@ function PathwayPageContent() {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
     if (!event.target.files?.length) return;
-    const file = event.target.files[0];
+    const files = Array.from(event.target.files);
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    await handleFormStatusUpdate([requirementTitle], 'Completed', file.name);
+    const fileNames = files.map(f => f.name).join(', ');
+    await handleFormStatusUpdate([requirementTitle], 'Completed', fileNames);
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
@@ -251,6 +253,7 @@ function PathwayPageContent() {
     }
 
     const isUploading = uploading[req.title];
+    const isMultiple = req.title === 'Proof of Income';
     
     switch (req.type) {
         case 'online-form':
@@ -287,9 +290,9 @@ function PathwayPageContent() {
                     )}
                     <Label htmlFor={req.id} className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (isUploading || isReadOnly) && "opacity-50 pointer-events-none")}>
                         {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                        <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
+                        <span>{isUploading ? 'Uploading...' : 'Upload File(s)'}</span>
                     </Label>
-                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.title)} disabled={isUploading || isReadOnly} />
+                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.title)} disabled={isUploading || isReadOnly} multiple={isMultiple} />
                     {req.href && req.href !== '#' && (
                         <Button asChild variant="link" className="w-full text-xs h-auto py-0">
                            <Link href={req.href} target="_blank">
@@ -312,12 +315,17 @@ function PathwayPageContent() {
           
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
-                Application for {application.memberFirstName} {application.memberLastName}
-              </CardTitle>
-              <CardDescription>
-                Submitted by {user?.displayName} | {application.pathway} ({application.healthPlan})
-              </CardDescription>
+              <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
+                      Application for {application.memberFirstName} {application.memberLastName}
+                    </CardTitle>
+                    <CardDescription>
+                      Submitted by {user?.displayName} | {application.pathway} ({application.healthPlan})
+                    </CardDescription>
+                  </div>
+                  <GlossaryDialog />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
