@@ -17,7 +17,7 @@ const formatPhoneNumber = (value: string) => {
 };
 
 const PhoneInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>((
-  { className, onChange, ...props },
+  { className, onChange, value, ...props },
   ref
 ) => {
 
@@ -34,6 +34,7 @@ const PhoneInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'inpu
       type="tel"
       className={cn(className)}
       onChange={handleInputChange}
+      value={value ?? ''}
       ref={ref}
       {...props}
     />
