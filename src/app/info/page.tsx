@@ -29,7 +29,7 @@ const allSections = [
         page: 1,
         icon: HelpCircle,
         title: "What is CalAIM?",
-        content: ["California Advancing and Innovating Medi-Cal (CalAIM) is California's long-term initiative to transform the Medi-Cal program by improving quality outcomes, reducing health disparities, and creating a more seamless and consistent system. It aims to achieve this through a focus on \"whole person care,\" which includes addressing social determinants of health, integrating physical, mental, and social services, and launching new programs like Enhanced Care Management (ECM) and Community Supports.", "CS and ECM are administered through managed care plans (MCPs)."]
+        content: ["CalAIM (California Advancing and Innovating Medi-Cal) is a long-term initiative by the state of California to transform the Medi-Cal program. Its goals are to improve health outcomes, reduce health disparities, and create a more integrated and seamless healthcare system. This portal focuses on one specific part of CalAIM: the Community Supports service for assisted living transitions."]
     },
     {
         page: 1,
@@ -98,7 +98,7 @@ const allSections = [
             'Members participating in CalAIM are not allowed to have a Medi-Cal SOC.',
             'When you apply for Medi-Cal and are over the income limit for free Medi-Cal, you may still qualify for Medi-Cal with a share of cost. A share of cost (SOC) is the amount of money you must pay each month towards medical related services, supplies, or equipment before your Medi-Cal insurance pays anything, similar to a deductible.',
             'The most common way to reduce or avoid a SOC is to purchase supplemental health insurance policies to lower countable income, such as supplemental dental, vision, or a Medicare Part D prescription drug plan.',
-            'Members can also eliminate SOC by paying more for the "room and board" portion and providing this information but this might only be viable once the member moves into the RCFE/ARF and can present a signed contract to Medi-Cal. For more Medi-Cal SOC information see the California Association of Nursing Home Reform (CANHR) website: https://canhr.org/understanding-the-share-of-cost-for-medi-cal/.',
+            'Members can also eliminate SOC by paying more for the "room and board" portion and providing this information but this might only be viable once the member moves into the RCFE/ARF and can present a signed contract to Medi-Cal. For more Medi-Cal SOC information see the California Association of Nursing Home Reform (CANHR) website: https://canhr.org/understanding-the-share-of-cost-for-medi-cal/.'
         ]
     },
     {
@@ -130,7 +130,7 @@ const allSections = [
         page: 3,
         icon: FileCheck2,
         title: "Next Steps: Starting the Application",
-        content: ["Once you have reviewed all the program information, the next step is to begin the application process. You can start a new application or continue an existing one from your dashboard.", "Our portal will guide you through each required form and document upload. If you have any questions along the way, please don't hesitate to contact us. We are here to help you navigate the process and find the best care setting for your needs."]
+        content: ["Once you have reviewed all the program information, the next step is to begin the application process. You can start a new application or continue an existing one from your dashboard. Our portal will guide you through each required form and document upload. If you have any questions along the way, please don't hesitate to contact us. We are here to help you navigate the process and find the best care setting for your needs."]
     }
 ];
 
@@ -240,5 +240,3 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
-
-    
