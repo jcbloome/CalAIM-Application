@@ -51,7 +51,6 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>e.g., John</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -65,7 +64,6 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                   <FormDescription>e.g., Doe</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
