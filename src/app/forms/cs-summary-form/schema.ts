@@ -77,12 +77,12 @@ export const formSchema = z.object({
     currentZip: requiredString,
     currentCounty: requiredString,
     copyAddress: z.boolean().optional(),
-    customaryLocationType: optionalString,
-    customaryAddress: optionalString,
-    customaryCity: optionalString,
-    customaryState: optionalString,
-    customaryZip: optionalString,
-    customaryCounty: optionalString,
+    customaryLocationType: requiredString,
+    customaryAddress: requiredString,
+    customaryCity: requiredString,
+    customaryState: requiredString,
+    customaryZip: requiredString,
+    customaryCounty: requiredString,
 
     // Step 3 - Health Plan & Pathway
     healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.'}),
@@ -124,15 +124,6 @@ export const formSchema = z.object({
     path: ["confirmMemberMrn"],
   })
   .superRefine((data, ctx) => {
-    if (!data.copyAddress) {
-        if (!data.customaryLocationType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryLocationType"] });
-        if (!data.customaryAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryAddress"] });
-        if (!data.customaryCity) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryCity"] });
-        if (!data.customaryState) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryState"] });
-        if (!data.customaryZip) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryZip"] });
-        if (!data.customaryCounty) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["customaryCounty"] });
-    }
-    
     if (data.pathway === 'SNF Diversion' && (!data.snfDiversionReason || data.snfDiversionReason.trim() === '')) {
       ctx.addIssue({
         code: 'custom',
