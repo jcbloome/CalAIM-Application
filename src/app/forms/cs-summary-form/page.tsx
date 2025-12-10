@@ -193,6 +193,7 @@ function CsSummaryFormComponent() {
     
     if (!isValid) {
       setValidationError("Please fix the errors on this page before continuing.");
+      console.log('Validation Errors:', errors); // Log validation errors
       return; // Stop advancement
     }
 
@@ -224,6 +225,7 @@ function CsSummaryFormComponent() {
   }
 
   const onInvalid = (errors: any) => {
+    console.log("Form Validation Failed:", errors);
     const firstErrorStep = findFirstErrorStep(errors);
     if (firstErrorStep && firstErrorStep !== currentStep) {
         setCurrentStep(firstErrorStep);
