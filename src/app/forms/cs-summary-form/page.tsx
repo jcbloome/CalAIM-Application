@@ -192,8 +192,8 @@ function CsSummaryFormComponent() {
     const isValid = await trigger(fields as FieldPath<FormValues>[], { shouldFocus: true });
     
     if (!isValid) {
-      setValidationError("Please fix the errors on this page before continuing.");
       console.log('Validation Errors:', errors); // Log validation errors
+      setValidationError("Please fix the errors on this page before continuing.");
       return; // Stop advancement
     }
 
