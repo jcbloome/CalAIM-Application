@@ -54,7 +54,8 @@ export function PrintableFreedomOfChoiceContent() {
               <div>
                 <SectionTitle>Signature</SectionTitle>
                 <p className="text-xs italic text-gray-600 my-2">By signing below, I acknowledge that under penalty of perjury, I am the member or an authorized representative legally empowered to sign on behalf of the member.</p>
-                <div className="flex gap-6 mt-2">
+                <p className="text-xs font-medium text-gray-700 mt-2">I am the:</p>
+                <div className="flex gap-6">
                     <CheckboxField label="Member" />
                     <CheckboxField label="Authorized Representative" />
                 </div>

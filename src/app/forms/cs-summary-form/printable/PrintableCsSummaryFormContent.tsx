@@ -40,7 +40,7 @@ export function PrintableCsSummaryFormContent() {
             <Field label="Age" />
             <Field 
               label="Medi-Cal Number"
-              description="This is a 9 digit number starting with 9."
+              description="This is a 9 character number starting with '9' and ending with a letter."
             />
             <Field label="Confirm Medi-Cal Number" />
             <Field 
@@ -49,6 +49,7 @@ export function PrintableCsSummaryFormContent() {
             />
             <Field label="Confirm Medical Record Number (MRN)" />
             <Field label="Preferred Language" description="e.g., English, Spanish"/>
+            <Field label="County" />
           </div>
         </div>
 
@@ -60,17 +61,12 @@ export function PrintableCsSummaryFormContent() {
             <Field label="Your Phone" description="(xxx) xxx-xxxx" />
             <Field label="Your Email" />
             <Field label="Relationship to Member (e.g., Family Member, Social Worker)" />
-            <Field label="Agency (e.g., Bob's Referral Agency, Hospital Name, etc.)" description="If not applicable, enter N/A"/>
+            <Field label="Agency (e.g., Bob's Referral Agency, Hospital Name, etc.)" description="If not applicable, leave blank."/>
           </div>
         </div>
 
         <div>
           <SectionTitle>Primary Contact Person</SectionTitle>
-          <p className="text-xs font-medium text-gray-700 mt-2">Who is the primary contact person?</p>
-            <div className="flex gap-6">
-              <CheckboxField label="The Member" />
-              <CheckboxField label="Another Contact Person" />
-          </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
               <Field label="First Name" />
               <Field label="Last Name" />
@@ -113,9 +109,10 @@ export function PrintableCsSummaryFormContent() {
             </div>
             <h3 className="text-sm font-medium text-gray-800 mt-4">Representative's Contact Info</h3>
             <CheckboxField label="Is the Legal Representative also the Primary Contact Person?" />
-            <p className="text-xs text-gray-500 pt-1">If the member does not have a legal representative, please enter N/A in the following fields.</p>
+            <p className="text-xs text-gray-500 pt-1">If the member does not have a legal representative, you can leave these fields blank.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
-              <Field label="Name" />
+              <Field label="First Name" />
+              <Field label="Last Name" />
               <Field label="Relationship to Member" />
               <Field label="Phone" description="(xxx) xxx-xxxx" />
               <Field label="Email" />
@@ -127,13 +124,12 @@ export function PrintableCsSummaryFormContent() {
           <div className="space-y-2">
               <p className="text-xs font-medium text-gray-700">Member's Current Location</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <CheckboxField label="Skilled Nursing Facility" />
                   <CheckboxField label="Home" />
                   <CheckboxField label="Hospital" />
-                  <CheckboxField label="Sub-Acute" />
-                  <CheckboxField label="Recuperative Care" />
+                  <CheckboxField label="Skilled Nursing" />
                   <CheckboxField label="Unhoused" />
-                  <CheckboxField label="RCFE/ARF" />
+                  <CheckboxField label="Sub-Acute" />
+                  <CheckboxField label="Assisted Living" />
                   <CheckboxField label="Other" />
               </div>
           </div>
@@ -170,6 +166,7 @@ export function PrintableCsSummaryFormContent() {
                 <div className="flex gap-6">
                   <CheckboxField label="Yes" />
                   <CheckboxField label="No" />
+                  <CheckboxField label="N/A" />
               </div>
             </div>
           <p className="text-xs font-medium text-gray-700 mt-4">Pathway Selection</p>
@@ -215,16 +212,16 @@ export function PrintableCsSummaryFormContent() {
             </div>
             
             <h3 className="text-sm font-medium text-gray-800 mt-4">ISP Assessment Location</h3>
+            <CheckboxField label="Same as current location" />
             <div className="space-y-2 mt-2">
               <p className="text-xs font-medium text-gray-700">Type of Location</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <CheckboxField label="Skilled Nursing Facility" />
                   <CheckboxField label="Home" />
+                  <CheckboxField label="SNF" />
+                  <CheckboxField label="RCFE" />
                   <CheckboxField label="Hospital" />
                   <CheckboxField label="Sub-Acute" />
-                  <CheckboxField label="Recuperative Care" />
                   <CheckboxField label="Unhoused" />
-                  <CheckboxField label="RCFE/ARF" />
                   <CheckboxField label="Other" />
               </div>
           </div>
@@ -253,7 +250,7 @@ export function PrintableCsSummaryFormContent() {
               </div>
           </div>
           <h4 className="text-xs font-medium text-gray-800 mt-4">Preferred Facility Details</h4>
-          <p className="text-xs text-gray-500 pt-1">If a facility has not been chosen, please enter N/A in the following fields.</p>
+          <p className="text-xs text-gray-500 pt-1">If a facility has not been chosen, you can leave these fields blank.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
               <Field label="Facility Name" className="sm:col-span-2"/>
               <Field label="Facility Address" className="sm:col-span-2"/>
