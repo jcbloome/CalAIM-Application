@@ -239,7 +239,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <PhoneInput {...field} value={field.value ?? ''} />
+                    <PhoneInput {...field} />
                   </FormControl>
                   <FormDescription>(xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
@@ -301,7 +301,7 @@ export default function Step1() {
                   <FormField control={control} name="bestContactPhone" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
-                        <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
+                        <FormControl><PhoneInput {...field} /></FormControl>
                         <FormDescription>(xxx) xxx-xxxx</FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -339,7 +339,7 @@ export default function Step1() {
                     <FormField control={control} name="secondaryContactPhone" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Phone</FormLabel>
-                            <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><PhoneInput {...field} /></FormControl>
                             <FormDescription>(xxx) xxx-xxxx</FormDescription>
                             <FormMessage />
                         </FormItem>
@@ -416,7 +416,7 @@ export default function Step1() {
                     <FormField control={control} name="repPhone" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Phone</FormLabel>
-                            <FormControl><PhoneInput {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><PhoneInput {...field} /></FormControl>
                             <FormDescription>(xxx) xxx-xxxx</FormDescription>
                             <FormMessage />
                         </FormItem>

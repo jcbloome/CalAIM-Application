@@ -45,7 +45,7 @@ export default function Step4() {
                     </FormItem>
                 )} />
                  <FormField control={control} name="ispPhone" render={({ field }) => (
-                    <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><PhoneInput placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} {...field} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Phone <span className="text-destructive">*</span></FormLabel><FormControl><PhoneInput placeholder="(xxx) xxx-xxxx" {...field} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                 )} />
               </div>
               <FormField control={control} name="ispEmail" render={({ field }) => (
@@ -168,7 +168,7 @@ export default function Step4() {
                 )} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={control} name="rcfeAdminPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Administrator Phone {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><PhoneInput placeholder="(xxx) xxx-xxxx" value={field.value ?? ''} {...field} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Administrator Phone {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><PhoneInput placeholder="(xxx) xxx-xxxx" {...field} /></FormControl><FormDescription>Format: (xxx) xxx-xxxx</FormDescription><FormMessage /></FormItem>
                     )} />
                     <FormField control={control} name="rcfeAdminEmail" render={({ field }) => (
                         <FormItem><FormLabel>Administrator Email {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
