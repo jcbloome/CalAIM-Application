@@ -101,13 +101,12 @@ export const formSchema = z.object({
     ispFacilityName: optionalString,
     ispPhone: requiredPhone,
     ispEmail: requiredEmail,
-    ispCopyCurrent: z.boolean().optional(),
-    ispLocationType: optionalString,
-    ispAddress: optionalString,
-    ispCity: optionalString,
-    ispState: optionalString,
-    ispZip: optionalString,
-    ispCounty: optionalString,
+    ispLocationType: requiredString,
+    ispAddress: requiredString,
+    ispCity: requiredString,
+    ispState: requiredString,
+    ispZip: requiredString,
+    ispCounty: requiredString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'Please select an option for ALW waitlist.' }),
     hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: 'Please select an option for preferred RCFE.' }),
     rcfeName: optionalString,
@@ -148,15 +147,6 @@ export const formSchema = z.object({
         if (!data.rcfeAdminName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["rcfeAdminName"] });
         if (!data.rcfeAdminPhone || !phoneRegex.test(data.rcfeAdminPhone)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A valid Administrator Phone is required.", path: ["rcfeAdminPhone"] });
         if (!data.rcfeAdminEmail || !z.string().email().safeParse(data.rcfeAdminEmail).success) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A valid Administrator Email is required.", path: ["rcfeAdminEmail"] });
-    }
-
-    if (!data.ispCopyCurrent) {
-        if (!data.ispLocationType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispLocationType"] });
-        if (!data.ispAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispAddress"] });
-        if (!data.ispCity) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispCity"] });
-        if (!data.ispState) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispState"] });
-        if (!data.ispZip) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispZip"] });
-        if (!data.ispCounty) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "This field is required.", path: ["ispCounty"] });
     }
   });
 
