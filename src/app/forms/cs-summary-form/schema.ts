@@ -77,12 +77,12 @@ export const formSchema = z.object({
     currentZip: requiredString,
     currentCounty: requiredString,
     copyAddress: z.boolean().optional(),
-    customaryLocationType: requiredString,
-    customaryAddress: requiredString,
-    customaryCity: requiredString,
-    customaryState: requiredString,
-    customaryZip: requiredString,
-    customaryCounty: requiredString,
+    customaryLocationType: optionalString,
+    customaryAddress: optionalString,
+    customaryCity: optionalString,
+    customaryState: optionalString,
+    customaryZip: optionalString,
+    customaryCounty: optionalString,
 
     // Step 3 - Health Plan & Pathway
     healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: 'Please select a health plan.'}),
