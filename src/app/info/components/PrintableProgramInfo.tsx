@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { acronyms } from '@/lib/data';
 
 const SectionTitle = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
     <h2 className={`text-2xl font-bold text-gray-800 mt-10 mb-4 ${className}`}>{children}</h2>
@@ -23,15 +24,10 @@ export function PrintableProgramInfo() {
                 <p className="mt-2 text-md text-gray-500">The Connections Care Home Consultants application portal for the California Advancing and Innovating Medi-Cal (CalAIM) Community Support for Assisted Transitions (SNF Diversion/Transition) for Health Net and Kaiser.</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10 p-6 bg-gray-50 rounded-lg not-prose">
-                <Acronym term="MCP" definition="Managed Care Plan" />
-                <Acronym term="RCFE" definition="Residential Care Facility for the Elderly" />
-                <Acronym term="ARF" definition="Adult Residential Facility" />
-                <Acronym term="CalAIM" definition="California Advancing and Innovating Medi-Cal" />
-                <Acronym term="SNF" definition="Skilled Nursing Facility" />
-                <Acronym term="ISP" definition="Individual Service Plan" />
-                <Acronym term="CS" definition="Community Supports" />
-                <Acronym term="SOC" definition="Share of Cost" />
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10 p-6 bg-gray-50 rounded-lg not-prose border-2 border-primary">
+                {acronyms.map((acronym) => (
+                    <Acronym key={acronym.term} term={acronym.term} definition={acronym.definition} />
+                ))}
             </div>
 
             <SectionTitle>What is CalAIM?</SectionTitle>
@@ -44,11 +40,11 @@ export function PrintableProgramInfo() {
             <p>For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination.</p>
 
             <SectionTitle>Managed Care Plans We Work With</SectionTitle>
+            <p>You must be a member of one of these plans to utilize us for the CS for Assisted Transitions.</p>
             <ul className="list-disc pl-5">
                 <li><strong>Health Net:</strong> Serving members in Sacramento and Los Ángeles counties.</li>
                 <li><strong>Kaiser Permanente:</strong> Serving members in various counties throughout California.</li>
             </ul>
-            <p>You must be a member of one of these plans to utilize us for the CS for Assisted Transitions.</p>
             
             <SectionTitle>Types of Assisted Living (RCFEs/ARFs)</SectionTitle>
              <p>Assisted Living facilities (RCFEs or ARFs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:</p>

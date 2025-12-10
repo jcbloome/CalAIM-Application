@@ -4,7 +4,7 @@
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Printer, ArrowRight, ExternalLink, Download, FileUp, Send, Package } from 'lucide-react';
+import { FileText, Printer, ArrowRight, ExternalLink, Download, FileUp, Send, Package, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 const forms = [
     { name: 'CS Member Summary', icon: FileText, href: '/forms/cs-summary-form/printable' },
     { name: 'Program Information & Acknowledgment', icon: FileText, href: '/info' },
+    { name: 'Acronym Glossary', icon: BookOpen, href: '/forms/acronym-glossary/printable' },
     { name: 'HIPAA Authorization', icon: FileText, href: '/forms/hipaa-authorization/printable' },
     { name: 'Liability Waiver', icon: FileText, href: '/forms/liability-waiver/printable' },
     { name: 'Freedom of Choice Waiver', icon: FileText, href: '/forms/freedom-of-choice/printable' },

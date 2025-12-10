@@ -10,6 +10,7 @@ import { PrintableLiabilityWaiverContent } from '@/app/forms/liability-waiver/pr
 import { PrintableFreedomOfChoiceContent } from '@/app/forms/freedom-of-choice/printable/PrintableFreedomOfChoiceContent';
 import { PrintableDeclarationOfEligibilityContent } from '@/app/forms/declaration-of-eligibility/printable/PrintableDeclarationOfEligibilityContent';
 import { PrintableProgramInfo } from '@/app/info/components/PrintableProgramInfo';
+import { PrintableGlossaryContent } from '@/app/forms/acronym-glossary/printable/PrintableGlossaryContent';
 
 const PageBreak = () => <div className="page-break-before"></div>;
 
@@ -35,6 +36,9 @@ export default function FullPackagePrintPage() {
         <div className="p-8 print:p-4 space-y-8">
             {/* The content that will be printed */}
             <PrintableProgramInfo />
+            <PageBreak />
+            <PrintableGlossaryContent />
+            <PageBreak />
             <PrintableCsSummaryFormContent />
             <PrintableHipaaFormContent />
             <PrintableLiabilityWaiverContent />
