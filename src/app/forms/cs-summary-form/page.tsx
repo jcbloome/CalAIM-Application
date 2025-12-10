@@ -331,13 +331,6 @@ function CsSummaryFormComponent() {
                     </span>
                 </div>
                 <Progress value={progress} className="w-full" />
-                 {validationError && (
-                  <Alert variant="destructive" className="mt-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Validation Error</AlertTitle>
-                    <AlertDescription>{validationError}</AlertDescription>
-                  </Alert>
-                )}
               </div>
 
               <div className="min-h-[450px]">
@@ -347,18 +340,27 @@ function CsSummaryFormComponent() {
                 {currentStep === 4 && <Step4 />}
               </div>
 
-              <div className="mt-8 pt-5 border-t flex justify-between">
-                <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                </Button>
-
-                {currentStep < steps.length ? (
-                  <Button type="button" onClick={nextStep}>
-                    Next
-                  </Button>
-                ) : (
-                  <Button type="submit">Review & Complete</Button>
+              <div className="mt-8 pt-5 border-t">
+                 {validationError && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Validation Error</AlertTitle>
+                    <AlertDescription>{validationError}</AlertDescription>
+                  </Alert>
                 )}
+                <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                    </Button>
+
+                    {currentStep < steps.length ? (
+                      <Button type="button" onClick={nextStep}>
+                        Next
+                      </Button>
+                    ) : (
+                      <Button type="submit">Review & Complete</Button>
+                    )}
+                </div>
               </div>
               
             </div>
