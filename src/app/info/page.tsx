@@ -29,7 +29,7 @@ const allSections = [
         page: 1,
         icon: HelpCircle,
         title: "What is CalAIM?",
-        content: ["California Advancing and Innovating Medi-Cal (CalAIM) is a long-term initiative by the state of California to transform the Medi-Cal program. Its goals are to improve health outcomes, reduce health disparities, and create a more integrated and seamless healthcare system. This portal focuses on one specific part of CalAIM: the Community Supports service for assisted living transitions. CS and ECM are administered through managed care plans (MCPs)."]
+        content: ["CalAIM (California Advancing and Innovating Medi-Cal) is a long-term initiative by the state of California to transform the Medi-Cal program. Its goals are to improve health outcomes, reduce health disparities, and create a more integrated and seamless healthcare system. This portal focuses on one specific part of CalAIM: the Community Supports service for assisted living transitions. CS and ECM are administered through managed care plans (MCPs)."]
     },
     {
         page: 1,
