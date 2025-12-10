@@ -32,7 +32,7 @@ const steps = [
       'referrerPhone', 'referrerRelationship', 'agency',
       'bestContactFirstName', 'bestContactLastName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
       'secondaryContactFirstName', 'secondaryContactLastName', 'secondaryContactRelationship', 'secondaryContactPhone', 'secondaryContactEmail', 'secondaryContactLanguage',
-      'hasCapacity', 'hasLegalRep', 'repFirstName', 'repLastName', 'repRelationship', 'repPhone', 'repEmail'
+      'hasCapacity', 'hasLegalRep', 'isRepPrimaryContact', 'repFirstName', 'repLastName', 'repRelationship', 'repPhone', 'repEmail'
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'customaryLocationType', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan', 'existingHealthPlan', 'snfDiversionReason'] },
@@ -92,6 +92,7 @@ function CsSummaryFormComponent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       meetsPathwayCriteria: false,
+      isRepPrimaryContact: false,
     },
   });
 
@@ -125,6 +126,7 @@ function CsSummaryFormComponent() {
                     referrerLastName: lastName,
                     referrerEmail: user.email || '',
                     meetsPathwayCriteria: false,
+                    isRepPrimaryContact: false,
                 });
             }
         }
@@ -138,6 +140,7 @@ function CsSummaryFormComponent() {
               referrerLastName: lastName,
               referrerEmail: user.email || '',
               meetsPathwayCriteria: false,
+              isRepPrimaryContact: false,
           });
       }
     };
