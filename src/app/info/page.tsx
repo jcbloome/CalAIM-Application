@@ -22,13 +22,6 @@ import { Header } from '@/components/Header';
 import { GlossaryDialog } from '@/components/GlossaryDialog';
 import { PrintableProgramInfo } from './components/PrintableProgramInfo';
 import { Button } from '@/components/ui/button';
-import { acronyms } from '@/lib/data';
-
-const Acronym = ({ term, definition }: { term: string, definition: string }) => (
-    <div>
-        <p><strong className="font-semibold text-gray-700">{term}:</strong> {definition}</p>
-    </div>
-);
 
 const allSections = [
     // Page 1
@@ -36,13 +29,13 @@ const allSections = [
         page: 1,
         icon: HelpCircle,
         title: "What is CalAIM?",
-        content: ["California Advancing and Innovating Medi-Cal (CalAIM) is California's long-term initiative to transform the Medi-Cal program by improving quality outcomes, reducing health disparities, and creating a more seamless and consistent system. It aims to achieve this through a focus on \"whole person care,\" which includes addressing social determinants of health, integrating physical, mental, and social services, and launching new programs like Enhanced Care Management (ECM) and Community Supports. CS and ECM are administered through managed care plans (MCPs)."]
+        content: ["California Advancing and Innovating Medi-Cal (CalAIM) is California's long-term initiative to transform the Medi-Cal program by improving quality outcomes, reducing health disparities, and creating a more seamless and consistent system. It aims to achieve this through a focus on \"whole person care,\" which includes addressing social determinants of health, integrating physical, mental, and social services, and launching new programs like Enhanced Care Management (ECM) and Community Supports.", "CS and ECM are administered through managed care plans (MCPs)."]
     },
     {
         page: 1,
         icon: Users,
         title: "Community Support for Assisted Living Transitions",
-        content: ["There are 14 Community Supports (CS), and this application portal is for one of them, called Assisted Living Transitions. This CS gives eligible members the choice to reside in an assisted living setting—such as a Residential Care Facility for the Elderly (RCFE) or an Adult Residential Facility (ARF)—as a safe alternative to a skilled nursing facility (SNF), promoting greater independence and community integration. The CS is either for SNF Diversion (e.g. for members coming from a community-based setting (e.g., from home or hospital) at risk of premature institutionalization or SNF Transitions (e.g., for members residing in SNFs) eligible to reside in assisted living settings."]
+        content: ["There are 14 Community Supports (CS), and this application portal is for one of them, called Assisted Living Transitions. This CS gives eligible members the choice to reside in an assisted living setting—such as a Residential Care Facility for the Elderly (RCFE) or an Adult Residential Facility (ARF)—as a safe alternative to a skilled nursing facility (SNF), promoting greater independence and community integration.", "The CS is either for SNF Diversion (e.g. for members coming from a community-based setting (e.g., from home or hospital) at risk of premature institutionalization or SNF Transitions (e.g., for members residing in SNFs) eligible to reside in assisted living settings."]
     },
     {
         page: 1,
@@ -194,14 +187,14 @@ export default function ProgramInfoPage() {
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
           <div className="bg-card rounded-lg border shadow-sm p-6 sm:p-8 print:hidden">
-             <div className="mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div className="mb-8 flex justify-between items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Program Information</h1>
                     <p className="mt-2 text-md text-muted-foreground">
                         An overview of the CalAIM program and our services.
                     </p>
                 </div>
-                <GlossaryDialog className="hidden sm:flex" />
+                <GlossaryDialog />
             </div>
 
              {renderPageContent()}
@@ -247,3 +240,5 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
+
+    
