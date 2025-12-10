@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { useEffect } from 'react';
 import { type FormValues } from '../schema';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { PhoneInput } from '@/components/ui/phone-input';
 
 
@@ -385,20 +384,6 @@ export default function Step1() {
                 <h3 className="font-medium">Representative's Contact Info</h3>
                  <FormField
                     control={control}
-                    name="isRepPrimaryContact"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                            <FormLabel>Is the Legal Rep also the Primary Contact?</FormLabel>
-                        </div>
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={control}
                     name="hasLegalRep"
                     render={({ field }) => (
                         <FormItem className="space-y-3">
@@ -409,10 +394,9 @@ export default function Step1() {
                             <RadioGroup onValueChange={field.onChange} value={field.value ?? ''} className="flex items-center space-x-4">
                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Yes" /></FormControl><FormLabel className="font-normal">Yes</FormLabel></FormItem>
                                 <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="No" /></FormControl><FormLabel className="font-normal">No</FormLabel></FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="Unknown" /></FormControl><FormLabel className="font-normal">Unknown</FormLabel></FormItem>
                             </RadioGroup>
                         </FormControl>
-                        <FormDescription>If the member does not have a legal representative, you can leave these fields blank.</FormDescription>
+                        <FormDescription>If yes, fill in below fields.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}

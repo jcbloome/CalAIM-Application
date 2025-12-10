@@ -14,7 +14,7 @@ const requiredEmail = z.string().email({ message: "Invalid email address." }).mi
 const optionalEmail = z.string().email({ message: "Invalid email address." }).optional().nullable().or(z.literal(''));
 
 const dateSchema = z.string().refine(val => {
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(val)) return false;
+    if (!/^\d{2}\/\d{2}\/\d{4}\$/.test(val)) return false;
     const [month, day, year] = val.split('/').map(Number);
     if (month < 1 || month > 12 || day < 1 || day > 31) return false;
     const date = new Date(year, month - 1, day);
@@ -61,13 +61,12 @@ export const formSchema = z.object({
 
     // Step 1 - Legal Rep
     hasCapacity: z.enum(['Yes', 'No'], { required_error: 'Please select an option for member capacity.' }),
-    hasLegalRep: z.enum(['Yes', 'No', 'Unknown']).optional().nullable(),
+    hasLegalRep: z.enum(['Yes', 'No']).optional().nullable(),
     repFirstName: optionalString,
     repLastName: optionalString,
     repRelationship: optionalString,
     repPhone: optionalPhone,
     repEmail: optionalEmail,
-    isRepPrimaryContact: z.boolean().optional(),
 
     // Step 2 - Location
     currentLocation: requiredString,
