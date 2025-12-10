@@ -47,7 +47,7 @@ const allSections = [
         page: 1,
         icon: Building,
         title: "Managed Care Plans We Work With",
-        content: ["You must be a member of one of these plans to utilize our services for the CalAIM Community Support for Assisted Living Transitions."],
+        content: ["You must be a member of one of these plans to utilize us for the CS for Assisted Transitions."],
         list: [
             "Health Net: Serving members in Sacramento and Los Ángeles counties.",
             "Kaiser Permanente: Serving members in various counties throughout California."

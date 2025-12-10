@@ -48,7 +48,7 @@ export function PrintableProgramInfo() {
                 <li><strong>Health Net:</strong> Serving members in Sacramento and Los Ángeles counties.</li>
                 <li><strong>Kaiser Permanente:</strong> Serving members in various counties throughout California.</li>
             </ul>
-            <p>You must be a member of one of these plans to utilize our services for the CalAIM Community Support for Assisted Living Transitions.</p>
+            <p>You must be a member of one of these plans to utilize us for the CS for Assisted Transitions.</p>
             
             <SectionTitle>Types of Assisted Living (RCFEs/ARFs)</SectionTitle>
              <p>Assisted living facilities in California (also known as residential care facilities for the elderly - RCFEs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:</p>
