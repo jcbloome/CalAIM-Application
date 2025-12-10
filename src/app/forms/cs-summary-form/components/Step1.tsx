@@ -273,7 +273,7 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>e.g., Hospital Name. If not applicable, leave blank.</FormDescription>
+                  <FormDescription>If not applicable, leave blank.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
