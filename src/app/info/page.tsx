@@ -194,16 +194,14 @@ export default function ProgramInfoPage() {
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
           <div className="bg-card rounded-lg border shadow-sm p-6 sm:p-8 print:hidden">
-             <div className="mb-6 text-center">
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Program Information</h1>
-                <p className="mt-2 text-md text-muted-foreground">
-                    An overview of the CalAIM program and our services.
-                </p>
-             </div>
-
-            <div className="my-8 p-4 bg-muted/30 rounded-lg border-2 border-primary text-center">
-                <p className="text-sm text-muted-foreground mb-2">Confused by the acronyms? We've got you covered.</p>
-                <GlossaryDialog />
+             <div className="mb-8 flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Program Information</h1>
+                    <p className="mt-2 text-md text-muted-foreground">
+                        An overview of the CalAIM program and our services.
+                    </p>
+                </div>
+                <GlossaryDialog className="hidden sm:flex" />
             </div>
 
              {renderPageContent()}
