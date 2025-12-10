@@ -26,7 +26,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "text-sm font-medium hidden",
         caption_dropdowns: "flex justify-center gap-1",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -59,7 +59,7 @@ function Calendar({
       }}
       components={{
         Dropdown: ({ value, onChange, options, ...props }: DropdownProps) => {
-          const selectedOption = options?.find((option) => option.value === value)
+          const selectedOption = options.find((option) => option.value === value)
           const handleChange = (newValue: string) => {
             const changeEvent = {
               target: { value: newValue },
@@ -78,7 +78,7 @@ function Calendar({
               </SelectTrigger>
               <SelectContent position="popper">
                 <ScrollArea className="h-80">
-                  {options?.map((option, id: number) => (
+                  {options.map((option, id: number) => (
                     <SelectItem
                       key={`${option.value}-${id}`}
                       value={option.value?.toString() ?? ""}
