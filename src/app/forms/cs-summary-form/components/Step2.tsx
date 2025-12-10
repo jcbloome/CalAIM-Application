@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEffect } from 'react';
 
-const locationOptions = ["Home", "SNF", "RCFE", "Hospital", "Sub-Acute", "Unhoused", "Other"];
+const locationOptions = ["Home", "Hospital", "Skilled Nursing", "Unhoused", "Sub-Acute", "Assisted Living", "Other"];
 
 export default function Step2() {
   const { control, watch, setValue, getValues, clearErrors } = useFormContext<FormValues>();
