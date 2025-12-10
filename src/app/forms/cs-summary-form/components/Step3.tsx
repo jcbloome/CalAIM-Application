@@ -10,10 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import type { FormValues } from '../schema';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 export default function Step3() {
   const { control, watch } = useFormContext<FormValues>();
   const pathway = watch('pathway');
+  const healthPlan = watch('healthPlan');
+  const switchingHealthPlan = watch('switchingHealthPlan');
   
   return (
     <div className="space-y-6">
@@ -73,6 +77,15 @@ export default function Step3() {
                       </FormItem>
                   )}
               />
+              {healthPlan === 'Other' && switchingHealthPlan === 'No' && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Eligibility Warning</AlertTitle>
+                  <AlertDescription>
+                    To use this service, the member must be enrolled with Kaiser or Health Net, or be planning to switch. If they are not switching, this application cannot proceed.
+                  </AlertDescription>
+                </Alert>
+              )}
           </div>
         </CardContent>
       </Card>
