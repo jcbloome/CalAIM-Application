@@ -28,11 +28,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const steps = [
   { id: 1, name: 'Member & Contact Info', fields: [
       'memberFirstName', 'memberLastName', 'memberAge', 'memberMrn', 'confirmMemberMrn', 'memberLanguage', 'memberCounty',
-      'memberMediCalNum', 'confirmMemberMediCalNum',
+      'memberMediCalNum', 'confirmMemberMediCalNum', 'memberDob',
       'referrerPhone', 'referrerRelationship', 'agency',
       'bestContactFirstName', 'bestContactLastName', 'bestContactRelationship', 'bestContactPhone', 'bestContactEmail', 'bestContactLanguage',
       'secondaryContactFirstName', 'secondaryContactLastName', 'secondaryContactRelationship', 'secondaryContactPhone', 'secondaryContactEmail', 'secondaryContactLanguage',
-      'hasCapacity', 'hasLegalRep', 'isRepPrimaryContact', 'repFirstName', 'repLastName', 'repRelationship', 'repPhone', 'repEmail'
+      'hasCapacity', 'hasLegalRep', 'repFirstName', 'repLastName', 'repRelationship', 'repPhone', 'repEmail'
   ]},
   { id: 2, name: 'Location Information', fields: ['currentLocation', 'currentAddress', 'currentCity', 'currentState', 'currentZip', 'currentCounty', 'customaryLocationType', 'customaryAddress', 'customaryCity', 'customaryState', 'customaryZip', 'customaryCounty'] },
   { id: 3, name: 'Health Plan & Pathway', fields: ['healthPlan', 'pathway', 'meetsPathwayCriteria', 'switchingHealthPlan', 'existingHealthPlan', 'snfDiversionReason'] },
@@ -92,7 +92,6 @@ function CsSummaryFormComponent() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       meetsPathwayCriteria: false,
-      isRepPrimaryContact: false,
     },
   });
 
@@ -126,7 +125,6 @@ function CsSummaryFormComponent() {
                     referrerLastName: lastName,
                     referrerEmail: user.email || '',
                     meetsPathwayCriteria: false,
-                    isRepPrimaryContact: false,
                 });
             }
         }
@@ -140,7 +138,6 @@ function CsSummaryFormComponent() {
               referrerLastName: lastName,
               referrerEmail: user.email || '',
               meetsPathwayCriteria: false,
-              isRepPrimaryContact: false,
           });
       }
     };
@@ -206,19 +203,15 @@ function CsSummaryFormComponent() {
     const isValid = await trigger(fields as FieldPath<FormValues>[], { shouldFocus: true });
     
     if (!isValid) {
-      // Find the first error in the current step's fields
-      const firstErrorField = fields.find(field => errors[field as keyof FormValues]);
-      const errorMessage = firstErrorField ? `${firstErrorField}: ${errors[firstErrorField as keyof FormValues]?.message}` : "Please fix the errors on this page before continuing.";
-      
       const detailedErrors = formatErrorsForDisplay(errors);
       setValidationError(`Please correct the following errors:\n${detailedErrors}`);
-      return; // Stop advancement
+      return;
     }
 
     setValidationError(null);
     
-    await saveProgress(true);
     if (currentStep < steps.length) {
+        await saveProgress(true);
         setCurrentStep(currentStep + 1);
         window.scrollTo(0, 0);
     }
@@ -367,7 +360,7 @@ function CsSummaryFormComponent() {
                   <Alert variant="destructive" className="mb-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Validation Error</AlertTitle>
-                    <AlertDescription className="whitespace-pre-wrap">
+                    <AlertDescription className="whitespace-pre-wrap text-xs font-mono bg-destructive-foreground text-destructive p-2 rounded-md">
                       {validationError}
                     </AlertDescription>
                   </Alert>
