@@ -91,7 +91,7 @@ service cloud.firestore {
      * @param userId The UID of the document's owner.
      */
     function isOwnerOrAdmin(userId) {
-      return isOwner(userId) || isAdmin();
+      return isOwner(userId) || isAdmin() || isSuperAdmin();
     }
 
     /**
@@ -183,16 +183,25 @@ service cloud.firestore {
         }
       }
     }
+    
+    match /applications/{applicationId} {
+       allow read, list, create, update, delete: if isAdmin() || isSuperAdmin();
+    }
+    
+     match /applications/{applicationId}/{subcollection}/{docId} {
+        allow read, list, create, update, delete: if isAdmin() || isSuperAdmin();
+     }
+
 
     /**
      * @description Defines admin roles. The existence of a document grants admin privileges.
      * @path /roles_admin/{userId}
-     * @allow (none) This collection is not readable or writable by any client.
-     * @deny (all) All client-side requests to read, list, or write are denied.
-     * @principle Secures administrative role management by disallowing any client-side modifications. Roles must be assigned out-of-band (e.g., Firebase Console).
+     * @allow (get) Any signed-in user can check if they are an admin.
+     * @deny (list, create, update, delete) All other operations are denied for security.
+     * @principle Secures administrative role management by disallowing any client-side modifications.
      */
     match /roles_admin/{userId} {
-      allow get: if false;
+      allow get: if isSignedIn();
       allow list: if false;
       allow create: if false;
       allow update: if false;
@@ -202,12 +211,13 @@ service cloud.firestore {
     /**
      * @description Defines super admin roles.
      * @path /roles_super_admin/{userId}
-     * @allow (none) This collection is not readable or writable by any client.
-     * @deny (all) All client-side requests to read, list, or write are denied.
-     * @principle Secures super administrative role management by disallowing any client-side modifications. Roles must be assigned out-of-band (e.g., Firebase Console).
+     * @allow (get) A super admin can check roles.
+     * @deny (all client) All client-side requests to read, list, or write are denied unless super admin.
+     * @principle Secures super administrative role management by disallowing any client-side modifications.
      */
     match /roles_super_admin/{userId} {
-      allow read, list, write: if isSuperAdmin();
+      allow get: if isSignedIn();
+      allow list, write: if isSuperAdmin();
     }
   }
 }
