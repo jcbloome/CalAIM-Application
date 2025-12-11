@@ -5,7 +5,24 @@ import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 
 
-export const applications: (Omit<Application, 'userId'> & { id: string; userId: string; memberName?: string; healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; memberMrn?: string; })[] = [];
+export const applications: (Omit<Application, 'userId'> & { id: string; userId: string; memberName?: string; healthPlan?: string; referrerName?: string; ispContactName?: string; agency?: string; memberMrn?: string; })[] = [
+  {
+    id: 'app-001',
+    userId: 'user-001',
+    memberFirstName: 'Tim',
+    memberLastName: 'Frank',
+    status: 'In Progress',
+    lastUpdated: Timestamp.fromDate(new Date('2023-10-26T10:00:00Z')),
+    pathway: 'SNF Transition',
+    healthPlan: 'Kaiser Permanente',
+    forms: [
+      { name: 'CS Member Summary', status: 'Completed', type: 'Form', href: '#' },
+      { name: 'HIPAA Authorization', status: 'Pending', type: 'online-form', href: '#' },
+      { name: 'Liability Waiver', status: 'Pending', type: 'online-form', href: '#' }
+    ],
+    progress: 33,
+  },
+];
 
 export const acronyms: Acronym[] = [
   { term: 'ARF', definition: 'Adult Residential Facility' },

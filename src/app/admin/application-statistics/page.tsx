@@ -209,18 +209,20 @@ export default function ApplicationStatisticsPage() {
          <Card className="border-t-4 border-sky-500">
             <CardHeader>
                 <CardTitle className="text-base">Applications by County</CardTitle>
-                <CardDescription>Top 5 counties by application volume.</CardDescription>
+                <CardDescription>Total applications per county.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={{}} className="h-[250px] w-full">
-                    <BarChart layout="vertical" data={statsData.byCounty} margin={{ top: 0, right: 20, left: 50, bottom: 0 }}>
-                    <CartesianGrid horizontal={false} />
-                    <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} fontSize={12} width={100} />
-                    <XAxis type="number" hide />
-                    <Tooltip cursor={false} content={<ChartTooltipContent />} />
-                    <Bar dataKey="value" layout="vertical" radius={4} fill="hsl(var(--chart-2))" />
-                    </BarChart>
-                </ChartContainer>
+                <ScrollArea className="h-64">
+                    <div className="space-y-2 text-sm pr-4">
+                        {statsData.byCounty.map(item => (
+                            <div key={item.name} className="flex justify-between">
+                                <span>{item.name}</span>
+                                <span className="font-medium">{item.value}</span>
+                            </div>
+                        ))}
+                         {statsData.byCounty.length === 0 && <p className="text-muted-foreground text-center">No county data available.</p>}
+                    </div>
+                </ScrollArea>
             </CardContent>
         </Card>
       </div>
