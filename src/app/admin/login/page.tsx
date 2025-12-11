@@ -49,15 +49,13 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(true);
 
-  const handleAuthAction = async (e: React.FormEvent, asSuperAdmin = false) => {
+  const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const action = isSigningIn ? 'Sign In' : (asSuperAdmin ? 'Super Admin Creation' : 'Sign Up');
     setIsLoading(true);
 
     if (!auth || !firestore) {
-      const errorMsg = "Firebase auth service is not available.";
-      setError(errorMsg);
+      setError("Firebase auth service is not available.");
       setIsLoading(false);
       return;
     }
@@ -68,6 +66,7 @@ export default function AdminLoginPage() {
       if (isSigningIn) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        
         const adminDocRef = doc(firestore, 'roles_admin', user.uid);
         const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
 
@@ -77,40 +76,30 @@ export default function AdminLoginPage() {
         if (adminDoc.exists() || superAdminDoc.exists()) {
           router.push('/admin/applications');
         } else {
-          const accessDeniedError = "Access Denied. You do not have admin privileges.";
-          setError(accessDeniedError);
+          setError("Access Denied. You do not have admin privileges.");
           if (auth) await auth.signOut();
         }
-      } else { // Signing Up or Creating Super Admin
-        if (asSuperAdmin) {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+      } else { // Signing Up
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const newUser = userCredential.user;
 
-            const superAdminRoleRef = doc(firestore, 'roles_super_admin', user.uid);
-            await setDoc(superAdminRoleRef, { email: user.email, role: 'super_admin', createdAt: new Date() });
-            router.push('/admin/applications');
-        } else {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const newUser = userCredential.user;
+        await updateProfile(newUser, {
+            displayName: `${firstName} ${lastName}`.trim()
+        });
 
-            await updateProfile(newUser, {
-                displayName: `${firstName} ${lastName}`.trim()
-            });
+        const userDocRef = doc(firestore, 'users', newUser.uid);
+        await setDoc(userDocRef, {
+            id: newUser.uid,
+            firstName: firstName,
+            lastName: lastName,
+            displayName: `${firstName} ${lastName}`.trim(),
+            email: newUser.email,
+        });
+        
+        const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
+        await setDoc(adminRoleRef, { email: newUser.email, role: 'admin' });
 
-            const userDocRef = doc(firestore, 'users', newUser.uid);
-            await setDoc(userDocRef, {
-                id: newUser.uid,
-                firstName: firstName,
-                lastName: lastName,
-                displayName: `${firstName} ${lastName}`.trim(),
-                email: newUser.email,
-            });
-            
-            const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
-            await setDoc(adminRoleRef, { email: newUser.email, role: 'admin' });
-
-            router.push('/admin/applications');
-        }
+        router.push('/admin/applications');
       }
 
     } catch (err: any) {
@@ -134,7 +123,7 @@ export default function AdminLoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={(e) => handleAuthAction(e)} className="space-y-4">
+          <form onSubmit={handleAuthAction} className="space-y-4">
              {!isSigningIn && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -194,20 +183,9 @@ export default function AdminLoginPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             
-            {isSigningIn ? (
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Sign In'}
-                </Button>
-            ) : (
-                <>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Create Account'}
-                    </Button>
-                    <Button type="button" onClick={(e) => handleAuthAction(e, true)} className="w-full" variant="destructive" disabled={isLoading}>
-                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Sign Up as Super Admin (One-Time)'}
-                    </Button>
-                </>
-            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : isSigningIn ? 'Sign In' : 'Create Account'}
+            </Button>
           </form>
            <div className="mt-4 text-center text-sm">
               {isSigningIn ? "Need to create an admin account?" : 'Already have an admin account?'}
