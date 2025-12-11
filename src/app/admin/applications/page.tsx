@@ -13,13 +13,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { applications as mockApplications } from '@/lib/data';
 import type { Application, ApplicationStatus } from '@/lib/definitions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileDown, Search } from 'lucide-react';
+import { FileDown, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, collectionGroup, query } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
+import { useMemo } from 'react';
 
 const getBadgeVariant = (status: ApplicationStatus) => {
   switch (status) {
@@ -33,11 +34,10 @@ const getBadgeVariant = (status: ApplicationStatus) => {
 const formatDate = (date: string | Timestamp | undefined) => {
     if (!date) return 'N/A';
     if (typeof date === 'string') {
-        // Try parsing the string, assuming it's a valid date string like 'YYYY-MM-DD'
         try {
             return format(new Date(date), 'MM/dd/yyyy');
         } catch {
-            return date; // Return original string if parsing fails
+            return date;
         }
     }
     if (date instanceof Timestamp) {
@@ -47,6 +47,15 @@ const formatDate = (date: string | Timestamp | undefined) => {
 };
 
 export default function AdminApplicationsPage() {
+    const firestore = useFirestore();
+
+    const applicationsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collectionGroup(firestore, 'applications')) as any;
+    }, [firestore]);
+
+    const { data: applications, isLoading } = useCollection<Application>(applicationsQuery);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -97,7 +106,14 @@ export default function AdminApplicationsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockApplications.map(app => (
+                {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                        </TableCell>
+                    </TableRow>
+                ) : applications && applications.length > 0 ? (
+                  applications.map(app => (
                   <TableRow key={app.id}>
                     <TableCell>
                       <div className="font-medium">{`${app.memberFirstName} ${app.memberLastName}`}</div>
@@ -112,11 +128,17 @@ export default function AdminApplicationsPage() {
                     <TableCell className="hidden sm:table-cell">{formatDate(app.lastUpdated)}</TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/application/${app.id}`}>View Details</Link>
+                        <Link href={`/admin/application/${app.id}?userId=${app.userId}`}>View Details</Link>
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))) : (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                           No applications found.
+                        </TableCell>
+                    </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

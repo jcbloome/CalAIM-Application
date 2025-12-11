@@ -11,27 +11,32 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { applications as mockApplications } from '@/lib/data';
 import type { FormStatus, ApplicationStatus } from '@/lib/definitions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CheckCircle2, Circle, FileQuestion, BookOpen } from 'lucide-react';
+import { CheckCircle2, Circle, FileQuestion, BookOpen, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import type { Application } from '@/lib/definitions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { useFirestore, useCollection } from '@/firebase';
+import { collectionGroup, query } from 'firebase/firestore';
 
-// Get a list of all unique form names across all applications
-const allFormNames = Array.from(new Set(mockApplications.flatMap(app => app.forms.map(form => form.name))));
 
-// Add any other forms that might not be in the initial mock data but should have a column
-const additionalForms = ['SNF Facesheet', 'Proof of Income', "LIC 602A - Physician's Report", "Medicine List", 'Declaration of Eligibility', 'Program Information'];
-additionalForms.forEach(formName => {
-    if (!allFormNames.includes(formName)) {
-        allFormNames.push(formName);
-    }
-});
+const allFormNames = [
+    'CS Member Summary',
+    'Program Information',
+    'HIPAA Authorization',
+    'Liability Waiver',
+    'Freedom of Choice Waiver',
+    'SNF Facesheet', 
+    'Proof of Income', 
+    "LIC 602A - Physician's Report", 
+    "Medicine List", 
+    'Declaration of Eligibility'
+];
+
 
 const formInitialsMap: Record<string, string> = {
     'CS Member Summary': 'CS',
@@ -87,6 +92,7 @@ const FormStatusIcon = ({ status }: { status: FormStatus['status'] | undefined }
 
 
 export default function FormTrackerPage() {
+    const firestore = useFirestore();
     const [filters, setFilters] = useState({
         status: 'all',
         healthPlan: 'all',
@@ -97,6 +103,13 @@ export default function FormTrackerPage() {
     
     const [sortBy, setSortBy] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+    const applicationsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collectionGroup(firestore, 'applications')) as any;
+    }, [firestore]);
+
+    const { data: applications, isLoading } = useCollection<Application>(applicationsQuery);
 
     const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
         setFilters(prev => ({ ...prev, [filterName]: value }));
@@ -112,7 +125,8 @@ export default function FormTrackerPage() {
     };
     
     const filteredApplications = useMemo(() => {
-        let filtered = [...mockApplications];
+        if (!applications) return [];
+        let filtered = [...applications];
 
         if (filters.status !== 'all') {
             filtered = filtered.filter(app => app.status === filters.status);
@@ -134,8 +148,8 @@ export default function FormTrackerPage() {
         
         if (sortBy) {
             filtered.sort((a, b) => {
-                const formStatusA = a.forms.find(f => f.name === sortBy)?.status || 'Pending';
-                const formStatusB = b.forms.find(f => f.name === sortBy)?.status || 'Pending';
+                const formStatusA = a.forms?.find(f => f.name === sortBy)?.status || 'Pending';
+                const formStatusB = b.forms?.find(f => f.name === sortBy)?.status || 'Pending';
 
                 const valueA = formStatusA === 'Completed' ? 1 : 0;
                 const valueB = formStatusB === 'Completed' ? 1 : 0;
@@ -148,7 +162,7 @@ export default function FormTrackerPage() {
 
 
         return filtered;
-    }, [filters, sortBy, sortDirection]);
+    }, [applications, filters, sortBy, sortDirection]);
 
   return (
     <div className="space-y-6">
@@ -257,14 +271,21 @@ export default function FormTrackerPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredApplications.map(app => {
-                    const formStatusMap = new Map(app.forms.map(form => [form.name, form.status]));
+                  {isLoading ? (
+                     <TableRow>
+                        <TableCell colSpan={legendItems.length + 1} className="h-24 text-center">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                        </TableCell>
+                    </TableRow>
+                  ) : filteredApplications.length > 0 ? (
+                  filteredApplications.map(app => {
+                    const formStatusMap = new Map(app.forms?.map(form => [form.name, form.status]));
                     const requiredForms = getRequiredFormsForPathway(app.pathway);
                     return (
                       <TableRow key={app.id}>
                         <TableCell>
-                          <Link href={`/admin/application/${app.id}`} className="font-medium hover:underline text-primary">
-                            {app.memberName}
+                          <Link href={`/admin/application/${app.id}?userId=${app.userId}`} className="font-medium hover:underline text-primary">
+                            {app.memberFirstName} {app.memberLastName}
                           </Link>
                           <div className="text-xs text-muted-foreground font-mono truncate">{app.id}</div>
                           <div className="text-xs text-muted-foreground">{app.healthPlan} – {app.pathway}</div>
@@ -283,7 +304,13 @@ export default function FormTrackerPage() {
                           })}
                       </TableRow>
                     );
-                  })}
+                  })) : (
+                     <TableRow>
+                        <TableCell colSpan={legendItems.length + 1} className="h-24 text-center">
+                            No applications found.
+                        </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

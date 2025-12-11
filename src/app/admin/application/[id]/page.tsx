@@ -2,19 +2,19 @@
 
 'use client';
 
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock, ShieldAlert } from 'lucide-react';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
-import { applications as mockApplications, activities as mockActivities } from '@/lib/data';
+import { activities as mockActivities } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -28,112 +28,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const FormViewer = dynamic(() => import('./FormViewer').then(mod => mod.FormViewer), {
   loading: () => <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>,
 });
-
-
-// This is a temporary solution for the demo to find the mock application data
-// In a real app, you would fetch this from a central 'applications' collection or use a backend search function.
-const getMockApplicationById = (id: string): (Application & { [key: string]: any }) | undefined => {
-  const app = mockApplications.find(app => app.id === id);
-  if (app) {
-      // This function now creates a detailed mock object using the exact field names
-      // from the `cs-summary-form/schema.ts` file to ensure webhook consistency.
-      return {
-        ...app,
-        // Step 1: Member Info
-        memberFirstName: app.memberFirstName || 'Test',
-        memberLastName: app.memberLastName || 'User',
-        memberDob: Timestamp.fromDate(new Date(1960, 5, 15)),
-        memberAge: 64,
-        memberMrn: app.memberMrn,
-        confirmMemberMrn: app.memberMrn,
-        memberLanguage: 'English',
-        memberCounty: 'Los Angeles',
-
-        // Step 1: Referrer Info (assuming 'user' is the referrer)
-        referrerFirstName: 'Jason',
-        referrerLastName: 'Bloome',
-        referrerEmail: 'user@example.com', // Added for email notifications
-        referrerPhone: '(555) 123-4567',
-        referrerRelationship: 'Social Worker',
-        agency: 'Care Home Finders',
-
-        // Step 1: Primary/Secondary Contact Info
-        bestContactType: 'other',
-        bestContactFirstName: 'Contact',
-        bestContactLastName: 'Person',
-        bestContactRelationship: 'Family Member',
-        bestContactPhone: '(555) 555-5555',
-        bestContactEmail: 'contact@example.com',
-        bestContactLanguage: 'English',
-        secondaryContactFirstName: 'Secondary',
-        secondaryContactLastName: 'Person',
-        secondaryContactRelationship: 'Friend',
-        secondaryContactPhone: '(555) 111-2222',
-        secondaryContactEmail: 'secondary@example.com',
-        secondaryContactLanguage: 'Spanish',
-
-        // Step 1: Legal Rep
-        hasCapacity: 'No',
-        hasLegalRep: 'Yes',
-        repName: 'Legal Eagle',
-        repRelationship: 'Lawyer',
-        repPhone: '(555) 333-4444',
-        repEmail: 'legal@rep.com',
-        isRepPrimaryContact: false,
-
-        // Step 2: Location
-        currentLocation: 'SNF',
-        currentAddress: '123 Nursing Way',
-        currentCity: 'Healthville',
-        currentState: 'CA',
-        currentZip: '90210',
-        currentCounty: 'Los Angeles',
-        copyAddress: false,
-        customaryAddress: '456 Home Street',
-        customaryCity: 'Hometown',
-        customaryState: 'CA',
-        customaryZip: '90211',
-        customaryCounty: 'Los Angeles',
-
-        // Step 3: Health Plan & Pathway
-        healthPlan: app.healthPlan || 'Kaiser Permanente',
-        switchingHealthPlan: 'No',
-        pathway: app.pathway || 'SNF Transition',
-        meetsPathwayCriteria: true,
-        snfDiversionReason: 'N/A',
-
-        // Step 4: ISP & RCFE
-        ispFirstName: 'ISP',
-        ispLastName: 'Coordinator',
-        ispRelationship: 'Coordinator',
-        ispFacilityName: 'Community Services Center',
-        ispPhone: '(555) 555-5555',
-        ispEmail: 'isp@example.com',
-        ispCopyCurrent: false,
-        ispLocationType: 'SNF',
-        ispAddress: '789 Assessment Dr',
-        ispCity: 'Planville',
-        ispState: 'CA',
-        ispZip: '90213',
-        ispCounty: 'Los Angeles',
-        onALWWaitlist: 'No',
-        hasPrefRCFE: 'Yes',
-        rcfeName: 'The Golden Years RCFE',
-        rcfeAddress: '789 Sunshine Ave, Happy Town, CA',
-        rcfeAdminName: 'Admin Person',
-        rcfeAdminPhone: '(555) 111-2222',
-        rcfeAdminEmail: 'rcfe-admin@example.com',
-        
-        // Other top-level fields from the original mock structure
-        forms: app.forms, // Explicitly carry over the forms array
-        UserEmail: 'user@example.com', // Keep for notifications if used elsewhere
-        MemberFullName: `${app.memberFirstName} ${app.memberLastName}`, // Keep for display if needed
-        userId: app.userId,
-      };
-  }
-  return undefined;
-};
-
 
 const ApplicationActivityLog = ({ activities }: { activities: Activity[] }) => {
   return (
@@ -258,13 +152,20 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
 
 export default function AdminApplicationDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const { id } = params as { id: string };
+  const userId = searchParams.get('userId');
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  
-  const [localApplication, setLocalApplication] = useState< (Application & { [key: string]: any }) | null | undefined>(undefined);
+
+  const applicationDocRef = useMemo(() => {
+    if (!firestore || !userId || !id) return null;
+    return doc(firestore, `users/${userId}/applications`, id);
+  }, [firestore, userId, id]);
+
+  const { data: application, isLoading: isApplicationLoading } = useDoc<Application & { [key:string]: any }>(applicationDocRef);
 
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [isFormViewerOpen, setFormViewerOpen] = useState(false);
@@ -275,13 +176,6 @@ export default function AdminApplicationDetailPage() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState('');
 
-  useEffect(() => {
-    if (id) {
-        const appData = getMockApplicationById(id);
-        setLocalApplication(appData ? appData : null);
-    }
-  }, [id]);
-  
   useEffect(() => {
     if (!isFormViewerOpen) {
       setSelectedForm(null);
@@ -294,15 +188,15 @@ export default function AdminApplicationDetailPage() {
 
 
   const handleRequestRevision = async () => {
-    if (!localApplication || !revisionDetails || !targetFormForRevision) return;
-
-    setLocalApplication(prev => prev ? { ...prev, status: 'Requires Revision' } : null);
+    if (!application || !revisionDetails || !targetFormForRevision || !applicationDocRef) return;
 
     try {
+        await updateDoc(applicationDocRef, { status: 'Requires Revision' });
+        
         await sendRevisionRequestEmail({
-            to: localApplication.UserEmail,
-            subject: `Revision Required for Your CalAIM Application: ${localApplication.MemberFullName}`,
-            memberName: localApplication.MemberFullName,
+            to: application.UserEmail || application.referrerEmail,
+            subject: `Revision Required for Your CalAIM Application: ${application.memberFirstName} ${application.memberLastName}`,
+            memberName: `${application.memberFirstName} ${application.memberLastName}`,
             formName: targetFormForRevision,
             revisionNotes: revisionDetails
         });
@@ -313,11 +207,11 @@ export default function AdminApplicationDetailPage() {
             className: 'bg-green-100 text-green-900 border-green-200',
         });
     } catch (error) {
-        console.error("Failed to send email:", error);
+        console.error("Failed to send email or update status:", error);
         toast({
             variant: 'destructive',
-            title: 'Email Failed',
-            description: 'Could not send the revision request email. Please try again.',
+            title: 'Action Failed',
+            description: 'Could not send the revision request email or update status. Please try again.',
         });
     }
 
@@ -327,14 +221,14 @@ export default function AdminApplicationDetailPage() {
   };
   
    const handleDeleteApplication = async () => {
-    if (!localApplication || !user) return;
+    if (!application || !user || !applicationDocRef) return;
 
     if (deleteMessage) {
         try {
             await sendApplicationStatusEmail({
-                to: localApplication.UserEmail,
-                subject: `CalAIM Application Status Update for ${localApplication.MemberFullName}`,
-                memberName: localApplication.MemberFullName,
+                to: application.UserEmail || application.referrerEmail,
+                subject: `CalAIM Application Status Update for ${application.memberFirstName} ${application.memberLastName}`,
+                memberName: `${application.memberFirstName} ${application.memberLastName}`,
                 staffName: user.displayName || 'The Admin Team',
                 message: deleteMessage,
                 status: 'Deleted'
@@ -348,40 +242,46 @@ export default function AdminApplicationDetailPage() {
             });
         }
     }
-
-    const appIndex = mockApplications.findIndex(a => a.id === localApplication.id);
-    if (appIndex !== -1) {
-        mockApplications.splice(appIndex, 1);
-    }
     
-     mockActivities.unshift({
-        id: `act-${Date.now()}`,
-        applicationId: localApplication.id,
-        user: user.displayName || 'Admin',
-        action: 'Application Deletion',
-        timestamp: new Date().toLocaleString(),
-        details: `Deleted application for ${localApplication.MemberFullName}. ${deleteMessage ? 'User was notified.' : 'User was not notified.'}`
-    });
+    try {
+      await deleteDoc(applicationDocRef);
+      toast({
+          title: 'Application Deleted',
+          description: `The application for ${application.memberFirstName} ${application.memberLastName} has been removed.`,
+      });
+      router.push('/admin/applications');
+    } catch (error) {
+        console.error("Failed to delete application:", error);
+         toast({
+            variant: 'destructive',
+            title: 'Deletion Failed',
+            description: 'Could not delete the application. Please try again.',
+        });
+    }
 
-    toast({
-        title: 'Application Deleted',
-        description: `The application for ${localApplication.MemberFullName} has been removed.`,
-    });
     setDeleteDialogOpen(false);
-    router.push('/admin/applications');
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    if (!localApplication) return;
-     setLocalApplication(prev => prev ? { ...prev, status: newStatus as any } : undefined);
-    
-    toast({
-        title: "Status Updated",
-        description: `Application for ${localApplication.MemberFullName} is now: ${newStatus}`,
-    });
+  const handleStatusChange = async (newStatus: string) => {
+    if (!application || !applicationDocRef) return;
+     
+    try {
+        await updateDoc(applicationDocRef, { status: newStatus, lastUpdated: Timestamp.now() });
+        toast({
+            title: "Status Updated",
+            description: `Application for ${application.memberFirstName} ${application.memberLastName} is now: ${newStatus}`,
+        });
+    } catch (error) {
+        console.error("Failed to update status:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Update Failed',
+            description: 'Could not update the application status. Please try again.',
+        });
+    }
   }
 
-  if (localApplication === undefined) {
+  if (isApplicationLoading) {
     return (
         <div className="flex items-center justify-center h-screen">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -390,13 +290,13 @@ export default function AdminApplicationDetailPage() {
     );
   }
   
-  if (localApplication === null) {
+  if (!application) {
       notFound();
   }
 
 
-  const completedForms = localApplication.forms?.filter(f => f.status === 'Completed').length || 0;
-  const totalForms = localApplication.forms?.length || 0;
+  const completedForms = application.forms?.filter(f => f.status === 'Completed').length || 0;
+  const totalForms = application.forms?.length || 0;
   const progress = totalForms > 0 ? (completedForms / totalForms) * 100 : 0;
 
   return (
@@ -419,7 +319,7 @@ export default function AdminApplicationDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Are you absolutely sure?</DialogTitle>
                   <DialogDescription>
-                    This action cannot be undone. This will permanently delete the application for <strong>{localApplication.MemberFullName}</strong>.
+                    This action cannot be undone. This will permanently delete the application for <strong>{application.memberFirstName} {application.memberLastName}</strong>.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-2">
@@ -440,7 +340,7 @@ export default function AdminApplicationDetailPage() {
             </Dialog>
         </div>
 
-      {localApplication.hasCapacity === 'No' && (
+      {application.hasCapacity === 'No' && (
           <Alert variant="destructive">
               <ShieldAlert className="h-4 w-4" />
               <AlertTitle>Member Lacks Capacity</AlertTitle>
@@ -454,12 +354,12 @@ export default function AdminApplicationDetailPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div>
-              <CardTitle className="text-2xl">Application: {localApplication.id}</CardTitle>
+              <CardTitle className="text-2xl">Application: {application.id}</CardTitle>
               <CardDescription className="flex flex-col sm:flex-row sm:gap-x-2">
-                <span>Member: <strong>{localApplication.MemberFullName}</strong> | </span>
-                <span>Health Plan: <strong>{localApplication.healthPlan}</strong> | </span>
-                <span>Pathway: <strong>{localApplication.pathway}</strong> | </span>
-                <span>Status: <strong>{localApplication.status}</strong></span>
+                <span>Member: <strong>{application.memberFirstName} {application.memberLastName}</strong> | </span>
+                <span>Health Plan: <strong>{application.healthPlan}</strong> | </span>
+                <span>Pathway: <strong>{application.pathway}</strong> | </span>
+                <span>Status: <strong>{application.status}</strong></span>
               </CardDescription>
             </div>
             <div className="text-left sm:text-right shrink-0">
@@ -482,7 +382,7 @@ export default function AdminApplicationDetailPage() {
               </CardHeader>
               <CardContent>
                   <div className="space-y-4">
-                  {localApplication.forms?.map((form: FormStatus) => (
+                  {application.forms?.map((form: FormStatus) => (
                       <div key={form.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border p-4">
                       <div className="flex items-center gap-4">
                           {form.status === 'Completed' ? (
@@ -512,7 +412,7 @@ export default function AdminApplicationDetailPage() {
                       </div>
                       </div>
                   ))}
-                  {!localApplication.forms?.length && (
+                  {!application.forms?.length && (
                       <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
                   )}
                   </div>
@@ -523,7 +423,7 @@ export default function AdminApplicationDetailPage() {
           </div>
 
           <div className="lg:col-span-1">
-               <ApplicationStatusTracker application={localApplication} onStatusChange={handleStatusChange} />
+               <ApplicationStatusTracker application={application} onStatusChange={handleStatusChange} />
           </div>
       </div>
       
@@ -539,11 +439,11 @@ export default function AdminApplicationDetailPage() {
               <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                       <Label htmlFor="memberName">Member Name</Label>
-                      <Input id="memberName" value={localApplication.MemberFullName} readOnly />
+                      <Input id="memberName" value={`${application.memberFirstName} ${application.memberLastName}`} readOnly />
                   </div>
                    <div className="space-y-2">
                       <Label htmlFor="userEmail">Recipient Email</Label>
-                      <Input id="userEmail" value={localApplication.UserEmail} readOnly />
+                      <Input id="userEmail" value={application.UserEmail || application.referrerEmail} readOnly />
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="revision-details">Revision Details</Label>
@@ -569,7 +469,7 @@ export default function AdminApplicationDetailPage() {
               <DialogHeader>
                   <DialogTitle>{selectedForm || 'Form View'}: Read-Only</DialogTitle>
               </DialogHeader>
-              {selectedForm && <FormViewer formName={selectedForm} application={localApplication} />}
+              {selectedForm && <FormViewer formName={selectedForm} application={application} />}
           </DialogContent>
       </Dialog>
     </div>

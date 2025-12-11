@@ -12,8 +12,6 @@ import { Send, Loader2, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { applications as mockApplications } from '@/lib/data';
-import dynamic from 'next/dynamic';
 
 const Field = ({ label, value }: { label: string; value: any }) => (
     <div>
@@ -67,16 +65,8 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
     const { user } = useUser();
     const isSuperAdmin = user?.email === 'jason@carehomefinders.com';
 
+    // Uniqueness check is disabled since we no longer have mock data
     const checkUniqueness = async (): Promise<{ isUnique: boolean, reason: string }> => {
-        const duplicate = mockApplications.find(app => 
-            app.id !== application.id && 
-            (app as any).memberMrn === application.memberMrn &&
-            (app as any).caspioSent
-        );
-        
-        if (duplicate) {
-            return { isUnique: false, reason: `An application with MRN # ${application.memberMrn} has already been sent to Caspio.` };
-        }
         return { isUnique: true, reason: '' };
     };
 
@@ -120,11 +110,6 @@ const CaspioSender = ({ application }: { application: Partial<Application> & { [
                 throw new Error(`Webhook server responded with status ${response.status}: ${errorText}`);
             }
             
-            const appIndex = mockApplications.findIndex(a => a.id === application.id);
-            if (appIndex !== -1) {
-                (mockApplications[appIndex] as any).caspioSent = true;
-            }
-
             toast({
                 title: 'Success!',
                 description: 'Application data has been sent to Caspio.',

@@ -1,11 +1,10 @@
 
 
 'use client';
-
+import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { statsData } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -16,10 +15,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Building, Users, Route } from 'lucide-react';
+import { Building, Users, Route, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+import { useFirestore, useCollection } from '@/firebase';
+import { collectionGroup, query, Timestamp } from 'firebase/firestore';
+import type { Application } from '@/lib/definitions';
+import { format } from 'date-fns';
 
 const StatCard = ({ title, value, icon: Icon, data, description, borderColor }: { title: string, value: string | number, icon: React.ElementType, data?: { name: string, value: number }[], description?: string, borderColor?: string }) => (
     <Card className={cn(borderColor)}>
@@ -93,6 +94,68 @@ const TopListCard = ({ title, data, listType, borderColor }: { title: string; da
 
 
 export default function ApplicationStatisticsPage() {
+    const firestore = useFirestore();
+
+    const applicationsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collectionGroup(firestore, 'applications')) as any;
+    }, [firestore]);
+
+    const { data: applications, isLoading } = useCollection<Application & { [key: string]: any }>(applicationsQuery);
+
+    const statsData = useMemo(() => {
+        if (!applications) {
+            return { byMcp: [], byPathway: [], byCounty: [], monthly: [], topIspContacts: [], topReferrers: [] };
+        }
+        
+        const byMcp: Record<string, number> = {};
+        const byPathway: Record<string, number> = {};
+        const byCounty: Record<string, number> = {};
+        const monthly: Record<string, number> = {};
+        const topIspContacts: Record<string, number> = {};
+        const topReferrers: Record<string, number> = {};
+
+        for (const app of applications) {
+            if (app.healthPlan) byMcp[app.healthPlan] = (byMcp[app.healthPlan] || 0) + 1;
+            if (app.pathway) byPathway[app.pathway] = (byPathway[app.pathway] || 0) + 1;
+            if (app.memberCounty) byCounty[app.memberCounty] = (byCounty[app.memberCounty] || 0) + 1;
+
+            if (app.lastUpdated) {
+                try {
+                    const date = app.lastUpdated instanceof Timestamp ? app.lastUpdated.toDate() : new Date(app.lastUpdated);
+                    const month = format(date, 'MMM');
+                    monthly[month] = (monthly[month] || 0) + 1;
+                } catch (e) {
+                    // Ignore invalid dates for stats
+                }
+            }
+            if (app.ispContactName) topIspContacts[app.ispContactName] = (topIspContacts[app.ispContactName] || 0) + 1;
+            if (app.agency && app.agency !== 'N/A') topReferrers[app.agency] = (topReferrers[app.agency] || 0) + 1;
+        }
+
+        const formatForChart = (data: Record<string, number>) => Object.entries(data).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
+        const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const sortedMonthly = Object.entries(monthly).map(([month, total]) => ({ month, total })).sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+
+        return {
+            byMcp: formatForChart(byMcp),
+            byPathway: formatForChart(byPathway),
+            byCounty: formatForChart(byCounty),
+            monthly: sortedMonthly,
+            topIspContacts: formatForChart(topIspContacts),
+            topReferrers: formatForChart(topReferrers),
+        };
+    }, [applications]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        )
+    }
+
     const totalByMcp = statsData.byMcp.reduce((sum, item) => sum + item.value, 0);
     const totalByPathway = statsData.byPathway.reduce((sum, item) => sum + item.value, 0);
 
