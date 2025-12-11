@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
     setLog([]);
-    const action = isSigningIn ? 'Sign In' : (asSuperAdmin ? 'Super Admin Sign Up' : 'Sign Up');
+    const action = isSigningIn ? 'Sign In' : (asSuperAdmin ? 'Super Admin Creation' : 'Sign Up');
     addLog(`Starting ${action} process for ${email}...`);
     setIsLoading(true);
 
@@ -101,38 +101,48 @@ export default function AdminLoginPage() {
           setError(accessDeniedError);
           if (auth) await auth.signOut();
         }
-      } else { // Signing Up
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        addLog("createUserWithEmailAndPassword successful.");
-        const newUser = userCredential.user;
-
-        addLog("Updating user profile...");
-        await updateProfile(newUser, {
-            displayName: `${firstName} ${lastName}`.trim()
-        });
-
-        addLog(`Creating user document in 'users/${newUser.uid}'...`);
-        const userDocRef = doc(firestore, 'users', newUser.uid);
-        await setDoc(userDocRef, {
-            id: newUser.uid,
-            firstName: firstName,
-            lastName: lastName,
-            displayName: `${firstName} ${lastName}`.trim(),
-            email: newUser.email,
-        });
-        
+      } else { // Signing Up or Creating Super Admin
         if (asSuperAdmin) {
-            addLog(`Creating SUPER ADMIN role document in 'roles_super_admin/${newUser.uid}'...`);
-            const superAdminRoleRef = doc(firestore, 'roles_super_admin', newUser.uid);
-            await setDoc(superAdminRoleRef, { email: newUser.email, role: 'super_admin' });
+            // This is the special flow for a pre-existing user needing a super_admin role.
+            // We sign them in, then create the role document.
+            addLog("Attempting to sign in existing user to grant Super Admin role...");
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            addLog(`Sign-in successful for user ${user.uid}.`);
+
+            addLog(`Creating SUPER ADMIN role document in 'roles_super_admin/${user.uid}'...`);
+            const superAdminRoleRef = doc(firestore, 'roles_super_admin', user.uid);
+            await setDoc(superAdminRoleRef, { email: user.email, role: 'super_admin', createdAt: new Date() });
+            addLog("Super Admin role created. Redirecting...");
+            router.push('/admin/applications');
         } else {
+            // Standard new admin sign-up flow.
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            addLog("createUserWithEmailAndPassword successful.");
+            const newUser = userCredential.user;
+
+            addLog("Updating user profile...");
+            await updateProfile(newUser, {
+                displayName: `${firstName} ${lastName}`.trim()
+            });
+
+            addLog(`Creating user document in 'users/${newUser.uid}'...`);
+            const userDocRef = doc(firestore, 'users', newUser.uid);
+            await setDoc(userDocRef, {
+                id: newUser.uid,
+                firstName: firstName,
+                lastName: lastName,
+                displayName: `${firstName} ${lastName}`.trim(),
+                email: newUser.email,
+            });
+            
             addLog(`Creating admin role document in 'roles_admin/${newUser.uid}'...`);
             const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
             await setDoc(adminRoleRef, { email: newUser.email, role: 'admin' });
-        }
 
-        addLog("Sign up complete. Redirecting...");
-        router.push('/admin/applications');
+            addLog("Sign up complete. Redirecting...");
+            router.push('/admin/applications');
+        }
       }
 
     } catch (err: any) {
@@ -216,21 +226,20 @@ export default function AdminLoginPage() {
               </Button>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-              ) : (
-                isSigningIn ? 'Sign In' : 'Create Account'
-              )}
-            </Button>
-             {!isSigningIn && (
-              <Button type="button" onClick={(e) => handleAuthAction(e, true)} className="w-full" variant="destructive" disabled={isLoading}>
-                {isLoading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-                ) : (
-                  'Sign Up as Super Admin (One-Time)'
-                )}
-              </Button>
+            
+            {isSigningIn ? (
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Sign In'}
+                </Button>
+            ) : (
+                <>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Create Account'}
+                    </Button>
+                    <Button type="button" onClick={(e) => handleAuthAction(e, true)} className="w-full" variant="destructive" disabled={isLoading}>
+                        {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Sign Up as Super Admin (One-Time)'}
+                    </Button>
+                </>
             )}
           </form>
            <div className="mt-4 text-center text-sm">
