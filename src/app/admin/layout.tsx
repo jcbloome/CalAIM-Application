@@ -14,6 +14,7 @@ import {
   LogOut,
   UserCog,
   BellRing,
+  Loader2,
 } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar';
 import { useUser, useAuth, useFirestore } from '@/firebase';
@@ -45,21 +46,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
   useEffect(() => {
+    // If we're on the login page, don't do any auth checks here. Let the login page handle it.
     if (pathname === '/admin/login') {
       setIsCheckingRole(false);
       return;
     }
 
+    // Wait until Firebase has determined the auth state.
     if (isUserLoading) {
       return;
     }
 
+    // If no user is logged in, redirect to the admin login page.
     if (!user) {
       router.push('/admin/login');
       setIsCheckingRole(false);
       return;
     }
 
+    // If there is a user, check their roles.
     const checkAdminRole = async () => {
       if (!firestore) {
         setIsCheckingRole(false);
@@ -69,20 +74,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsCheckingRole(true);
       try {
         const adminDocRef = doc(firestore, 'roles_admin', user.uid);
-        const adminDocSnap = await getDoc(adminDocRef);
-        const hasAdminRole = adminDocSnap.exists();
-        setIsAdmin(hasAdminRole);
-
         const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
-        const superAdminDocSnap = await getDoc(superAdminDocRef);
+        
+        const [adminDocSnap, superAdminDocSnap] = await Promise.all([
+            getDoc(adminDocRef),
+            getDoc(superAdminDocSnap)
+        ]);
+        
+        const hasAdminRole = adminDocSnap.exists();
         const hasSuperAdminRole = superAdminDocSnap.exists();
+
+        setIsAdmin(hasAdminRole);
         setIsSuperAdmin(hasSuperAdminRole);
         
+        // If the user has neither role, sign them out and send to the public login.
         if (!hasAdminRole && !hasSuperAdminRole) {
           if (auth) await auth.signOut();
           router.push('/login'); 
         }
       } catch (error: any) {
+        console.error("Error checking admin roles:", error);
         setIsAdmin(false);
         setIsSuperAdmin(false);
         if (auth) await auth.signOut();
@@ -99,8 +110,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isUserLoading || (isCheckingRole && pathname !== '/admin/login')) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 font-sans">
-        <div className="p-6 bg-white rounded-lg shadow-md max-w-2xl w-full">
-            <h2 className="text-xl font-semibold mb-4 text-center">Verifying Session...</h2>
+        <div className="p-6 bg-white rounded-lg shadow-md flex items-center gap-4">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <h2 className="text-xl font-semibold">Verifying Session...</h2>
         </div>
       </div>
     );
@@ -110,12 +122,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
+  // This prevents a flash of admin content for non-admin users before redirect.
   if (!isAdmin && !isSuperAdmin) {
      return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 font-sans">
         <div className="p-6 bg-white rounded-lg shadow-md max-w-2xl w-full">
           <h2 className="text-xl font-semibold mb-4 text-center text-red-600">Access Denied</h2>
-          <p className="text-center">You do not have the required admin role. Redirecting...</p>
+          <p className="text-center">You do not have the required permissions. Redirecting...</p>
         </div>
       </div>
     );
@@ -150,7 +163,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarMenu>
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild isActive={pathname === item.href}>
+                <SidebarMenuButton asChild isActive={pathname.startsWith(item.href)}>
                   <Link href={item.href}>
                     <item.icon />
                     <span>{item.label}</span>
