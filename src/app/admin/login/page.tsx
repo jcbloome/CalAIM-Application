@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserSessionPersistence, User } from 'firebase/auth';
+import React, { useState } from 'react';
+import { useAuth, useFirestore } from '@/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +39,6 @@ export default function AdminLoginPage() {
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
-  const { user, isUserLoading } = useUser();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,65 +49,24 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(true);
   const [log, setLog] = useState<string[]>([]);
-  
+
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setLog(prev => [`${timestamp}: ${message}`, ...prev]);
   };
 
-  useEffect(() => {
-    if (user && !isUserLoading && firestore) {
-      addLog(`User detected: ${user.uid}. Checking roles...`);
-      const verifyAdminAndRedirect = async (user: User) => {
-        const adminDocRef = doc(firestore, 'roles_admin', user.uid);
-        const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
-        
-        try {
-          addLog(`Checking admin role at path: ${adminDocRef.path}`);
-          const adminDoc = await getDoc(adminDocRef);
-          addLog(`Admin role exists: ${adminDoc.exists()}`);
-
-          addLog(`Checking super admin role at path: ${superAdminDocRef.path}`);
-          const superAdminDoc = await getDoc(superAdminDocRef);
-          addLog(`Super admin role exists: ${superAdminDoc.exists()}`);
-
-          if (adminDoc.exists() || superAdminDoc.exists()) {
-            addLog('Role verified. Redirecting to /admin/applications');
-            router.push('/admin/applications');
-          } else {
-            addLog('User is not an admin. Signing out.');
-            if(auth) await auth.signOut();
-            setError("Access Denied. You do not have admin privileges.");
-          }
-        } catch (e: any) {
-          addLog(`Error checking roles: ${e.message}`);
-          setError(`Error during role verification: ${e.message}`);
-           if(auth) await auth.signOut();
-        }
-      };
-      verifyAdminAndRedirect(user);
-    } else if (!user && !isUserLoading) {
-        addLog("No user logged in.");
-    }
-  }, [user, isUserLoading, firestore, auth, router]);
-
-
-  const handleAuthAction = async (e: React.FormEvent) => {
+  const handleAuthAction = async (e: React.FormEvent, asSuperAdmin = false) => {
     e.preventDefault();
     setError(null);
-    setLog([]); // Clear log on new attempt
-    addLog(`Starting ${isSigningIn ? 'Sign In' : 'Sign Up'} process for ${email}...`);
+    setLog([]);
+    const action = isSigningIn ? 'Sign In' : (asSuperAdmin ? 'Super Admin Sign Up' : 'Sign Up');
+    addLog(`Starting ${action} process for ${email}...`);
     setIsLoading(true);
 
     if (!auth || !firestore) {
       const errorMsg = "Firebase auth service is not available.";
       addLog(errorMsg);
       setError(errorMsg);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not connect to Firebase. Please try again later.',
-      });
       setIsLoading(false);
       return;
     }
@@ -118,48 +76,68 @@ export default function AdminLoginPage() {
       await setPersistence(auth, browserSessionPersistence);
 
       if (isSigningIn) {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          addLog("signInWithEmailAndPassword successful.");
-          // The useEffect will now handle role checking and redirection.
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        addLog("signInWithEmailAndPassword successful.");
+        const user = userCredential.user;
+        addLog(`User detected: ${user.uid}. Checking roles...`);
+
+        const adminDocRef = doc(firestore, 'roles_admin', user.uid);
+        const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
+
+        addLog(`Checking admin role at path: ${adminDocRef.path}`);
+        const adminDoc = await getDoc(adminDocRef);
+        addLog(`Admin role exists: ${adminDoc.exists()}`);
+        
+        addLog(`Checking super admin role at path: ${superAdminDocRef.path}`);
+        const superAdminDoc = await getDoc(superAdminDocRef);
+        addLog(`Super admin role exists: ${superAdminDoc.exists()}`);
+
+        if (adminDoc.exists() || superAdminDoc.exists()) {
+          addLog('Role verified. Redirecting to /admin/applications');
+          router.push('/admin/applications');
+        } else {
+          const accessDeniedError = "Access Denied. You do not have admin privileges.";
+          addLog(accessDeniedError);
+          setError(accessDeniedError);
+          if (auth) await auth.signOut();
+        }
       } else { // Signing Up
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          addLog("createUserWithEmailAndPassword successful.");
-          const newUser = userCredential.user;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        addLog("createUserWithEmailAndPassword successful.");
+        const newUser = userCredential.user;
 
-          addLog("Updating user profile...");
-          await updateProfile(newUser, {
-              displayName: `${firstName} ${lastName}`.trim()
-          });
+        addLog("Updating user profile...");
+        await updateProfile(newUser, {
+            displayName: `${firstName} ${lastName}`.trim()
+        });
 
-          addLog(`Creating user document in 'users/${newUser.uid}'...`);
-          const userDocRef = doc(firestore, 'users', newUser.uid);
-          await setDoc(userDocRef, {
-              id: newUser.uid,
-              firstName: firstName,
-              lastName: lastName,
-              displayName: `${firstName} ${lastName}`.trim(),
-              email: newUser.email,
-          });
-          
-          addLog(`Creating admin role document in 'roles_admin/${newUser.uid}'...`);
-          const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
-          await setDoc(adminRoleRef, {
-              email: newUser.email,
-              role: 'admin'
-          });
+        addLog(`Creating user document in 'users/${newUser.uid}'...`);
+        const userDocRef = doc(firestore, 'users', newUser.uid);
+        await setDoc(userDocRef, {
+            id: newUser.uid,
+            firstName: firstName,
+            lastName: lastName,
+            displayName: `${firstName} ${lastName}`.trim(),
+            email: newUser.email,
+        });
+        
+        if (asSuperAdmin) {
+            addLog(`Creating SUPER ADMIN role document in 'roles_super_admin/${newUser.uid}'...`);
+            const superAdminRoleRef = doc(firestore, 'roles_super_admin', newUser.uid);
+            await setDoc(superAdminRoleRef, { email: newUser.email, role: 'super_admin' });
+        } else {
+            addLog(`Creating admin role document in 'roles_admin/${newUser.uid}'...`);
+            const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
+            await setDoc(adminRoleRef, { email: newUser.email, role: 'admin' });
+        }
 
-          addLog("Sign up complete. Redirecting...");
-          // The useEffect will handle the redirection after the user state changes.
+        addLog("Sign up complete. Redirecting...");
+        router.push('/admin/applications');
       }
 
     } catch (err: any) {
         addLog(`Authentication failed: ${err.message}`);
         setError(err.message);
-        toast({
-            variant: 'destructive',
-            title: 'Authentication Failed',
-            description: err.message,
-        });
     } finally {
         setIsLoading(false);
     }
@@ -179,7 +157,7 @@ export default function AdminLoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
-          <form onSubmit={handleAuthAction} className="space-y-4">
+          <form onSubmit={(e) => handleAuthAction(e)} className="space-y-4">
              {!isSigningIn && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -245,6 +223,15 @@ export default function AdminLoginPage() {
                 isSigningIn ? 'Sign In' : 'Create Account'
               )}
             </Button>
+             {!isSigningIn && (
+              <Button type="button" onClick={(e) => handleAuthAction(e, true)} className="w-full" variant="destructive" disabled={isLoading}>
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  'Sign Up as Super Admin (One-Time)'
+                )}
+              </Button>
+            )}
           </form>
            <div className="mt-4 text-center text-sm">
               {isSigningIn ? "Need to create an admin account?" : 'Already have an admin account?'}
