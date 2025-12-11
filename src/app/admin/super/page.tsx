@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,16 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trash2, UserPlus, Send, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-
-// Mock data - in a real app, this would come from Firestore
-const initialStaff = [
-  { id: '1', name: 'Jason Bloome', email: 'jason@carehomefinders.com', role: 'Super Admin', avatar: '/avatars/01.png' },
-  { id: '2', name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', avatar: '/avatars/02.png' },
-  { id: '3', name: 'Bob Williams', email: 'bob@example.com', role: 'Admin', avatar: '/avatars/03.png' },
-];
+import { useFirestore } from '@/firebase';
+import { createAdminUser } from '@/app/actions/admin-actions';
 
 const samplePayload = {
     memberFirstName: 'John',
@@ -101,6 +95,14 @@ const samplePayload = {
     caspioSent: true,
 };
 
+interface StaffMember {
+    id: string;
+    name: string;
+    email: string;
+    role: 'Admin' | 'Super Admin';
+    avatar?: string;
+}
+
 const WebhookPreparer = () => {
     const [isSending, setIsSending] = useState(false);
     const { toast } = useToast();
@@ -169,42 +171,106 @@ const WebhookPreparer = () => {
 
 
 export default function SuperAdminPage() {
-    const [staff, setStaff] = useState(initialStaff);
-    const [newStaffEmail, setNewStaffEmail] = useState('');
+    const firestore = useFirestore();
     const { toast } = useToast();
+    
+    const [staff, setStaff] = useState<StaffMember[]>([]);
+    const [isLoadingStaff, setIsLoadingStaff] = useState(true);
+    
+    const [newStaffEmail, setNewStaffEmail] = useState('');
+    const [newStaffFirstName, setNewStaffFirstName] = useState('');
+    const [newStaffLastName, setNewStaffLastName] = useState('');
+    const [isAddingStaff, setIsAddingStaff] = useState(false);
 
-    const handleAddStaff = () => {
-        if (newStaffEmail && !staff.find(s => s.email === newStaffEmail)) {
-            const newStaffMember = {
-                id: `staff-${Date.now()}`,
-                name: newStaffEmail.split('@')[0] || 'New Staff', // simple name from email
-                email: newStaffEmail,
-                role: 'Admin',
-                avatar: `/avatars/0${(staff.length % 5) + 1}.png` // Cycle through placeholder avatars
-            };
-            setStaff([...staff, newStaffMember]);
-            setNewStaffEmail('');
-            toast({
-                title: "Staff Added",
-                description: `${newStaffEmail} has been invited.`,
+    const fetchStaff = async () => {
+        if (!firestore) return;
+        setIsLoadingStaff(true);
+        
+        const adminUsers = new Map<string, Omit<StaffMember, 'role' | 'avatar'>>();
+        const userDocs = await getDocs(collection(firestore, 'users'));
+        userDocs.forEach(doc => {
+            const data = doc.data();
+            adminUsers.set(doc.id, {
+                id: doc.id,
+                name: data.displayName || `${data.firstName} ${data.lastName}`,
+                email: data.email
             });
-        } else {
-             toast({
-                variant: "destructive",
-                title: "Invalid Email",
-                description: "This email is either invalid or already exists.",
+        });
+
+        const allStaff: StaffMember[] = [];
+        const adminRoles = await getDocs(collection(firestore, 'roles_admin'));
+        adminRoles.forEach(doc => {
+            const user = adminUsers.get(doc.id);
+            if (user) {
+                allStaff.push({ ...user, role: 'Admin' });
+            }
+        });
+
+        const superAdminRoles = await getDocs(collection(firestore, 'roles_super_admin'));
+        superAdminRoles.forEach(doc => {
+            const user = adminUsers.get(doc.id);
+            if (user) {
+                const existingIndex = allStaff.findIndex(s => s.id === user.id);
+                if (existingIndex !== -1) {
+                    allStaff[existingIndex].role = 'Super Admin';
+                } else {
+                    allStaff.push({ ...user, role: 'Super Admin' });
+                }
+            }
+        });
+
+        setStaff(allStaff.sort((a,b) => a.name.localeCompare(b.name)));
+        setIsLoadingStaff(false);
+    };
+
+    useEffect(() => {
+        fetchStaff();
+    }, [firestore]);
+    
+
+    const handleAddStaff = async () => {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
+            toast({ variant: "destructive", title: "Missing Information", description: "Please provide a first name, last name, and email." });
+            return;
+        }
+
+        setIsAddingStaff(true);
+        try {
+            const result = await createAdminUser({ 
+                email: newStaffEmail, 
+                firstName: newStaffFirstName, 
+                lastName: newStaffLastName 
             });
+
+            if (result.success) {
+                toast({ title: "Staff Added", description: `${newStaffEmail} has been created and invited.` });
+                setNewStaffEmail('');
+                setNewStaffFirstName('');
+                setNewStaffLastName('');
+                await fetchStaff(); // Refresh the list
+            } else {
+                throw new Error(result.error || "An unknown error occurred.");
+            }
+        } catch (error: any) {
+            toast({ variant: "destructive", title: "Failed to Add Staff", description: error.message });
+        } finally {
+            setIsAddingStaff(false);
         }
     };
     
-    const handleRemoveStaff = (id: string) => {
-        const staffToRemove = staff.find(s => s.id === id);
-        setStaff(staff.filter(s => s.id !== id));
-        if (staffToRemove) {
-            toast({
-                title: "Staff Removed",
-                description: `${staffToRemove.email} has had their access revoked.`,
-            });
+    const handleRemoveStaff = async (staffMember: StaffMember) => {
+        if (!firestore) return;
+
+        try {
+            if (staffMember.role === 'Admin') {
+                await deleteDoc(doc(firestore, 'roles_admin', staffMember.id));
+            } else if (staffMember.role === 'Super Admin') {
+                await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
+            }
+            toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
+            await fetchStaff(); // Refresh list
+        } catch (error: any) {
+             toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
         }
     };
 
@@ -223,9 +289,19 @@ export default function SuperAdminPage() {
                 <CardDescription>Add or remove staff who can access the admin portal.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label htmlFor="add-staff-email">Invite New Staff by Email</Label>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                <div className="space-y-4 p-4 border rounded-lg">
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First Name</Label>
+                          <Input id="firstName" value={newStaffFirstName} onChange={e => setNewStaffFirstName(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last Name</Label>
+                          <Input id="lastName" value={newStaffLastName} onChange={e => setNewStaffLastName(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="add-staff-email">Invite New Staff by Email</Label>
                         <Input 
                             id="add-staff-email" 
                             type="email" 
@@ -233,42 +309,51 @@ export default function SuperAdminPage() {
                             value={newStaffEmail}
                             onChange={(e) => setNewStaffEmail(e.target.value)}
                         />
-                        <Button onClick={handleAddStaff} className="w-full sm:w-auto">
-                            <UserPlus className="mr-2 h-4 w-4" /> Add
-                        </Button>
                     </div>
+                    <Button onClick={handleAddStaff} className="w-full" disabled={isAddingStaff}>
+                        {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Add Staff Member
+                    </Button>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-4">
                     <h3 className="text-sm font-medium text-muted-foreground">Current Staff</h3>
-                    {staff.map(member => (
-                        <div key={member.id} className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <Avatar>
-                                    <AvatarImage src={member.avatar} alt={member.name} />
-                                    <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-semibold">{member.name}</p>
-                                    <p className="text-sm text-muted-foreground">{member.email}</p>
+                    <ScrollArea className="h-72">
+                         {isLoadingStaff ? (
+                            <div className="flex items-center justify-center p-8">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                            </div>
+                         ) : (
+                            staff.map(member => (
+                                <div key={member.id} className="flex items-center justify-between pr-4 py-2">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar>
+                                            <AvatarImage src={member.avatar} alt={member.name} />
+                                            <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="font-semibold">{member.name}</p>
+                                            <p className="text-sm text-muted-foreground">{member.email}</p>
+                                        </div>
+                                    </div>
+                                     <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="text-destructive hover:bg-destructive/10"
+                                            onClick={() => handleRemoveStaff(member)}
+                                            disabled={member.role === 'Super Admin'}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="text-destructive hover:bg-destructive/10"
-                                    onClick={() => handleRemoveStaff(member.id)}
-                                    disabled={member.role === 'Super Admin'}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    ))}
+                            ))
+                         )}
+                    </ScrollArea>
                 </div>
             </CardContent>
         </Card>
@@ -285,7 +370,6 @@ export default function SuperAdminPage() {
                     <div className="space-y-2">
                         <Label>New Application Submitted</Label>
                         <p className="text-sm text-muted-foreground">Select staff to notify when a new application is submitted.</p>
-                        {/* In a real app, this would be a multi-select component */}
                         <Input disabled placeholder="jason@carehomefinders.com, alice@example.com" />
                     </div>
                     <div className="space-y-2">
@@ -308,5 +392,3 @@ export default function SuperAdminPage() {
     </div>
   );
 }
-
-    

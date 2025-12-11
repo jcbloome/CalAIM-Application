@@ -3,8 +3,8 @@
 
 import React, { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -40,14 +40,11 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('jason@carehomefinders.com');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSigningIn, setIsSigningIn] = useState(true);
 
   const handleAuthAction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,44 +59,20 @@ export default function AdminLoginPage() {
 
     try {
       await setPersistence(auth, browserSessionPersistence);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      const adminDocRef = doc(firestore, 'roles_admin', user.uid);
+      const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
 
-      if (isSigningIn) {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        const adminDocRef = doc(firestore, 'roles_admin', user.uid);
-        const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
+      const adminDoc = await getDoc(adminDocRef);
+      const superAdminDoc = await getDoc(superAdminDocRef);
 
-        const adminDoc = await getDoc(adminDocRef);
-        const superAdminDoc = await getDoc(superAdminDocRef);
-
-        if (adminDoc.exists() || superAdminDoc.exists()) {
-          router.push('/admin/applications');
-        } else {
-          setError("Access Denied. You do not have admin privileges.");
-          if (auth) await auth.signOut();
-        }
-      } else { // Signing Up
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const newUser = userCredential.user;
-
-        await updateProfile(newUser, {
-            displayName: `${firstName} ${lastName}`.trim()
-        });
-
-        const userDocRef = doc(firestore, 'users', newUser.uid);
-        await setDoc(userDocRef, {
-            id: newUser.uid,
-            firstName: firstName,
-            lastName: lastName,
-            displayName: `${firstName} ${lastName}`.trim(),
-            email: newUser.email,
-        });
-        
-        const adminRoleRef = doc(firestore, 'roles_admin', newUser.uid);
-        await setDoc(adminRoleRef, { email: newUser.email, role: 'admin' });
-
+      if (adminDoc.exists() || superAdminDoc.exists()) {
         router.push('/admin/applications');
+      } else {
+        setError("Access Denied. You do not have admin privileges.");
+        if (auth) await auth.signOut();
       }
 
     } catch (err: any) {
@@ -115,41 +88,11 @@ export default function AdminLoginPage() {
     <main className="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="items-center text-center p-6">
-          <CardTitle className="text-3xl font-bold">
-            {isSigningIn ? 'Admin Portal' : 'Create Admin Account'}
-          </CardTitle>
-          <CardDescription className="text-base">
-            {isSigningIn ? 'Sign in to manage applications.' : 'Create a new administrative account.'}
-          </CardDescription>
+          <CardTitle className="text-3xl font-bold">Admin Portal</CardTitle>
+          <CardDescription className="text-base">Sign in to manage applications.</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleAuthAction} className="space-y-4">
-             {!isSigningIn && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="John"
-                    required
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    required
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -184,15 +127,9 @@ export default function AdminLoginPage() {
             {error && <p className="text-sm text-destructive">{error}</p>}
             
             <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : isSigningIn ? 'Sign In' : 'Create Account'}
+                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Sign In'}
             </Button>
           </form>
-           <div className="mt-4 text-center text-sm">
-              {isSigningIn ? "Need to create an admin account?" : 'Already have an admin account?'}
-              <Button variant="link" onClick={() => setIsSigningIn(!isSigningIn)} className="pl-1">
-                  {isSigningIn ? 'Sign Up' : 'Sign In'}
-              </Button>
-            </div>
         </CardContent>
       </Card>
     </main>
