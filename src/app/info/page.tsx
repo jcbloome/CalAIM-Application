@@ -190,15 +190,14 @@ export default function ProgramInfoPage() {
       <main className="flex-grow flex items-center justify-center py-8 px-4 sm:px-6">
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
-          <div className="bg-card rounded-lg border shadow-sm p-6 sm:p-8 print:hidden">
-            <div className="mb-8 flex justify-between items-center gap-4">
+          <div className="bg-card rounded-lg border shadow-sm p-4 sm:p-8 print:hidden">
+            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Program Information</h1>
                     <p className="mt-2 text-md text-muted-foreground">
                         An overview of the CalAIM program and our services.
                     </p>
                 </div>
-                <GlossaryDialog className="hidden sm:flex" />
             </div>
 
              {renderPageContent()}

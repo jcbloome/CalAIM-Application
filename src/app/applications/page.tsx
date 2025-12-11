@@ -92,7 +92,7 @@ const ApplicationsTable = ({
                 {onSelectionChange && <TableHead className="w-[50px]"></TableHead>}
                 <TableHead>Member / App ID</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Plan &amp; Pathway</TableHead>
+                <TableHead className="hidden md:table-cell">Plan &amp; Pathway</TableHead>
                 <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -125,7 +125,7 @@ const ApplicationsTable = ({
                         {app.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{app.healthPlan} - {app.pathway}</TableCell>
+                    <TableCell className="hidden md:table-cell">{app.healthPlan} - {app.pathway}</TableCell>
                     <TableCell className="hidden sm:table-cell">{app.lastUpdated ? format(app.lastUpdated.toDate(), 'MM/dd/yyyy') : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">

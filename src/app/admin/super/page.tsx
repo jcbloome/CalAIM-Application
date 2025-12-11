@@ -292,7 +292,7 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-4 p-4 border rounded-lg">
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
                           <Input id="firstName" value={newStaffFirstName} onChange={e => setNewStaffFirstName(e.target.value)} />

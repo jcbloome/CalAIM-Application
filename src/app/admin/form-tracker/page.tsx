@@ -231,7 +231,7 @@ export default function FormTrackerPage() {
                         <SelectItem value="SNF Diversion">SNF Diversion</SelectItem>
                     </SelectContent>
                 </Select>
-                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto md:col-span-1 lg:col-span-1">
+                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto md:col-span-full lg:col-span-1">
                     <Select value={filters.formName} onValueChange={(v) => handleFilterChange('formName', v)}>
                         <SelectTrigger className="w-full"><SelectValue placeholder="Filter by Form" /></SelectTrigger>
                         <SelectContent>
@@ -252,10 +252,10 @@ export default function FormTrackerPage() {
 
           <TooltipProvider>
             <div className="w-full overflow-x-auto">
-              <Table className="table-fixed min-w-[800px]">
+              <Table className="table-auto min-w-[900px] w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[250px] font-bold">Member / App ID</TableHead>
+                    <TableHead className="w-[200px] font-bold">Member / App ID</TableHead>
                     {legendItems.map(item => (
                        <TableHead key={item.initial} className="text-center w-[50px] p-0">
                           <Tooltip>

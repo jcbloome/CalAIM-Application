@@ -23,7 +23,7 @@ export default function Home() {
                 width={200}
                 height={200}
                 data-ai-hint={mascot.imageHint}
-                className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-full mb-6"
+                className="w-40 h-40 sm:w-48 sm:h-48 object-contain rounded-full mb-6"
               />
             )}
             <CardTitle className="text-3xl sm:text-5xl font-bold">Connect CalAIM</CardTitle>
