@@ -85,6 +85,7 @@ function CsSummaryFormComponent() {
   const [applicationId, setApplicationId] = useState<string | null>(searchParams.get('applicationId'));
   const initialStep = parseInt(searchParams.get('step') || '1', 10);
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
 
@@ -270,13 +271,17 @@ function CsSummaryFormComponent() {
   };
 
   const onSubmit = async (data: FormValues) => {
+    setIsProcessing(true);
+
     if (!user || !firestore) {
       toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
+      setIsProcessing(false);
       return;
     }
 
     const hasDuplicate = await checkForDuplicates(data);
     if (hasDuplicate) {
+      setIsProcessing(false);
       return;
     }
   
@@ -285,6 +290,7 @@ function CsSummaryFormComponent() {
 
     if (!finalAppId) {
          toast({ variant: "destructive", title: "Error", description: "Could not get an application ID to finalize submission." });
+         setIsProcessing(false);
          return;
     }
   
@@ -309,6 +315,8 @@ function CsSummaryFormComponent() {
         title: "Submission Error",
         description: `Could not submit your application: ${error.message}`,
       });
+    } finally {
+        setIsProcessing(false);
     }
   };
 
@@ -375,7 +383,13 @@ function CsSummaryFormComponent() {
                         Next
                       </Button>
                     ) : (
-                      <Button type="submit">Review & Complete</Button>
+                      <Button type="submit" disabled={isProcessing}>
+                        {isProcessing ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                        ) : (
+                            'Review & Complete'
+                        )}
+                      </Button>
                     )}
                 </div>
               </div>
