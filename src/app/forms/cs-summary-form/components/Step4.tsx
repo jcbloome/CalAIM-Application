@@ -161,12 +161,14 @@ export default function Step4() {
             <div className="p-4 border rounded-md space-y-4">
                 <h3 className="font-medium">Preferred Facility Details</h3>
                 <p className="text-sm text-muted-foreground">If a facility has not been chosen, you can leave these fields blank. If "Yes" is selected above, all fields are required.</p>
-                <FormField control={control} name="rcfeName" render={({ field }) => (
-                    <FormItem><FormLabel>Facility Name {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={control} name="rcfeAddress" render={({ field }) => (
-                    <FormItem><FormLabel>Facility Address {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                )} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={control} name="rcfeName" render={({ field }) => (
+                        <FormItem><FormLabel>Facility Name {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={control} name="rcfeAddress" render={({ field }) => (
+                        <FormItem><FormLabel>Facility Address {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
                 <FormField control={control} name="rcfeAdminName" render={({ field }) => (
                     <FormItem><FormLabel>Administrator Name {hasPrefRCFE === 'Yes' && <span className="text-destructive">*</span>}</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />

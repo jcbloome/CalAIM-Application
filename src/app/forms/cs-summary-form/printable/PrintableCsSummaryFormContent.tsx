@@ -233,11 +233,13 @@ export function PrintableCsSummaryFormContent() {
           <h4 className="text-xs font-medium text-gray-800 mt-4">Preferred Facility Details</h4>
           <p className="text-xs text-gray-500 pt-1">If a facility has not been chosen, you can leave these fields blank.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
-              <Field label="Facility Name" className="sm:col-span-2"/>
-              <Field label="Facility Address" className="sm:col-span-2"/>
+              <Field label="Facility Name" />
+              <Field label="Facility Address" />
+          </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-1">
               <Field label="Administrator Name" />
               <Field label="Administrator Phone" description="(xxx) xxx-xxxx" />
-              <Field label="Administrator Email" />
+              <Field label="Administrator Email" className="sm:col-span-2" />
           </div>
         </div>
       </div>
