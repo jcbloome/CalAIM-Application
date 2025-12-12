@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
-import { doc, getDoc, updateDoc, deleteDoc, collectionGroup, query, where } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
@@ -150,24 +150,21 @@ const ApplicationStatusTracker = ({ application, onStatusChange }: { application
 
 export default function AdminApplicationDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
   const id = params.id as string;
-  
-  const applicationQuery = useMemo(() => {
-    if (!firestore || !id) return null;
-    return query(collectionGroup(firestore, 'applications'), where('id', '==', id));
-  }, [firestore, id]);
+  const userId = searchParams.get('userId');
 
-  const { data: applications, isLoading } = useCollection<Application & { [key:string]: any }>(applicationQuery);
-  const application = applications?.[0];
   const applicationDocRef = useMemo(() => {
-      if (!firestore || !application) return null;
-      return doc(firestore, `users/${application.userId}/applications`, application.id);
-  }, [firestore, application]);
+    if (!firestore || !id || !userId) return null;
+    return doc(firestore, `users/${userId}/applications`, id);
+  }, [firestore, id, userId]);
+
+  const { data: application, isLoading } = useDoc<Application & { [key:string]: any }>(applicationDocRef);
 
 
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
@@ -293,6 +290,19 @@ export default function AdminApplicationDetailPage() {
   }
   
   if (!application) {
+      if (!userId) {
+          return (
+            <div className="flex items-center justify-center h-screen">
+                <Alert variant="destructive" className="max-w-lg">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Missing User ID</AlertTitle>
+                  <AlertDescription>
+                    The URL is missing the required 'userId' parameter. Please return to the applications list and try again.
+                  </AlertDescription>
+                </Alert>
+            </div>
+        );
+      }
       notFound();
   }
 
