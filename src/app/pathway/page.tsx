@@ -367,6 +367,14 @@ function PathwayPageContent() {
             )}
           </Card>
 
+           <Alert variant="default" className="bg-sky-50 border-sky-200 text-sky-800">
+              <Info className="h-4 w-4 !text-sky-800" />
+              <AlertTitle>Upload Tip</AlertTitle>
+              <AlertDescription>
+                  For convenience, you can group related documents into a single upload. For example, all waivers (HIPAA, Liability, Freedom of Choice) or all clinical documents (Physician's Report, Medicine List, etc.) can be uploaded together using the "Bundle Upload" options at the bottom of this page.
+              </AlertDescription>
+          </Alert>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pathwayRequirements.map((req) => {
                 const formInfo = formStatusMap.get(req.title);
