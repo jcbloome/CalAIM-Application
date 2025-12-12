@@ -1,3 +1,4 @@
+
 'use client';
     
 import { useState, useEffect } from 'react';
@@ -24,6 +25,11 @@ export interface UseDocResult<T> {
   error: FirestoreError | Error | null; // Error object, or null.
 }
 
+type UseDocOptions<T> = {
+  initialData?: T;
+};
+
+
 /**
  * React hook to subscribe to a single Firestore document in real-time.
  * Handles nullable references.
@@ -40,11 +46,17 @@ export interface UseDocResult<T> {
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
+  options?: UseDocOptions<T>,
 ): UseDocResult<T> {
   type StateDataType = WithId<T> | null;
 
-  const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [data, setData] = useState<StateDataType>(() => {
+    if (options?.initialData) {
+      return { ...options.initialData, id: memoizedDocRef?.id || '' } as WithId<T>;
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(!options?.initialData);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
@@ -55,9 +67,12 @@ export function useDoc<T = any>(
       return;
     }
 
-    setIsLoading(true);
+    // If we have initial data, we aren't "loading" from the user's perspective initially.
+    // The listener will update the data in the background.
+    if (!options?.initialData) {
+      setIsLoading(true);
+    }
     setError(null);
-    // Optional: setData(null); // Clear previous data instantly
 
     const unsubscribe = onSnapshot(
       memoizedDocRef,
@@ -87,7 +102,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef, options?.initialData]); // Re-run if the memoizedDocRef changes.
 
   return { data, isLoading, error };
 }
