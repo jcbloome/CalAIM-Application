@@ -63,7 +63,7 @@ export default function AdminApplicationsPage() {
                 const usersSnapshot = await getDocs(collection(firestore, 'users'));
                 
                 // 2. For each user, get their applications
-                const appPromises = usersSnapshot.docs.map(async (userDoc) => {
+                for (const userDoc of usersSnapshot.docs) {
                     const userId = userDoc.id;
                     const appsCollectionRef = collection(firestore, `users/${userId}/applications`);
                     const appsSnapshot = await getDocs(appsCollectionRef);
@@ -74,10 +74,8 @@ export default function AdminApplicationsPage() {
                             id: appDoc.id,
                         } as Application & { userId: string });
                     });
-                });
+                }
 
-                await Promise.all(appPromises);
-                
                 setApplications(allApps);
             } catch (error) {
                 console.error("Failed to fetch all applications:", error);
@@ -86,7 +84,9 @@ export default function AdminApplicationsPage() {
             }
         };
 
-        fetchAllApplications();
+        if (firestore) {
+            fetchAllApplications();
+        }
     }, [firestore]);
 
 
