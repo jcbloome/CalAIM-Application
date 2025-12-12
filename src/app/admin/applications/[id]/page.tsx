@@ -1,7 +1,7 @@
 
 import { notFound } from 'next/navigation';
 import { initializeAdminApp } from '@/firebase/admin-init';
-import { getFirestore, collectionGroup, query, where, getDocs } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import { ApplicationDetailClientView } from './ApplicationDetailClientView';
 import type { Application } from '@/lib/definitions';
 
@@ -21,25 +21,29 @@ export default async function AdminApplicationDetailPage({ params }: { params: {
     const adminFirestore = getFirestore(adminApp);
     
     // Query the 'applications' collection group to find the document by its ID
-    const applicationsCollection = collectionGroup(adminFirestore, 'applications');
-    const q = query(applicationsCollection, where('id', '==', id));
-    const querySnapshot = await getDocs(q);
+    const applicationsCollection = adminFirestore.collectionGroup('applications');
+    const q = applicationsCollection.where('id', '==', id);
+    const querySnapshot = await q.get();
 
     if (!querySnapshot.empty) {
       const docSnap = querySnapshot.docs[0];
       // Manually converting Firestore data to a plain object
       const data = docSnap.data();
+      
+      const lastUpdated = data?.lastUpdated;
+      const memberDob = data?.memberDob;
+      
       applicationData = {
         id: docSnap.id,
         ...data,
         // The userId is part of the document path, so we can get it from the ref
         userId: docSnap.ref.parent.parent?.id,
         // Convert Timestamps to ISO strings for serialization
-        lastUpdated: data?.lastUpdated?.toDate().toISOString(),
-        memberDob: data?.memberDob?.toDate().toISOString(),
+        lastUpdated: lastUpdated?.toDate ? lastUpdated.toDate().toISOString() : lastUpdated,
+        memberDob: memberDob?.toDate ? memberDob.toDate().toISOString() : memberDob,
         forms: data?.forms?.map((form: any) => ({
           ...form,
-          dateCompleted: form.dateCompleted?.toDate().toISOString() || null,
+          dateCompleted: form.dateCompleted?.toDate ? form.dateCompleted.toDate().toISOString() : form.dateCompleted || null,
         })),
       } as Application;
     }
