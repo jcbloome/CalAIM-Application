@@ -315,16 +315,14 @@ function PathwayPageContent() {
           
           <Card className="shadow-sm">
             <CardHeader>
-              <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
-                      Application for {application.memberFirstName} {application.memberLastName}
-                    </CardTitle>
-                    <CardDescription>
-                      Submitted by {user?.displayName} | {application.pathway} ({application.healthPlan})
-                    </CardDescription>
-                  </div>
-                  <GlossaryDialog />
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
+                Application for {application.memberFirstName} {application.memberLastName}
+              </CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <CardDescription>
+                  Submitted by {user?.displayName} | {application.pathway} ({application.healthPlan})
+                </CardDescription>
+                <GlossaryDialog />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -502,5 +500,3 @@ export default function PathwayPage() {
     </Suspense>
   );
 }
-
-    

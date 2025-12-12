@@ -14,13 +14,13 @@ import { Separator } from '@/components/ui/separator';
 
 const forms = [
     { name: 'CS Member Summary', icon: FileText, href: '/forms/cs-summary-form/printable' },
-    { name: 'Program Information & Acknowledgment', icon: FileText, href: '/info' },
+    { name: 'Program Information', icon: FileText, href: '/info' },
     { name: 'Acronym Glossary', icon: BookOpen, href: '/forms/acronym-glossary/printable' },
     { name: 'HIPAA Authorization', icon: FileText, href: '/forms/hipaa-authorization/printable' },
     { name: 'Liability Waiver', icon: FileText, href: '/forms/liability-waiver/printable' },
     { name: 'Freedom of Choice Waiver', icon: FileText, href: '/forms/freedom-of-choice/printable' },
-    { name: 'Declaration of Eligibility (for SNF Diversion only)', icon: FileText, href: '/forms/declaration-of-eligibility/printable' },
-    { name: 'LIC 602A - Physician\'s Report', icon: ExternalLink, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf', target: '_blank', download: true },
+    { name: 'Declaration of Eligibility', description: 'For SNF Diversion only', icon: FileText, href: '/forms/declaration-of-eligibility/printable' },
+    { name: "LIC 602A - Physician's Report", icon: ExternalLink, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf', target: '_blank', download: true },
 ];
 
 const uploadableDocs = [
@@ -90,10 +90,15 @@ export default function ApplicationSubmissionPage() {
                             <div className="space-y-2">
                                 <p className="text-sm text-muted-foreground mb-4">Print individual forms:</p>
                                 {forms.map((form) => (
-                                    <Button key={form.name} variant="outline" className="w-full justify-start text-left bg-background" asChild>
-                                      <Link href={form.href} target={form.target || '_self'} download={form.download}>
-                                        <form.icon className="mr-2 h-4 w-4" />
-                                        {form.name}
+                                    <Button key={form.name} variant="outline" className="w-full justify-start text-left bg-background h-auto" asChild>
+                                      <Link href={form.href} target={form.target || '_self'} download={!!form.download}>
+                                        <div className='flex items-start py-2'>
+                                            <form.icon className="mr-2 h-4 w-4 mt-1" />
+                                            <div>
+                                                <span>{form.name}</span>
+                                                {form.description && <p className='text-xs text-muted-foreground'>{form.description}</p>}
+                                            </div>
+                                        </div>
                                       </Link>
                                     </Button>
                                 ))}

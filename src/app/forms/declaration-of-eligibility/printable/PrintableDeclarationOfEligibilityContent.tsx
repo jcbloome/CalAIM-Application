@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-const Field = ({ label, className = '', description }: { label: string; className?: string, description?: string }) => (
+const Field = ({ label, className = '', description }: { label: string; className?: string; description?: string }) => (
     <div className={`pt-2 ${className}`}>
       <label className="block text-xs font-medium text-gray-700">{label}</label>
       <div className="mt-1 h-5 border-b border-gray-400"></div>
@@ -22,6 +22,7 @@ export function PrintableDeclarationOfEligibilityContent() {
         <form>
             <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Declaration of Eligibility</h1>
+                <p className="text-sm text-gray-500">For SNF Diversion only</p>
                 <p className="mt-1 text-sm text-gray-500 max-w-2xl mx-auto">This form is for a Physician/AP to establish presumptive eligibility and must be signed by the member's Primary Care Provider (PCP) or a provider with an established relationship with the member.</p>
             </div>
             <div className="space-y-6 text-sm">
