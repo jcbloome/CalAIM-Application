@@ -1,62 +1,44 @@
 
-import { notFound } from 'next/navigation';
-import { initializeAdminApp } from '@/firebase/admin-init';
-import { getFirestore } from 'firebase-admin/firestore';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
+import { useFirestore, useCollection } from '@/firebase';
 import { ApplicationDetailClientView } from './ApplicationDetailClientView';
 import type { Application } from '@/lib/definitions';
+import { useMemo }embla-carousel-react
+import { collectionGroup, query, where } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
-// This is now a Server Component. It fetches data on the server.
-export default async function AdminApplicationDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+// This is now a Client Component again to resolve server-side auth issues.
+export default function AdminApplicationDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const firestore = useFirestore();
 
-  if (!id) {
-    // If we don't have an ID, we can't fetch the data.
-    notFound();
+  const applicationsQuery = useMemo(() => {
+    if (!firestore || !id) return null;
+    // Query the collection group to find the application by its ID, regardless of the user.
+    return query(collectionGroup(firestore, 'applications'), where('id', '==', id));
+  }, [firestore, id]);
+
+  const { data: applications, isLoading } = useCollection<Application>(applicationsQuery);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-4">Loading application...</p>
+      </div>
+    );
   }
 
-  let applicationData: Application | null = null;
-  
-  try {
-    const adminApp = initializeAdminApp();
-    const adminFirestore = getFirestore(adminApp);
-    
-    // Query the 'applications' collection group to find the document by its ID
-    const applicationsCollection = adminFirestore.collectionGroup('applications');
-    const q = applicationsCollection.where('id', '==', id);
-    const querySnapshot = await q.get();
-
-    if (!querySnapshot.empty) {
-      const docSnap = querySnapshot.docs[0];
-      // Manually converting Firestore data to a plain object
-      const data = docSnap.data();
-      
-      const lastUpdated = data?.lastUpdated;
-      const memberDob = data?.memberDob;
-      
-      applicationData = {
-        id: docSnap.id,
-        ...data,
-        // The userId is part of the document path, so we can get it from the ref
-        userId: docSnap.ref.parent.parent?.id,
-        // Convert Timestamps to ISO strings for serialization
-        lastUpdated: lastUpdated?.toDate ? lastUpdated.toDate().toISOString() : lastUpdated,
-        memberDob: memberDob?.toDate ? memberDob.toDate().toISOString() : memberDob,
-        forms: data?.forms?.map((form: any) => ({
-          ...form,
-          dateCompleted: form.dateCompleted?.toDate ? form.dateCompleted.toDate().toISOString() : form.dateCompleted || null,
-        })),
-      } as Application;
-    }
-  } catch (error) {
-    console.error("Failed to fetch application data on server:", error);
-    // If fetching fails, we can't render the page.
-    notFound();
-  }
+  const applicationData = applications?.[0];
 
   if (!applicationData) {
+    // If the query completes and there's no data, then the application doesn't exist.
     notFound();
   }
 
-  // Pass the server-fetched data to the client component.
+  // Pass the fetched data to the client view.
   return <ApplicationDetailClientView initialApplication={applicationData} />;
 }
