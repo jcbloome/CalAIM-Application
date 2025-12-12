@@ -25,11 +25,11 @@ export default function Step3() {
         <CardHeader>
           <CardTitle>Health Plan</CardTitle>
           <CardDescription>Select the member's Managed Care Plan (MCP).</CardDescription>
-          <p className="text-sm text-muted-foreground pt-2">
-            Connections is contracted with the managed care plans (MCPs), Health Net and Kaiser, and member must be enrolled with either health plan or plan to switch to those plans to continue this application.
-          </p>
         </CardHeader>
         <CardContent>
+           <p className="text-sm text-muted-foreground pb-4">
+            Connections is contracted with the managed care plans (MCPs), Health Net and Kaiser, and member must be enrolled with either health plan or plan to switch to those plans to continue this application.
+          </p>
           <FormField
             control={control}
             name="healthPlan"
@@ -78,6 +78,14 @@ export default function Step3() {
                   )}
               />
           </div>
+            <Alert variant="default" className="mt-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Important!</AlertTitle>
+                <AlertDescription className="prose prose-sm max-w-none">
+                    <p>To enroll in the CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are currently in another Medi-Cal managed care plan, you will need to switch. You can change your health plan by contacting <a href="https://www.healthcareoptions.dhcs.ca.gov/" target="_blank" rel="noopener noreferrer">California Health Care Options</a> at <strong>1-800-430-4263</strong>.</p>
+                    <p className="font-semibold">Changes must be made by the end of the month to be effective on the first day of the following month.</p>
+                </AlertDescription>
+            </Alert>
         </CardContent>
       </Card>
 
