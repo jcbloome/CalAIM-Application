@@ -155,7 +155,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwnerOrAdmin(userId);
       allow write: if isOwner(userId);
-      allow list: if false;
+      allow list: if false; // Deny listing of users for non-admins
       allow delete: if isOwnerOrAdmin(userId);
 
       /**
@@ -217,5 +217,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

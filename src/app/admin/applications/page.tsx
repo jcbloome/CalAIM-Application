@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,9 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileDown, Search, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Timestamp, collection, getDocs } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-import { useState, useEffect } from 'react';
+import { Timestamp, collectionGroup, query } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
+import { useState, useMemo } from 'react';
 
 const getBadgeVariant = (status: ApplicationStatus) => {
   switch (status) {
@@ -47,40 +48,14 @@ const formatDate = (date: string | Timestamp | undefined) => {
 
 export default function AdminApplicationsPage() {
     const firestore = useFirestore();
-    const [applications, setApplications] = useState<Application[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-      const fetchAllApplications = async () => {
-          if (!firestore) return;
-          setIsLoading(true);
-          
-          try {
-              const allApplications: Application[] = [];
-              // 1. Get all user documents
-              const usersSnapshot = await getDocs(collection(firestore, 'users'));
-              
-              // 2. For each user, get their applications
-              for (const userDoc of usersSnapshot.docs) {
-                  const userId = userDoc.id;
-                  const appsRef = collection(firestore, `users/${userId}/applications`);
-                  const appsSnapshot = await getDocs(appsRef);
-                  appsSnapshot.forEach(appDoc => {
-                      allApplications.push({ ...appDoc.data(), id: appDoc.id, userId } as Application);
-                  });
-              }
-              
-              setApplications(allApplications);
-          } catch (error) {
-              console.error("Failed to fetch applications:", error);
-          } finally {
-              setIsLoading(false);
-          }
-      };
-
-      fetchAllApplications();
+    
+    const applicationsQuery = useMemo(() => {
+        if (!firestore) return null;
+        // Use a collection group query to fetch all documents from all 'applications' subcollections.
+        return query(collectionGroup(firestore, 'applications'));
     }, [firestore]);
 
+    const { data: applications, isLoading } = useCollection<Application>(applicationsQuery);
 
   return (
     <div className="space-y-6">
