@@ -257,6 +257,7 @@ export default function Step1() {
                   <FormControl>
                     <Input {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormDescription>e.g., Son, POA, Self, etc.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
