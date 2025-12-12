@@ -81,7 +81,8 @@ export function useCollection<T = any>(
       (snapshot: QuerySnapshot<DocumentData>) => {
         const results: ResultItemType[] = [];
         for (const doc of snapshot.docs) {
-          results.push({ ...(doc.data() as T), id: doc.id });
+          // Explicitly combine doc.data() with the document ID.
+          results.push({ id: doc.id, ...doc.data() as T });
         }
         setData(results);
         setError(null);
