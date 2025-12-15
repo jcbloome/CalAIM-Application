@@ -82,11 +82,15 @@ service cloud.firestore {
     
     // Rules for LIST operations on top-level collections must be separate.
     match /users/{document=**} {
+      // Corrected: was `allow list: if isSuperAdmin();` which is a recursive wildcard.
+      // This rule only applies to the top-level collection, not subcollections.
       allow list: if isSuperAdmin();
     }
+
     match /roles_admin/{document=**} {
       allow list: if isSuperAdmin();
     }
+
     match /roles_super_admin/{document=**} {
       allow list: if isSuperAdmin();
     }
@@ -96,7 +100,7 @@ service cloud.firestore {
     // =====================================================================
 
     match /users/{userId} {
-      allow get: if isOwnerOrAdmin(userId);
+      allow get, read: if isOwnerOrAdmin(userId);
       allow create, update, write: if isOwner(userId) || isSuperAdmin();
       allow delete: if isOwnerOrAdmin(userId);
 

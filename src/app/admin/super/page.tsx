@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp, collection, doc, deleteDoc, setDoc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore, useCollection, useUser, useAuth } from '@/firebase';
+import { useFirestore, useUser, useAuth } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
@@ -189,47 +189,68 @@ export default function SuperAdminPage() {
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    const adminsQuery = useMemo(() => firestore ? collection(firestore, 'roles_admin') : null, [firestore]);
-    const superAdminsQuery = useMemo(() => firestore ? collection(firestore, 'roles_super_admin') : null, [firestore]);
-    const usersQuery = useMemo(() => firestore ? collection(firestore, 'users') : null, [firestore]);
-    
-    const { data: adminRoles, isLoading: isLoadingAdmins } = useCollection(adminsQuery);
-    const { data: superAdminRoles, isLoading: isLoadingSuperAdmins } = useCollection(superAdminsQuery);
-    const { data: allUsers, isLoading: isLoadingUsers } = useCollection(usersQuery);
-
     useEffect(() => {
-        const loading = isLoadingAdmins || isLoadingSuperAdmins || isLoadingUsers;
-        setIsLoadingStaff(loading);
+        if (!firestore) return;
+    
+        const fetchStaff = async () => {
+            setIsLoadingStaff(true);
+            try {
+                // 1. Fetch all role documents
+                const adminRolesSnap = await getDocs(collection(firestore, 'roles_admin'));
+                const superAdminRolesSnap = await getDocs(collection(firestore, 'roles_super_admin'));
+    
+                const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
+                const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
+                
+                const allRoleIds = [...Array.from(adminIds), ...Array.from(superAdminIds)];
+                const uniqueRoleIds = [...new Set(allRoleIds)];
 
-        if (!loading && allUsers && adminRoles && superAdminRoles) {
-            const adminIds = new Set(adminRoles.map(role => role.id));
-            const superAdminIds = new Set(superAdminRoles.map(role => role.id));
-            
-            const staffList = allUsers
-                .map(user => {
-                    let role: 'Admin' | 'Super Admin' | null = null;
-                    if (superAdminIds.has(user.id)) {
-                        role = 'Super Admin';
-                    } else if (adminIds.has(user.id)) {
-                        role = 'Admin';
-                    }
+                if (uniqueRoleIds.length === 0) {
+                    setStaff([]);
+                    setIsLoadingStaff(false);
+                    return;
+                }
+    
+                // 2. Fetch all user documents that have a role
+                const usersQuery = query(collection(firestore, 'users'), where('id', 'in', uniqueRoleIds));
+                const usersSnap = await getDocs(usersQuery);
+                
+                const userMap = new Map();
+                usersSnap.forEach(doc => {
+                    userMap.set(doc.id, doc.data());
+                });
 
-                    if (role) {
-                        return {
-                            id: user.id,
-                            name: user.displayName || `${user.firstName} ${user.lastName}`,
-                            email: user.email,
-                            role: role,
-                        };
-                    }
-                    return null;
-                })
-                .filter((s): s is StaffMember => s !== null)
-                .sort((a, b) => a.name.localeCompare(b.name));
+                // 3. Combine the data
+                const staffList = uniqueRoleIds.map(id => {
+                    const user = userMap.get(id);
+                    if (!user) return null;
 
-            setStaff(staffList);
-        }
-    }, [allUsers, adminRoles, superAdminRoles, isLoadingAdmins, isLoadingSuperAdmins, isLoadingUsers]);
+                    const role = superAdminIds.has(id) ? 'Super Admin' : 'Admin';
+                    
+                    return {
+                        id: id,
+                        name: user.displayName || `${user.firstName} ${user.lastName}`,
+                        email: user.email,
+                        role: role,
+                    };
+                }).filter((s): s is StaffMember => s !== null).sort((a,b) => a.name.localeCompare(b.name));
+    
+                setStaff(staffList);
+    
+            } catch (error) {
+                console.error("Error fetching staff:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Error fetching staff",
+                    description: "Could not load the list of current staff members."
+                });
+            } finally {
+                setIsLoadingStaff(false);
+            }
+        };
+    
+        fetchStaff();
+    }, [firestore, toast]);
 
 
     const handleAddRole = async (
@@ -290,6 +311,18 @@ export default function SuperAdminPage() {
                 description: `${email} has been granted ${role} privileges.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
+
+             // Manually add to local state to force UI update
+            setStaff(prevStaff => {
+                const newStaffMember: StaffMember = { id: uid!, name: `${firstName} ${lastName}`, email, role };
+                const existingIndex = prevStaff.findIndex(s => s.id === uid);
+                if (existingIndex > -1) {
+                    const updatedStaff = [...prevStaff];
+                    updatedStaff[existingIndex] = newStaffMember;
+                    return updatedStaff.sort((a,b) => a.name.localeCompare(b.name));
+                }
+                return [...prevStaff, newStaffMember].sort((a,b) => a.name.localeCompare(b.name));
+            });
     
             resetFields();
     
@@ -319,6 +352,8 @@ export default function SuperAdminPage() {
             } else if (staffMember.role === 'Super Admin') {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
             }
+
+            setStaff(prev => prev.filter(s => s.id !== staffMember.id));
             toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
         } catch (error: any) {
              toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
