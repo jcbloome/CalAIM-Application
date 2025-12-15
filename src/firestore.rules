@@ -145,6 +145,19 @@ service cloud.firestore {
       allow read, write: if isAdmin() || isSuperAdmin();
     }
 
+    // --- Collection-level rules for LIST operations ---
+    match /users {
+      allow list: if isSuperAdmin();
+    }
+    match /roles_admin {
+      allow list: if isSuperAdmin();
+    }
+    match /roles_super_admin {
+      allow list: if isSuperAdmin();
+    }
+    
+    // --- Document-level rules for GET, WRITE, DELETE ---
+
     /**
      * @description Rules for a user's own profile document.
      * @path /users/{userId}
@@ -152,19 +165,6 @@ service cloud.firestore {
      * @deny (list) Any user attempting to list all user profiles.
      * @principle Restricts access to a user's own data tree and allows self-creation and update of a profile.
      */
-     
-    // --- Collection-level rules ---
-    match /users {
-      allow list: if isSuperAdmin();
-    }
-     match /roles_admin {
-      allow list: if isSuperAdmin();
-    }
-     match /roles_super_admin {
-      allow list: if isSuperAdmin();
-    }
-
-    // --- Document-level rules ---
     match /users/{userId} {
       allow get: if isOwnerOrAdmin(userId);
       allow write: if isOwner(userId);
@@ -229,5 +229,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
