@@ -10,13 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trash2, UserPlus, Send, Loader2, ShieldPlus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp, collection, doc, deleteDoc, setDoc, getDoc, getDocs } from 'firebase/firestore';
+import { Timestamp, collection, doc, deleteDoc, setDoc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFirestore, useCollection, useUser, useAuth } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { createUserWithEmailAndPassword, getAuth, initializeApp } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, initializeApp, fetchSignInMethodsForEmail } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
-
 
 const samplePayload = {
     memberFirstName: 'John',
@@ -191,50 +190,42 @@ export default function SuperAdminPage() {
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    const adminRolesQuery = useMemo(() => firestore ? collection(firestore, 'roles_admin') : null, [firestore]);
-    const { data: adminRoles } = useCollection(adminRolesQuery);
-
     useEffect(() => {
         const fetchStaffDetails = async () => {
             if (!firestore) return;
 
             setIsLoadingStaff(true);
-            const staffMap = new Map<string, StaffMember>();
-
             try {
-                // Fetch admin roles
                 const adminRolesSnapshot = await getDocs(collection(firestore, 'roles_admin'));
-                for (const roleDoc of adminRolesSnapshot.docs) {
-                    const userDoc = await getDoc(doc(firestore, 'users', roleDoc.id));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        staffMap.set(userDoc.id, {
-                            id: userDoc.id,
-                            name: userData.displayName || `${userData.firstName} ${userData.lastName}`,
-                            email: userData.email,
-                            role: 'Admin'
-                        });
-                    }
-                }
-
-                // Fetch super admin roles
                 const superAdminRolesSnapshot = await getDocs(collection(firestore, 'roles_super_admin'));
-                for (const roleDoc of superAdminRolesSnapshot.docs) {
-                    const userDoc = await getDoc(doc(firestore, 'users', roleDoc.id));
+                
+                const adminIds = new Set(adminRolesSnapshot.docs.map(d => d.id));
+                const superAdminIds = new Set(superAdminRolesSnapshot.docs.map(d => d.id));
+                const allUserIds = Array.from(new Set([...adminIds, ...superAdminIds]));
+
+                if (allUserIds.length === 0) {
+                    setStaff([]);
+                    setIsLoadingStaff(false);
+                    return;
+                }
+                
+                const staffList: StaffMember[] = [];
+                for (const userId of allUserIds) {
+                    const userDoc = await getDoc(doc(firestore, 'users', userId));
                     if (userDoc.exists()) {
                         const userData = userDoc.data();
-                        // Overwrite if user is both admin and super admin
-                        staffMap.set(userDoc.id, {
-                            id: userDoc.id,
+                        const role = superAdminIds.has(userId) ? 'Super Admin' : 'Admin';
+                        staffList.push({
+                            id: userId,
                             name: userData.displayName || `${userData.firstName} ${userData.lastName}`,
                             email: userData.email,
-                            role: 'Super Admin'
+                            role: role
                         });
                     }
                 }
                 
-                const staffList = Array.from(staffMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-                setStaff(staffList);
+                setStaff(staffList.sort((a, b) => a.name.localeCompare(b.name)));
+
             } catch (error) {
                 console.error("Error fetching staff list:", error);
                 toast({
@@ -248,39 +239,95 @@ export default function SuperAdminPage() {
         };
 
         fetchStaffDetails();
-    }, [firestore, toast]); // Re-fetch when firestore is available
+    }, [firestore, toast]); 
 
+    const getUidByEmail = async (email: string): Promise<string | null> => {
+        if (!firestore) return null;
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            return querySnapshot.docs[0].id;
+        }
+        return null;
+    };
     
     const handleAddRole = async (
         email: string,
         firstName: string,
         lastName: string,
         role: 'Admin' | 'Super Admin',
-        setLoading: (loading: boolean) => void
+        setLoading: (loading: boolean) => void,
+        resetFields: () => void
     ) => {
         if (!email || !firstName || !lastName || !firestore || !auth) {
             toast({ variant: "destructive", title: "Missing Information", description: "All fields are required." });
             return;
         }
-
+    
         setLoading(true);
-
+    
         try {
+            let uid: string | null = null;
+            let userExists = false;
+    
             const tempPassword = `temp-password-${Date.now()}`;
-            // This is non-functional due to server-side auth issues.
-            // Client-side user creation is now handled directly.
-            // It returns an error to be handled by the client.
+    
+            try {
+                const { user: newUser } = await createUserWithEmailAndPassword(auth, email, tempPassword);
+                uid = newUser.uid;
+            } catch (error: any) {
+                if (error.code === 'auth/email-already-in-use') {
+                    userExists = true;
+                    uid = await getUidByEmail(email);
+                    if (!uid) {
+                        throw new Error(`User with email ${email} exists in Auth but not in the 'users' collection. Please check Firestore.`);
+                    }
+                } else {
+                    throw error; // Re-throw other auth errors
+                }
+            }
+    
+            if (!uid) {
+                throw new Error("Could not get user ID.");
+            }
+    
+            // 2. Create or update the user document in the `users` collection
+            const userDocRef = doc(firestore, 'users', uid);
+            if (!userExists) {
+                await setDoc(userDocRef, {
+                    id: uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    displayName: `${firstName} ${lastName}`,
+                    email: email,
+                });
+            }
+    
+            // 3. Set the role in the appropriate roles collection
+            const roleCollection = role === 'Admin' ? 'roles_admin' : 'roles_super_admin';
+            const roleDocRef = doc(firestore, roleCollection, uid);
+            await setDoc(roleDocRef, { uid: uid }); // Add some data to the document
+    
             toast({
-                variant: 'destructive',
-                title: 'Automatic user creation via AI flow is disabled.',
+                title: `${role} Added Successfully`,
+                description: `${email} has been granted ${role} privileges.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
             });
-
+    
+            // Manually add the new staff member to the UI state
+            setStaff(prev => [...prev, {
+                id: uid!,
+                name: `${firstName} ${lastName}`,
+                email,
+                role
+            }].sort((a,b) => a.name.localeCompare(b.name)));
+    
+            resetFields();
+    
         } catch (error: any) {
             console.error(`Failed to Add ${role}:`, error);
-            const errorMessage = error.code === 'auth/email-already-in-use'
-                ? 'A user with this email already exists.'
-                : error.message;
-            toast({ variant: "destructive", title: `Failed to Add ${role}`, description: errorMessage });
+            toast({ variant: "destructive", title: `Failed to Add ${role}`, description: error.message });
         } finally {
             setLoading(false);
         }
@@ -305,10 +352,22 @@ export default function SuperAdminPage() {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
             }
             toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
-            setStaff(prev => prev.filter(s => s.id !== staffMember.id)); // Optimistically update UI
+            setStaff(prev => prev.filter(s => s.id !== staffMember.id));
         } catch (error: any) {
              toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
         }
+    };
+
+    const resetStaffFields = () => {
+        setNewStaffEmail('');
+        setNewStaffFirstName('');
+        setNewStaffLastName('');
+    };
+
+    const resetSuperAdminFields = () => {
+        setNewSuperAdminEmail('');
+        setNewSuperAdminFirstName('');
+        setNewSuperAdminLastName('');
     };
 
 
@@ -324,7 +383,7 @@ export default function SuperAdminPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
-                    <CardDescription>Create a new user with standard Admin privileges.</CardDescription>
+                    <CardDescription>Grant standard Admin privileges to a new or existing user.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -339,7 +398,7 @@ export default function SuperAdminPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="add-staff-email">New Staff Email</Label>
+                            <Label htmlFor="add-staff-email">Staff Email</Label>
                             <Input 
                                 id="add-staff-email" 
                                 type="email" 
@@ -348,9 +407,9 @@ export default function SuperAdminPage() {
                                 onChange={(e) => setNewStaffEmail(e.target.value)}
                             />
                         </div>
-                        <Button onClick={() => handleAddRole(newStaffEmail, newStaffFirstName, newStaffLastName, 'Admin', setIsAddingStaff)} className="w-full" disabled={isAddingStaff}>
+                        <Button onClick={() => handleAddRole(newStaffEmail, newStaffFirstName, newStaffLastName, 'Admin', setIsAddingStaff, resetStaffFields)} className="w-full" disabled={isAddingStaff}>
                             {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-                            Add Staff Member
+                            Grant Admin Role
                         </Button>
                     </div>
                 </CardContent>
@@ -359,7 +418,7 @@ export default function SuperAdminPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Add Super Admin</CardTitle>
-                    <CardDescription>Create a new user with Super Admin privileges.</CardDescription>
+                    <CardDescription>Grant full Super Admin privileges to a new or existing user.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -374,7 +433,7 @@ export default function SuperAdminPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="add-super-admin-email">New Super Admin Email</Label>
+                            <Label htmlFor="add-super-admin-email">Super Admin Email</Label>
                             <Input
                                 id="add-super-admin-email"
                                 type="email"
@@ -383,78 +442,78 @@ export default function SuperAdminPage() {
                                 onChange={(e) => setNewSuperAdminEmail(e.target.value)}
                             />
                         </div>
-                        <Button onClick={() => handleAddRole(newSuperAdminEmail, newSuperAdminFirstName, newSuperAdminLastName, 'Super Admin', setIsAddingSuperAdmin)} className="w-full" disabled={isAddingSuperAdmin}>
+                        <Button onClick={() => handleAddRole(newSuperAdminEmail, newSuperAdminFirstName, newSuperAdminLastName, 'Super Admin', setIsAddingSuperAdmin, resetSuperAdminFields)} className="w-full" disabled={isAddingSuperAdmin}>
                             {isAddingSuperAdmin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldPlus className="mr-2 h-4 w-4" />}
-                            Add Super Admin
+                            Grant Super Admin Role
                         </Button>
                     </div>
                 </CardContent>
             </Card>
-        </div>
-
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Current Staff</CardTitle>
-                    <CardDescription>A list of all users with Admin or Super Admin roles.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-96">
-                         {isLoadingStaff ? (
-                            <div className="flex items-center justify-center p-8">
-                                <Loader2 className="h-6 w-6 animate-spin" />
-                            </div>
-                         ) : staff.length > 0 ? (
-                            staff.map(member => (
-                                <div key={member.id} className="flex items-center justify-between pr-4 py-2">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar>
-                                            <AvatarImage src={member.avatar} alt={member.name} />
-                                            <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-semibold">{member.name}</p>
-                                            <p className="text-sm text-muted-foreground">{member.email}</p>
-                                        </div>
-                                    </div>
-                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    className="text-destructive hover:bg-destructive/10"
-                                                    disabled={member.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length <= 1}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Are you sure?</DialogTitle>
-                                                    <DialogDescription>
-                                                        This will remove <strong>{member.role}</strong> permissions for {member.name}. They may still be able to log in but will not have admin access. This does not delete their user account.
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <DialogFooter>
-                                                    <Button variant="outline">Cancel</Button>
-                                                    <Button variant="destructive" onClick={() => handleRemoveStaff(member)}>Confirm Removal</Button>
-                                                </DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
-                                    </div>
-                                </div>
-                            ))
-                         ) : (
-                            <div className="text-center text-muted-foreground p-8">No staff members found.</div>
-                         )}
-                    </ScrollArea>
-                </CardContent>
-            </Card>
             <WebhookPreparer />
         </div>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Current Staff</CardTitle>
+                <CardDescription>A list of all users with Admin or Super Admin roles.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-96">
+                     {isLoadingStaff ? (
+                        <div className="flex items-center justify-center p-8">
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                        </div>
+                     ) : staff.length > 0 ? (
+                        staff.map(member => (
+                            <div key={member.id} className="flex items-center justify-between pr-4 py-2">
+                                <div className="flex items-center gap-4">
+                                    <Avatar>
+                                        <AvatarImage src={member.avatar} alt={member.name} />
+                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold">{member.name}</p>
+                                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                                    </div>
+                                </div>
+                                 <div className="flex items-center gap-2">
+                                    <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="text-destructive hover:bg-destructive/10"
+                                                disabled={member.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length <= 1}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Are you sure?</DialogTitle>
+                                                <DialogDescription>
+                                                    This will remove <strong>{member.role}</strong> permissions for {member.name}. They may still be able to log in but will not have admin access. This does not delete their user account.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <DialogFooter>
+                                                <Button variant="outline">Cancel</Button>
+                                                <Button variant="destructive" onClick={() => handleRemoveStaff(member)}>Confirm Removal</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+                            </div>
+                        ))
+                     ) : (
+                        <div className="text-center text-muted-foreground p-8">No staff members found.</div>
+                     )}
+                </ScrollArea>
+            </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+
+    
