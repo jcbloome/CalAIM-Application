@@ -159,7 +159,8 @@ service cloud.firestore {
        */
       allow get: if isOwnerOrAdmin(userId);
       allow write: if isOwner(userId);
-      allow list: if isSuperAdmin(); // Allow super admins to list users.
+      // list permission must be specified on the collection, not the document
+      allow list: if isSuperAdmin();
       allow delete: if isOwnerOrAdmin(userId);
 
       /**
