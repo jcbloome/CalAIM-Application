@@ -144,7 +144,7 @@ service cloud.firestore {
     match /{path=**}/applications/{applicationId} {
       allow read, write: if isAdmin() || isSuperAdmin();
     }
-
+    
     // --- Rules for /users collection ---
     match /users {
       allow list: if isSuperAdmin();
