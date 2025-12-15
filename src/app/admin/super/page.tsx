@@ -103,47 +103,43 @@ export default function SuperAdminPage() {
         setIsAddingStaff(true);
     
         try {
-            let uid: string | null = null;
-    
             // Check if user already exists in the `users` collection in Firestore
             const existingUsersQuery = query(collection(firestore, 'users'), where('email', '==', newStaffEmail));
             const existingUsersSnap = await getDocs(existingUsersQuery);
             
             if (!existingUsersSnap.empty) {
-                // User document exists in Firestore, grant admin role
-                uid = existingUsersSnap.docs[0].id;
-                toast({ title: "Existing User Found", description: `Granting Admin role to ${newStaffEmail}.`});
+                // User document exists in Firestore, just grant them the admin role.
+                const userId = existingUsersSnap.docs[0].id;
+                const adminRoleDocRef = doc(firestore, 'roles_admin', userId);
+                await setDoc(adminRoleDocRef, { uid: userId, addedOn: Timestamp.now() });
+                toast({ title: "Existing User Found", description: `Admin role granted to ${newStaffEmail}.`});
             } else {
-                // No user document in Firestore, attempt to create a new user in Auth
+                // No user document in Firestore, so try to create a new one in Auth.
                 const tempPassword = `temp-password-${Date.now()}`;
                 try {
                     const { user: newUser } = await createUserWithEmailAndPassword(auth, newStaffEmail, tempPassword);
-                    uid = newUser.uid;
-                    // Also create their user profile document
-                    const userDocRef = doc(firestore, 'users', uid);
+                    // On success, create their user and role documents.
+                    const userDocRef = doc(firestore, 'users', newUser.uid);
                     await setDoc(userDocRef, {
-                        id: uid,
+                        id: newUser.uid,
                         firstName: newStaffFirstName,
                         lastName: newStaffLastName,
                         displayName: `${newStaffFirstName} ${newStaffLastName}`,
                         email: newStaffEmail,
                     });
+                    const adminRoleDocRef = doc(firestore, 'roles_admin', newUser.uid);
+                    await setDoc(adminRoleDocRef, { uid: newUser.uid, addedOn: Timestamp.now() });
                 } catch (error: any) {
                     if (error.code === 'auth/email-already-in-use') {
-                       // This is the edge case: user exists in Auth but not Firestore.
-                       // We can't get their UID directly from the client, so we must ask for a manual fix for now.
-                       // A more advanced solution would involve a server-side function to look up user by email.
+                       // THIS IS THE FIX: The user is in Auth but not Firestore. We cannot get their UID from the client.
+                       // So, we must throw a specific error and ask the super admin to resolve this one case manually
+                       // by creating the user document in the Firestore `users` collection.
+                       // This is a rare state, but we need to handle it gracefully.
                        throw new Error("This email is registered in Firebase Auth but not in the 'users' collection. Please resolve manually in Firebase Console.");
                     }
                     throw error;
                 }
             }
-    
-            if (!uid) throw new Error("Could not get user ID.");
-    
-            // Grant the standard Admin role
-            const adminRoleDocRef = doc(firestore, 'roles_admin', uid);
-            await setDoc(adminRoleDocRef, { uid: uid, addedOn: Timestamp.now() });
     
             toast({
                 title: `Admin Role Granted`,
