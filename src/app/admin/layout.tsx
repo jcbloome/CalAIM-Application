@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -35,13 +34,27 @@ const superAdminLinks = [
 ];
 
 
-function AdminHeader({ isSuperAdmin }: { isSuperAdmin: boolean }) {
+function AdminHeader() {
     const { user } = useUser();
     const auth = useAuth();
+    const firestore = useFirestore();
     const router = useRouter();
     const pathname = usePathname();
     const [isSheetOpen, setSheetOpen] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
     const mascot = imageData.placeholderImages.find(p => p.id === 'fox-mascot');
+
+    useEffect(() => {
+        const checkSuperAdmin = async () => {
+            if (user && firestore) {
+                const superAdminDocRef = doc(firestore, 'roles_super_admin', user.uid);
+                const superAdminDocSnap = await getDoc(superAdminDocRef);
+                setIsSuperAdmin(superAdminDocSnap.exists());
+            }
+        };
+        checkSuperAdmin();
+    }, [user, firestore]);
 
     const handleSignOut = async () => {
         if (auth) {
@@ -136,7 +149,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
   useEffect(() => {
@@ -167,7 +179,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         if (hasAdminRole || hasSuperAdminRole) {
           setIsAdmin(true);
-          setIsSuperAdmin(hasSuperAdminRole);
         } else {
           if (auth) await auth.signOut();
           router.push('/admin/login');
@@ -190,7 +201,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-        <AdminHeader isSuperAdmin={isSuperAdmin} />
+        <AdminHeader />
         <main className="container mx-auto flex-1 p-4 sm:p-6">{children}</main>
     </>
   );
