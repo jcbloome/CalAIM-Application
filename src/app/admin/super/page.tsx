@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -250,7 +251,6 @@ export default function SuperAdminPage() {
 
         try {
             // This is a placeholder password. The user will be expected to reset it.
-            // In a real-world scenario, you would send a password reset email.
             const tempPassword = `temp-password-${Date.now()}`;
             
             const { user: newUser } = await createUserWithEmailAndPassword(auth, email, tempPassword);
