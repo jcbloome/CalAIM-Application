@@ -146,6 +146,7 @@ service cloud.firestore {
     }
 
     // --- Collection-level rules for LIST operations ---
+    // These must be separate from the document-level rules.
     match /users {
       allow list: if isSuperAdmin();
     }
@@ -162,7 +163,7 @@ service cloud.firestore {
      * @description Rules for a user's own profile document.
      * @path /users/{userId}
      * @allow (read, write) An authenticated user can read and write to their own profile.
-     * @deny (list) Any user attempting to list all user profiles.
+     * @deny (list) Any user attempting to list all user profiles (handled by separate match block).
      * @principle Restricts access to a user's own data tree and allows self-creation and update of a profile.
      */
     match /users/{userId} {
@@ -205,7 +206,7 @@ service cloud.firestore {
      * @description Defines admin roles. The existence of a document grants admin privileges.
      * @path /roles_admin/{userId}
      * @allow (get) Any signed-in user can check if they are an admin.
-     * @deny (list, create, update, delete) All other operations are denied for security.
+     * @deny (list, create, update, delete) All other operations are denied for security (except for Super Admins).
      * @principle Secures administrative role management by disallowing any client-side modifications.
      */
     match /roles_admin/{userId} {
@@ -229,3 +230,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
