@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, collection, query, where, getDocs, collectionGroup } from 'firebase/firestore';
 import { useEffect, useMemo, useState }from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
@@ -289,8 +289,13 @@ export default function AdminApplicationDetailPage() {
         name: 'CS Member Summary',
         status: 'Completed',
         type: 'online-form',
-        href: `/forms/cs-summary-form/review?applicationId=${id}`
+        href: `/admin/applications/${id}/edit`
       });
+    } else {
+        const summary = forms.find(form => form.name === 'CS Member Summary');
+        if(summary) {
+            summary.href = `/admin/applications/${id}/edit`;
+        }
     }
     return forms;
   }, [application, id]);
@@ -438,7 +443,7 @@ export default function AdminApplicationDetailPage() {
                       <div className="flex items-center gap-2 self-end sm:self-center">
                           <Button variant="outline" size="sm" onClick={() => {
                             if (form.name === 'CS Member Summary') {
-                                router.push(`/forms/cs-summary-form?applicationId=${id}`);
+                                router.push(`${form.href}?userId=${userId}`);
                                 return;
                             }
                               setSelectedForm(form.name);
@@ -519,5 +524,3 @@ export default function AdminApplicationDetailPage() {
     </div>
   );
 }
-
-    
