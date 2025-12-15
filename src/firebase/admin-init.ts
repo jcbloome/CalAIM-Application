@@ -1,22 +1,21 @@
 
-import { initializeApp, getApps, getApp, type App, cert } from 'firebase-admin/app';
-
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : null;
+import { initializeApp, getApps, getApp, type App } from 'firebase-admin/app';
 
 const adminAppId = 'firebase-admin-app-e1a2b3c4d5';
 
+/**
+ * Initializes and returns the Firebase Admin App instance, ensuring it's a singleton.
+ * This version relies on Google Application Default Credentials for authentication,
+ * which is the standard practice for server-side environments like App Hosting.
+ */
 export function initializeAdminApp(): App {
+  // Check if the admin app has already been initialized to avoid re-initialization.
   const existingApp = getApps().find(app => app.name === adminAppId);
   if (existingApp) {
     return existingApp;
   }
 
-  // If the service account is available, create a credential object.
-  const credential = serviceAccount ? cert(serviceAccount) : undefined;
-
-  // Conditionally create the app with credentials if they exist,
-  // otherwise, initialize with default credentials for the environment.
-  return initializeApp(credential ? { credential } : {}, adminAppId);
+  // Initialize the app with a unique name.
+  // No credentials are passed; the SDK will automatically find them from the environment.
+  return initializeApp({}, adminAppId);
 }
