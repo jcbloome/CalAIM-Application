@@ -19,8 +19,7 @@ service cloud.firestore {
      * - Admin Privileges: The existence of a document in `/roles_admin` grants
      *   broad read/write access. The `/roles_super_admin` grants universal access,
      *   including the ability to list all users and manage roles.
-     * - Role Management Security: Roles can only be managed by super admins or,
-     *   in a temporary state, by the user themselves to bootstrap the first super admin.
+     * - Role Management Security: Roles can only be managed by super admins.
      *
      * Structural Separation of Rules:
      * To comply with Firestore's rule evaluation, collection-level rules (like `list`)
@@ -81,8 +80,7 @@ service cloud.firestore {
       allow read: if isSuperAdmin() || isAdmin();
     }
     
-    // These rules are for LIST operations on top-level collections.
-    // They must be separate from the document-specific rules below.
+    // Rules for LIST operations on top-level collections must be separate.
     match /users/{document=**} {
       allow list: if isSuperAdmin();
     }
@@ -124,10 +122,7 @@ service cloud.firestore {
     
     match /roles_super_admin/{userId} {
       allow get: if isSignedIn();
-      // Temporarily allow any authenticated user to create their own super admin role
-      // to bootstrap the first super admin.
-      allow create: if isSuperAdmin() || request.auth.uid == userId;
-      allow update, delete: if isSuperAdmin();
+      allow write, delete: if isSuperAdmin();
     }
   }
 }
