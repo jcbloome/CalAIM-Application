@@ -7,169 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trash2, UserPlus, Send, Loader2, ShieldPlus } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Trash2, UserPlus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp, collection, doc, deleteDoc, setDoc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query, where } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFirestore, useUser, useAuth } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Switch } from '@/components/ui/switch';
+import { WebhookPreparer } from './WebhookPreparer';
 
-const samplePayload = {
-    memberFirstName: 'John',
-    memberLastName: 'Doe',
-    memberDob: Timestamp.fromDate(new Date('1965-01-15')).toDate(),
-    memberAge: 59,
-    memberMediCalNum: '912345678',
-    confirmMemberMediCalNum: '912345678',
-    memberMrn: 'MRN123456789',
-    confirmMemberMrn: 'MRN123456789',
-    memberLanguage: 'English',
-    memberCounty: 'Los Angeles',
-    referrerFirstName: 'Admin',
-    referrerLastName: 'User',
-    referrerEmail: 'admin.user@example.com',
-    referrerPhone: '(555) 111-2222',
-    referrerRelationship: 'System Admin',
-    agency: 'Testing Agency',
-    bestContactFirstName: 'Primary',
-    bestContactLastName: 'Contact',
-    bestContactRelationship: 'Spouse',
-    bestContactPhone: '(555) 333-4444',
-    bestContactEmail: 'primary@contact.com',
-    bestContactLanguage: 'English',
-    secondaryContactFirstName: 'Secondary',
-    secondaryContactLastName: 'Contact',
-    secondaryContactRelationship: 'Child',
-    secondaryContactPhone: '(555) 555-6666',
-    secondaryContactEmail: 'secondary@contact.com',
-    secondaryContactLanguage: 'Spanish',
-    hasCapacity: 'Yes',
-    hasLegalRep: 'Yes',
-    repFirstName: 'Legal',
-    repLastName: 'Representative',
-    repRelationship: 'Lawyer',
-    repPhone: '(555) 777-8888',
-    repEmail: 'legal@rep.com',
-    repLanguage: 'English',
-    isRepPrimaryContact: false,
-    currentLocation: 'SNF',
-    currentAddress: '123 Test St',
-    currentCity: 'Testville',
-    currentState: 'CA',
-    currentZip: '90210',
-    currentCounty: 'Los Angeles',
-    copyAddress: false,
-    customaryAddress: '456 Home Ave',
-    customaryCity: 'Hometown',
-    customaryState: 'CA',
-    customaryZip: '90211',
-    customaryCounty: 'Los Angeles',
-    healthPlan: 'Kaiser',
-    existingHealthPlan: null,
-    switchingHealthPlan: null,
-    pathway: 'SNF Transition',
-    meetsPathwayCriteria: true,
-    snfDiversionReason: null,
-    ispFirstName: 'ISP',
-    ispLastName: 'Coordinator',
-    ispRelationship: 'Care Coordinator',
-    ispFacilityName: 'Test Facility',
-    ispPhone: '(555) 999-0000',
-    ispEmail: 'isp@coordinator.com',
-    ispCopyCurrent: false,
-    ispLocationType: 'Other',
-    ispAddress: '789 ISP Way',
-    ispCity: 'Ispville',
-    ispState: 'CA',
-    ispZip: '90213',
-    ispCounty: 'Los Angeles',
-    onALWWaitlist: 'No',
-    hasPrefRCFE: 'Yes',
-    rcfeName: 'Preferred RCFE',
-    rcfeAdminName: 'RCFE Admin',
-    rcfeAdminPhone: '(555) 123-9876',
-    rcfeAdminEmail: 'rcfe@admin.com',
-    rcfeAddress: '101 RCFE Blvd',
-    id: `test-payload-${Date.now()}`,
-    caspioSent: true,
-};
 
 interface StaffMember {
     id: string;
     name: string;
     email: string;
-    role: 'Admin' | 'Super Admin';
+    isSuperAdmin: boolean;
     avatar?: string;
 }
-
-const WebhookPreparer = () => {
-    const [isSending, setIsSending] = useState(false);
-    const { toast } = useToast();
-
-    const handleSendTestWebhook = async () => {
-        setIsSending(true);
-        const webhookUrl = 'https://hook.us2.make.com/mqif1rouo1wh762k2eze1y7568gwq6kx';
-        
-        try {
-            const response = await fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(samplePayload),
-            });
-
-            if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-
-            toast({
-                title: 'Webhook Sent!',
-                description: 'The sample CS Summary data was sent to Make.com.',
-                className: 'bg-green-100 text-green-900 border-green-200',
-            });
-        } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Webhook Error',
-                description: `Failed to send data: ${error.message}`,
-            });
-        } finally {
-            setIsSending(false);
-        }
-    };
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Webhook Preparer</CardTitle>
-                <CardDescription>Send a sample with all CS Summary fields to Make.com to prepare your scenario for field mapping.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                    Click the button below to send a test payload. Go to your Make.com scenario, click "Run once", and then come back here and click the button. Make.com will receive the data, allowing you to map the fields to your Caspio module.
-                </p>
-                <Button onClick={handleSendTestWebhook} disabled={isSending} className="w-full">
-                    {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    Send Test Payload to Make.com
-                </Button>
-                <Separator />
-                <h4 className="font-semibold">Sample Payload Fields</h4>
-                 <ScrollArea className="h-64 border rounded-md p-4 bg-muted/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 text-sm">
-                        {Object.entries(samplePayload).map(([key, value]) => (
-                            <div key={key} className="flex gap-2">
-                                <span className="font-semibold text-primary">{key}:</span>
-                                <span className="text-muted-foreground truncate">
-                                    {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </ScrollArea>
-            </CardContent>
-        </Card>
-    );
-};
-
 
 export default function SuperAdminPage() {
     const firestore = useFirestore();
@@ -180,164 +35,139 @@ export default function SuperAdminPage() {
     const [newStaffFirstName, setNewStaffFirstName] = useState('');
     const [newStaffLastName, setNewStaffLastName] = useState('');
     const [isAddingStaff, setIsAddingStaff] = useState(false);
-
-    const [newSuperAdminEmail, setNewSuperAdminEmail] = useState('');
-    const [newSuperAdminFirstName, setNewSuperAdminFirstName] = useState('');
-    const [newSuperAdminLastName, setNewSuperAdminLastName] = useState('');
-    const [isAddingSuperAdmin, setIsAddingSuperAdmin] = useState(false);
     
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    useEffect(() => {
+    const fetchStaff = async () => {
         if (!firestore) return;
-    
-        const fetchStaff = async () => {
-            setIsLoadingStaff(true);
-            try {
-                // 1. Fetch all role documents
-                const adminRolesSnap = await getDocs(collection(firestore, 'roles_admin'));
-                const superAdminRolesSnap = await getDocs(collection(firestore, 'roles_super_admin'));
-    
-                const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
-                const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
-                
-                const allRoleIds = [...Array.from(adminIds), ...Array.from(superAdminIds)];
-                const uniqueRoleIds = [...new Set(allRoleIds)];
+        setIsLoadingStaff(true);
+        try {
+            const adminRolesSnap = await getDocs(collection(firestore, 'roles_admin'));
+            const superAdminRolesSnap = await getDocs(collection(firestore, 'roles_super_admin'));
 
-                if (uniqueRoleIds.length === 0) {
-                    setStaff([]);
-                    setIsLoadingStaff(false);
-                    return;
-                }
-    
-                // 2. Fetch all user documents that have a role
-                const usersQuery = query(collection(firestore, 'users'), where('id', 'in', uniqueRoleIds));
-                const usersSnap = await getDocs(usersQuery);
-                
-                const userMap = new Map();
-                usersSnap.forEach(doc => {
-                    userMap.set(doc.id, doc.data());
-                });
+            const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
+            const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
+            
+            const allRoleIds = [...new Set([...Array.from(adminIds), ...Array.from(superAdminIds)])];
 
-                // 3. Combine the data
-                const staffList = uniqueRoleIds.map(id => {
-                    const user = userMap.get(id);
-                    if (!user) return null;
-
-                    const role = superAdminIds.has(id) ? 'Super Admin' : 'Admin';
-                    
-                    return {
-                        id: id,
-                        name: user.displayName || `${user.firstName} ${user.lastName}`,
-                        email: user.email,
-                        role: role,
-                    };
-                }).filter((s): s is StaffMember => s !== null).sort((a,b) => a.name.localeCompare(b.name));
-    
-                setStaff(staffList);
-    
-            } catch (error) {
-                console.error("Error fetching staff:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Error fetching staff",
-                    description: "Could not load the list of current staff members."
-                });
-            } finally {
+            if (allRoleIds.length === 0) {
+                setStaff([]);
                 setIsLoadingStaff(false);
+                return;
             }
-        };
-    
+            
+            const usersQuery = query(collection(firestore, 'users'), where('id', 'in', allRoleIds));
+            const usersSnap = await getDocs(usersQuery);
+            
+            const userMap = new Map();
+            usersSnap.forEach(doc => userMap.set(doc.id, doc.data()));
+
+            const staffList = allRoleIds.map(id => {
+                const user = userMap.get(id);
+                if (!user) return null;
+                
+                return {
+                    id: id,
+                    name: user.displayName || `${user.firstName} ${user.lastName}`,
+                    email: user.email,
+                    isSuperAdmin: superAdminIds.has(id),
+                };
+            }).filter((s): s is StaffMember => s !== null).sort((a,b) => a.name.localeCompare(b.name));
+
+            setStaff(staffList);
+
+        } catch (error) {
+            console.error("Error fetching staff:", error);
+            toast({
+                variant: "destructive",
+                title: "Error fetching staff",
+                description: "Could not load the list of current staff members."
+            });
+        } finally {
+            setIsLoadingStaff(false);
+        }
+    };
+
+    useEffect(() => {
         fetchStaff();
-    }, [firestore, toast]);
+    }, [firestore]);
 
 
-    const handleAddRole = async (
-        email: string,
-        firstName: string,
-        lastName: string,
-        role: 'Admin' | 'Super Admin',
-        setLoading: (loading: boolean) => void,
-        resetFields: () => void
-    ) => {
-        if (!email || !firstName || !lastName || !firestore || !auth) {
+    const handleAddStaff = async () => {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore || !auth) {
             toast({ variant: "destructive", title: "Missing Information", description: "All fields are required." });
             return;
         }
     
-        setLoading(true);
+        setIsAddingStaff(true);
     
         try {
             let uid: string | null = null;
     
-            const existingUsersQuery = query(collection(firestore, 'users'), where('email', '==', email));
+            // Check if user already exists in Auth
+            const existingUsersQuery = query(collection(firestore, 'users'), where('email', '==', newStaffEmail));
             const existingUsersSnap = await getDocs(existingUsersQuery);
             
             if (!existingUsersSnap.empty) {
                 uid = existingUsersSnap.docs[0].id;
-                toast({ title: "Existing User Found", description: `Granting ${role} role to ${email}.`});
+                toast({ title: "Existing User Found", description: `Granting Admin role to ${newStaffEmail}.`});
             } else {
+                // If not, create them in Auth
                 const tempPassword = `temp-password-${Date.now()}`;
                 try {
-                    const { user: newUser } = await createUserWithEmailAndPassword(auth, email, tempPassword);
+                    const { user: newUser } = await createUserWithEmailAndPassword(auth, newStaffEmail, tempPassword);
                     uid = newUser.uid;
+                    // Also create their user profile document
                     const userDocRef = doc(firestore, 'users', uid);
                     await setDoc(userDocRef, {
                         id: uid,
-                        firstName: firstName,
-                        lastName: lastName,
-                        displayName: `${firstName} ${lastName}`,
-                        email: email,
+                        firstName: newStaffFirstName,
+                        lastName: newStaffLastName,
+                        displayName: `${newStaffFirstName} ${newStaffLastName}`,
+                        email: newStaffEmail,
                     });
                 } catch (error: any) {
                     if (error.code === 'auth/email-already-in-use') {
+                       // This is a rare edge case where a user exists in Auth but not in the 'users' collection.
+                       // We can attempt to recover by querying Auth users, but for now we will throw an error.
                        throw new Error("This email is registered in Firebase Auth but not in the 'users' collection. Please resolve manually in Firebase Console.");
                     }
                     throw error;
                 }
             }
     
-            if (!uid) {
-                throw new Error("Could not get user ID.");
-            }
+            if (!uid) throw new Error("Could not get user ID.");
     
-            const roleCollection = role === 'Admin' ? 'roles_admin' : 'roles_super_admin';
-            const roleDocRef = doc(firestore, roleCollection, uid);
-            await setDoc(roleDocRef, { uid: uid, addedOn: Timestamp.now() });
+            // Grant the standard Admin role
+            const adminRoleDocRef = doc(firestore, 'roles_admin', uid);
+            await setDoc(adminRoleDocRef, { uid: uid, addedOn: Timestamp.now() });
     
             toast({
-                title: `${role} Added Successfully`,
-                description: `${email} has been granted ${role} privileges.`,
+                title: `Admin Role Granted`,
+                description: `${newStaffEmail} has been granted Admin privileges.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
 
-             // Manually add to local state to force UI update
-            setStaff(prevStaff => {
-                const newStaffMember: StaffMember = { id: uid!, name: `${firstName} ${lastName}`, email, role };
-                const existingIndex = prevStaff.findIndex(s => s.id === uid);
-                if (existingIndex > -1) {
-                    const updatedStaff = [...prevStaff];
-                    updatedStaff[existingIndex] = newStaffMember;
-                    return updatedStaff.sort((a,b) => a.name.localeCompare(b.name));
-                }
-                return [...prevStaff, newStaffMember].sort((a,b) => a.name.localeCompare(b.name));
-            });
-    
-            resetFields();
+            // Refresh the staff list
+            await fetchStaff();
+            
+            setNewStaffEmail('');
+            setNewStaffFirstName('');
+            setNewStaffLastName('');
     
         } catch (error: any) {
-            console.error(`Failed to Add ${role}:`, error);
-            toast({ variant: "destructive", title: `Failed to Add ${role}`, description: error.message });
+            console.error(`Failed to Add Staff:`, error);
+            toast({ variant: "destructive", title: `Failed to Add Staff`, description: error.message });
         } finally {
-            setLoading(false);
+            setIsAddingStaff(false);
         }
     };
     
     const handleRemoveStaff = async (staffMember: StaffMember) => {
         if (!firestore) return;
 
-        if (staffMember.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length <= 1) {
+        if (staffMember.isSuperAdmin && staff.filter(s => s.isSuperAdmin).length <= 1) {
             toast({
                 variant: 'destructive',
                 title: 'Action Not Allowed',
@@ -347,29 +177,52 @@ export default function SuperAdminPage() {
         }
 
         try {
-            if (staffMember.role === 'Admin') {
-                await deleteDoc(doc(firestore, 'roles_admin', staffMember.id));
-            } else if (staffMember.role === 'Super Admin') {
-                await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
-            }
+            // Remove both admin and super_admin roles to fully revoke access
+            await deleteDoc(doc(firestore, 'roles_admin', staffMember.id));
+            await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
 
             setStaff(prev => prev.filter(s => s.id !== staffMember.id));
-            toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
+            toast({ title: "Staff Roles Removed", description: `${staffMember.email} no longer has admin privileges.` });
         } catch (error: any) {
-             toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
+             toast({ variant: "destructive", title: "Failed to Remove Roles", description: error.message });
         }
     };
 
-    const resetStaffFields = () => {
-        setNewStaffEmail('');
-        setNewStaffFirstName('');
-        setNewStaffLastName('');
-    };
-
-    const resetSuperAdminFields = () => {
-        setNewSuperAdminEmail('');
-        setNewSuperAdminFirstName('');
-        setNewSuperAdminLastName('');
+    const handleRoleToggle = async (staffMember: StaffMember, isSuper: boolean) => {
+        if (!firestore) return;
+    
+        // Prevent removing the last Super Admin
+        if (!isSuper && staffMember.isSuperAdmin && staff.filter(s => s.isSuperAdmin).length <= 1) {
+            toast({
+                variant: 'destructive',
+                title: 'Action Not Allowed',
+                description: 'Cannot remove the only remaining Super Admin.',
+            });
+            // Re-fetch to reset the toggle in the UI
+            await fetchStaff(); 
+            return;
+        }
+    
+        try {
+            if (isSuper) {
+                // Grant Super Admin
+                const superAdminDocRef = doc(firestore, 'roles_super_admin', staffMember.id);
+                await setDoc(superAdminDocRef, { uid: staffMember.id, addedOn: Timestamp.now() });
+                toast({ title: "Role Updated", description: `${staffMember.name} is now a Super Admin.` });
+            } else {
+                // Revoke Super Admin
+                await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
+                toast({ title: "Role Updated", description: `${staffMember.name} is now a standard Admin.` });
+            }
+            // Update local state to reflect the change immediately
+            setStaff(prev => prev.map(s => s.id === staffMember.id ? { ...s, isSuperAdmin: isSuper } : s));
+    
+        } catch (error: any) {
+            console.error("Failed to toggle role:", error);
+            toast({ variant: "destructive", title: "Failed to Update Role", description: error.message });
+            // Re-fetch to reset the UI on error
+            await fetchStaff();
+        }
     };
 
 
@@ -385,7 +238,7 @@ export default function SuperAdminPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
-                    <CardDescription>Grant standard Admin privileges to a new or existing user.</CardDescription>
+                    <CardDescription>Grant standard Admin privileges to a new or existing user. You can grant Super Admin privileges from the staff list after they are added.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -409,7 +262,7 @@ export default function SuperAdminPage() {
                                 onChange={(e) => setNewStaffEmail(e.target.value)}
                             />
                         </div>
-                        <Button onClick={() => handleAddRole(newStaffEmail, newStaffFirstName, newStaffLastName, 'Admin', setIsAddingStaff, resetStaffFields)} className="w-full" disabled={isAddingStaff}>
+                        <Button onClick={handleAddStaff} className="w-full" disabled={isAddingStaff}>
                             {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
                             Grant Admin Role
                         </Button>
@@ -417,40 +270,6 @@ export default function SuperAdminPage() {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Add Super Admin</CardTitle>
-                    <CardDescription>Grant full Super Admin privileges to a new or existing user.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="superAdminFirstName">First Name</Label>
-                                <Input id="superAdminFirstName" value={newSuperAdminFirstName} onChange={e => setNewSuperAdminFirstName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="superAdminLastName">Last Name</Label>
-                                <Input id="superAdminLastName" value={newSuperAdminLastName} onChange={e => setNewSuperAdminLastName(e.target.value)} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="add-super-admin-email">Super Admin Email</Label>
-                            <Input
-                                id="add-super-admin-email"
-                                type="email"
-                                placeholder="super.admin@example.com"
-                                value={newSuperAdminEmail}
-                                onChange={(e) => setNewSuperAdminEmail(e.target.value)}
-                            />
-                        </div>
-                        <Button onClick={() => handleAddRole(newSuperAdminEmail, newSuperAdminFirstName, newSuperAdminLastName, 'Super Admin', setIsAddingSuperAdmin, resetSuperAdminFields)} className="w-full" disabled={isAddingSuperAdmin}>
-                            {isAddingSuperAdmin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldPlus className="mr-2 h-4 w-4" />}
-                            Grant Super Admin Role
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
             <WebhookPreparer />
         </div>
 
@@ -467,26 +286,33 @@ export default function SuperAdminPage() {
                         </div>
                      ) : staff.length > 0 ? (
                         staff.map(member => (
-                            <div key={member.id} className="flex items-center justify-between pr-4 py-2">
+                            <div key={member.id} className="flex items-center justify-between pr-4 py-3 border-b last:border-b-0">
                                 <div className="flex items-center gap-4">
                                     <Avatar>
                                         <AvatarImage src={member.avatar} alt={member.name} />
-                                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>{member.name.charAt(0).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <p className="font-semibold">{member.name}</p>
                                         <p className="text-sm text-muted-foreground">{member.email}</p>
                                     </div>
                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-medium text-muted-foreground">{member.role}</span>
+                                 <div className="flex items-center gap-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Switch
+                                            id={`super-admin-toggle-${member.id}`}
+                                            checked={member.isSuperAdmin}
+                                            onCheckedChange={(checked) => handleRoleToggle(member, checked)}
+                                        />
+                                        <Label htmlFor={`super-admin-toggle-${member.id}`}>Super Admin</Label>
+                                    </div>
                                     <Dialog>
                                         <DialogTrigger asChild>
                                             <Button
                                                 variant="ghost" 
                                                 size="icon" 
                                                 className="text-destructive hover:bg-destructive/10"
-                                                disabled={member.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length <= 1}
+                                                disabled={member.isSuperAdmin && staff.filter(s => s.isSuperAdmin).length <= 1}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -495,7 +321,7 @@ export default function SuperAdminPage() {
                                             <DialogHeader>
                                                 <DialogTitle>Are you sure?</DialogTitle>
                                                 <DialogDescription>
-                                                    This will remove <strong>{member.role}</strong> permissions for {member.name}. They may still be able to log in but will not have admin access. This does not delete their user account.
+                                                    This will revoke all admin privileges for {member.name}. They will not be able to access the admin portal. This does not delete their user account.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <DialogFooter>
