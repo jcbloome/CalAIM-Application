@@ -76,9 +76,9 @@ service cloud.firestore {
     //         COLLECTION-LEVEL & COLLECTION GROUP RULES (FOR QUERIES)
     // =====================================================================
     
-    // This allows super admins to query across all users' applications.
+    // This allows admins and super admins to query across all users' applications.
     match /{path=**}/applications/{applicationId} {
-      allow read, write: if isSuperAdmin() || isAdmin();
+      allow read: if isSuperAdmin() || isAdmin();
     }
     
     // These rules are for LIST operations on top-level collections.
@@ -126,8 +126,8 @@ service cloud.firestore {
       allow get: if isSignedIn();
       // Temporarily allow any authenticated user to create their own super admin role
       // to bootstrap the first super admin.
-      allow write: if isSuperAdmin() || request.auth.uid == userId;
-      allow delete: if isSuperAdmin();
+      allow create: if isSuperAdmin() || request.auth.uid == userId;
+      allow update, delete: if isSuperAdmin();
     }
   }
 }
