@@ -225,10 +225,8 @@ service cloud.firestore {
       allow get: if isSignedIn();
       // Temporarily allow any authenticated user to create their own super admin role.
       // This should be reverted to 'if isSuperAdmin()' after the first super admin is created.
-      allow write: if request.auth.uid == userId || isSuperAdmin();
+      allow write: if isSuperAdmin() || request.auth.uid == userId;
       allow delete: if isSuperAdmin();
     }
   }
 }
-
-    
