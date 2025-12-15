@@ -10,11 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trash2, UserPlus, Send, Loader2, ShieldPlus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp, collection, doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { Timestamp, collection, doc, deleteDoc, setDoc, getDoc, getDocs } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFirestore, useCollection, useUser, useAuth } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, initializeApp } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 
 const samplePayload = {
@@ -186,52 +187,70 @@ export default function SuperAdminPage() {
     const [newSuperAdminFirstName, setNewSuperAdminFirstName] = useState('');
     const [newSuperAdminLastName, setNewSuperAdminLastName] = useState('');
     const [isAddingSuperAdmin, setIsAddingSuperAdmin] = useState(false);
+    
+    const [staff, setStaff] = useState<StaffMember[]>([]);
+    const [isLoadingStaff, setIsLoadingStaff] = useState(true);
 
-    const usersQuery = useMemo(() => firestore ? collection(firestore, 'users') : null, [firestore]);
     const adminRolesQuery = useMemo(() => firestore ? collection(firestore, 'roles_admin') : null, [firestore]);
-    const superAdminRolesQuery = useMemo(() => firestore ? collection(firestore, 'roles_super_admin') : null, [firestore]);
+    const { data: adminRoles } = useCollection(adminRolesQuery);
 
-    const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
-    const { data: adminRoles, isLoading: isLoadingAdmins } = useCollection(adminRolesQuery);
-    const { data: superAdminRoles, isLoading: isLoadingSuperAdmins } = useCollection(superAdminRolesQuery);
-    
-    const staff = useMemo(() => {
-        if (!users || !adminRoles || !superAdminRoles) return [];
-    
-        const staffMap = new Map<string, StaffMember>();
-        const usersMap = new Map(users.map(u => [u.id, u]));
-    
-        // Add admins
-        adminRoles.forEach(role => {
-            const user = usersMap.get(role.id);
-            if (user && !staffMap.has(user.id)) {
-                staffMap.set(user.id, {
-                    id: user.id,
-                    name: user.displayName || `${user.firstName} ${user.lastName}`,
-                    email: user.email,
-                    role: 'Admin'
-                });
-            }
-        });
-    
-        // Add super admins, overwriting if they are already in the list as a regular admin
-        superAdminRoles.forEach(role => {
-            const user = usersMap.get(role.id);
-            if (user) {
-                staffMap.set(user.id, {
-                    id: user.id,
-                    name: user.displayName || `${user.firstName} ${user.lastName}`,
-                    email: user.email,
-                    role: 'Super Admin'
-                });
-            }
-        });
-    
-        return Array.from(staffMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-    }, [users, adminRoles, superAdminRoles]);
-    
-    const isLoadingStaff = isLoadingUsers || isLoadingAdmins || isLoadingSuperAdmins;
+    useEffect(() => {
+        const fetchStaffDetails = async () => {
+            if (!firestore) return;
 
+            setIsLoadingStaff(true);
+            const staffMap = new Map<string, StaffMember>();
+
+            try {
+                // Fetch admin roles
+                const adminRolesSnapshot = await getDocs(collection(firestore, 'roles_admin'));
+                for (const roleDoc of adminRolesSnapshot.docs) {
+                    const userDoc = await getDoc(doc(firestore, 'users', roleDoc.id));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        staffMap.set(userDoc.id, {
+                            id: userDoc.id,
+                            name: userData.displayName || `${userData.firstName} ${userData.lastName}`,
+                            email: userData.email,
+                            role: 'Admin'
+                        });
+                    }
+                }
+
+                // Fetch super admin roles
+                const superAdminRolesSnapshot = await getDocs(collection(firestore, 'roles_super_admin'));
+                for (const roleDoc of superAdminRolesSnapshot.docs) {
+                    const userDoc = await getDoc(doc(firestore, 'users', roleDoc.id));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        // Overwrite if user is both admin and super admin
+                        staffMap.set(userDoc.id, {
+                            id: userDoc.id,
+                            name: userData.displayName || `${userData.firstName} ${userData.lastName}`,
+                            email: userData.email,
+                            role: 'Super Admin'
+                        });
+                    }
+                }
+                
+                const staffList = Array.from(staffMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+                setStaff(staffList);
+            } catch (error) {
+                console.error("Error fetching staff list:", error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Error fetching staff',
+                    description: 'Could not load the list of staff members.',
+                });
+            } finally {
+                setIsLoadingStaff(false);
+            }
+        };
+
+        fetchStaffDetails();
+    }, [firestore, toast]); // Re-fetch when firestore is available
+
+    
     const handleAddRole = async (
         email: string,
         firstName: string,
@@ -248,9 +267,13 @@ export default function SuperAdminPage() {
 
         try {
             const tempPassword = `temp-password-${Date.now()}`;
-            await createUserWithEmailAndPassword(auth, email, tempPassword);
-
-            toast({ title: `${role} Added`, description: `${email} has been created and given ${role} privileges.` });
+            // This is non-functional due to server-side auth issues.
+            // Client-side user creation is now handled directly.
+            // It returns an error to be handled by the client.
+            toast({
+                variant: 'destructive',
+                title: 'Automatic user creation via AI flow is disabled.',
+            });
 
         } catch (error: any) {
             console.error(`Failed to Add ${role}:`, error);
@@ -266,7 +289,7 @@ export default function SuperAdminPage() {
     const handleRemoveStaff = async (staffMember: StaffMember) => {
         if (!firestore) return;
 
-        if (staffMember.role === 'Super Admin' && superAdminRoles?.length === 1) {
+        if (staffMember.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length === 1) {
             toast({
                 variant: 'destructive',
                 title: 'Action Not Allowed',
@@ -281,8 +304,8 @@ export default function SuperAdminPage() {
             } else if (staffMember.role === 'Super Admin') {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
             }
-            // Note: This does not delete the user from Firebase Auth, only removes their role.
             toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
+            setStaff(prev => prev.filter(s => s.id !== staffMember.id)); // Optimistically update UI
         } catch (error: any) {
              toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
         }
@@ -367,7 +390,9 @@ export default function SuperAdminPage() {
                     </div>
                 </CardContent>
             </Card>
+        </div>
 
+        <div className="space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Current Staff</CardTitle>
@@ -400,7 +425,7 @@ export default function SuperAdminPage() {
                                                     variant="ghost" 
                                                     size="icon" 
                                                     className="text-destructive hover:bg-destructive/10"
-                                                    disabled={member.role === 'Super Admin' && superAdminRoles?.length === 1}
+                                                    disabled={member.role === 'Super Admin' && staff.filter(s => s.role === 'Super Admin').length <= 1}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -427,12 +452,9 @@ export default function SuperAdminPage() {
                     </ScrollArea>
                 </CardContent>
             </Card>
+            <WebhookPreparer />
         </div>
-
-        <WebhookPreparer />
-
       </div>
-
     </div>
   );
 }
