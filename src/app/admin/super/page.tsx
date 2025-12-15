@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp, collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useCollection } from '@/firebase';
 import { createAdminUser, createSuperAdminUser } from '@/app/actions/admin-actions';
 
 const samplePayload = {
@@ -174,9 +174,6 @@ export default function SuperAdminPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
     
-    const [staff, setStaff] = useState<StaffMember[]>([]);
-    const [isLoadingStaff, setIsLoadingStaff] = useState(true);
-    
     const [newStaffEmail, setNewStaffEmail] = useState('');
     const [newStaffFirstName, setNewStaffFirstName] = useState('');
     const [newStaffLastName, setNewStaffLastName] = useState('');
@@ -187,53 +184,53 @@ export default function SuperAdminPage() {
     const [newSuperAdminLastName, setNewSuperAdminLastName] = useState('');
     const [isAddingSuperAdmin, setIsAddingSuperAdmin] = useState(false);
 
-    const fetchStaff = async () => {
-        if (!firestore) return;
-        setIsLoadingStaff(true);
-        
-        const adminUsers = new Map<string, Omit<StaffMember, 'role' | 'avatar'>>();
-        const userDocs = await getDocs(collection(firestore, 'users'));
-        userDocs.forEach(doc => {
-            const data = doc.data();
-            adminUsers.set(doc.id, {
-                id: doc.id,
-                name: data.displayName || `${data.firstName} ${data.lastName}`,
-                email: data.email
-            });
-        });
+    const usersQuery = useMemo(() => firestore ? collection(firestore, 'users') : null, [firestore]);
+    const adminRolesQuery = useMemo(() => firestore ? collection(firestore, 'roles_admin') : null, [firestore]);
+    const superAdminRolesQuery = useMemo(() => firestore ? collection(firestore, 'roles_super_admin') : null, [firestore]);
 
-        const allStaff: StaffMember[] = [];
-        const adminRoles = await getDocs(collection(firestore, 'roles_admin'));
-        adminRoles.forEach(doc => {
-            const user = adminUsers.get(doc.id);
+    const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
+    const { data: adminRoles, isLoading: isLoadingAdmins } = useCollection(adminRolesQuery);
+    const { data: superAdminRoles, isLoading: isLoadingSuperAdmins } = useCollection(superAdminRolesQuery);
+
+    const staff = useMemo(() => {
+        if (!users || !adminRoles || !superAdminRoles) return [];
+
+        const usersMap = new Map(users.map(u => [u.id, u]));
+        const staffList: StaffMember[] = [];
+
+        adminRoles.forEach(role => {
+            const user = usersMap.get(role.id);
             if (user) {
-                allStaff.push({ ...user, role: 'Admin' });
+                staffList.push({
+                    id: user.id,
+                    name: user.displayName || `${user.firstName} ${user.lastName}`,
+                    email: user.email,
+                    role: 'Admin'
+                });
             }
         });
-
-        const superAdminRoles = await getDocs(collection(firestore, 'roles_super_admin'));
-        superAdminRoles.forEach(doc => {
-            const user = adminUsers.get(doc.id);
+        
+        superAdminRoles.forEach(role => {
+            const user = usersMap.get(role.id);
             if (user) {
-                const existingIndex = allStaff.findIndex(s => s.id === user.id);
-                if (existingIndex !== -1) {
-                    allStaff[existingIndex].role = 'Super Admin';
+                const existingIndex = staffList.findIndex(s => s.id === user.id);
+                if (existingIndex > -1) {
+                    staffList[existingIndex].role = 'Super Admin';
                 } else {
-                    allStaff.push({ ...user, role: 'Super Admin' });
+                     staffList.push({
+                        id: user.id,
+                        name: user.displayName || `${user.firstName} ${user.lastName}`,
+                        email: user.email,
+                        role: 'Super Admin'
+                    });
                 }
             }
         });
 
-        setStaff(allStaff.sort((a,b) => a.name.localeCompare(b.name)));
-        setIsLoadingStaff(false);
-    };
-
-    useEffect(() => {
-        if(firestore){
-            fetchStaff();
-        }
-    }, [firestore]);
+        return staffList.sort((a,b) => a.name.localeCompare(b.name));
+    }, [users, adminRoles, superAdminRoles]);
     
+    const isLoadingStaff = isLoadingUsers || isLoadingAdmins || isLoadingSuperAdmins;
 
     const handleAddStaff = async () => {
         if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
@@ -254,7 +251,6 @@ export default function SuperAdminPage() {
                 setNewStaffEmail('');
                 setNewStaffFirstName('');
                 setNewStaffLastName('');
-                await fetchStaff(); // Refresh the list
             } else {
                 throw new Error(result.error || "An unknown error occurred.");
             }
@@ -284,7 +280,6 @@ export default function SuperAdminPage() {
                 setNewSuperAdminEmail('');
                 setNewSuperAdminFirstName('');
                 setNewSuperAdminLastName('');
-                await fetchStaff(); // Refresh the list
             } else {
                 throw new Error(result.error || "An unknown error occurred.");
             }
@@ -305,7 +300,6 @@ export default function SuperAdminPage() {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
             }
             toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
-            await fetchStaff(); // Refresh list
         } catch (error: any) {
              toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
         }
