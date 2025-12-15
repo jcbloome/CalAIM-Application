@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, FileWarning, PenSquare, ArrowLeft, Trash2, Loader2, User, Clock, Check, Circle, Lock, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
+import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useEffect, useMemo, useState }from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Application, FormStatus, Activity } from '@/lib/definitions';
 import { activities as mockActivities } from '@/lib/data';
@@ -166,7 +166,6 @@ export default function AdminApplicationDetailPage() {
 
   const { data: application, isLoading } = useDoc<Application & { [key:string]: any }>(applicationDocRef);
 
-
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
   const [isFormViewerOpen, setFormViewerOpen] = useState(false);
   const [revisionDetails, setRevisionDetails] = useState('');
@@ -184,7 +183,6 @@ export default function AdminApplicationDetailPage() {
   const applicationActivities = useMemo(() => {
     return application ? mockActivities.filter(activity => activity.applicationId === application.id) : [];
   }, [application]);
-
 
   const handleRequestRevision = async () => {
     if (!application || !revisionDetails || !targetFormForRevision || !applicationDocRef) return;
@@ -280,6 +278,24 @@ export default function AdminApplicationDetailPage() {
     }
   }
 
+  const allForms = useMemo(() => {
+    if (!application) return [];
+    
+    const forms = application.forms ? [...application.forms] : [];
+    
+    // Ensure "CS Member Summary" is always in the list
+    if (!forms.some(form => form.name === 'CS Member Summary')) {
+      forms.unshift({
+        name: 'CS Member Summary',
+        status: 'Completed',
+        type: 'online-form',
+        href: `/forms/cs-summary-form/review?applicationId=${id}`
+      });
+    }
+    return forms;
+  }, [application, id]);
+
+
   if (isLoading) {
     return (
         <div className="flex items-center justify-center h-screen">
@@ -306,8 +322,8 @@ export default function AdminApplicationDetailPage() {
       notFound();
   }
 
-  const completedForms = application.forms?.filter(f => f.status === 'Completed').length || 0;
-  const totalForms = application.forms?.length || 0;
+  const completedForms = allForms.filter(f => f.status === 'Completed').length;
+  const totalForms = allForms.length;
   const progress = totalForms > 0 ? (completedForms / totalForms) * 100 : 0;
 
   return (
@@ -406,7 +422,7 @@ export default function AdminApplicationDetailPage() {
               </CardHeader>
               <CardContent>
                   <div className="space-y-4">
-                  {application.forms?.map((form: FormStatus) => (
+                  {allForms.map((form: FormStatus) => (
                       <div key={form.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border p-4">
                       <div className="flex items-center gap-4">
                           {form.status === 'Completed' ? (
@@ -421,10 +437,14 @@ export default function AdminApplicationDetailPage() {
                       </div>
                       <div className="flex items-center gap-2 self-end sm:self-center">
                           <Button variant="outline" size="sm" onClick={() => {
+                            if (form.name === 'CS Member Summary') {
+                                router.push(`/forms/cs-summary-form?applicationId=${id}`);
+                                return;
+                            }
                               setSelectedForm(form.name);
                               setFormViewerOpen(true);
                           }}>
-                              View
+                              {form.name === 'CS Member Summary' ? 'View/Edit' : 'View'}
                           </Button>
                           <Button variant="secondary" size="sm" onClick={() => {
                               setTargetFormForRevision(form.name);
@@ -436,7 +456,7 @@ export default function AdminApplicationDetailPage() {
                       </div>
                       </div>
                   ))}
-                  {!application.forms?.length && (
+                  {!allForms.length && (
                       <div className="text-center p-8 text-muted-foreground">No forms required for this pathway yet.</div>
                   )}
                   </div>
@@ -499,3 +519,5 @@ export default function AdminApplicationDetailPage() {
     </div>
   );
 }
+
+    
