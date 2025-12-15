@@ -140,6 +140,11 @@ service cloud.firestore {
     //         Collection Rules
     // =================================
 
+    // This rule allows collection group queries on 'applications' for admins.
+    match /{path=**}/applications/{applicationId} {
+      allow read, write: if isAdmin() || isSuperAdmin();
+    }
+
     /**
      * @description Rules for a user's own profile document.
      * @path /users/{userId}
@@ -148,10 +153,9 @@ service cloud.firestore {
      * @principle Restricts access to a user's own data tree and allows self-creation and update of a profile.
      */
     match /users/{userId} {
-      // Admins can list all users to fetch all applications.
-      allow list: if isAdmin() || isSuperAdmin();
       allow get: if isOwnerOrAdmin(userId);
       allow write: if isOwner(userId);
+      allow list: if false; // Deny listing of users for non-admins
       allow delete: if isOwnerOrAdmin(userId);
 
       /**
