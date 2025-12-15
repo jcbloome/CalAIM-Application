@@ -12,9 +12,9 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp, collection, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore, useCollection } from '@/firebase';
-import { createAdminUser, createSuperAdminUser } from '@/app/actions/admin-actions';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { createUser } from '@/ai/flows/create-user';
 
 
 const samplePayload = {
@@ -174,6 +174,7 @@ const WebhookPreparer = () => {
 
 export default function SuperAdminPage() {
     const firestore = useFirestore();
+    const { user } = useUser();
     const { toast } = useToast();
     
     const [newStaffEmail, setNewStaffEmail] = useState('');
@@ -234,76 +235,74 @@ export default function SuperAdminPage() {
     
     const isLoadingStaff = isLoadingUsers || isLoadingAdmins || isLoadingSuperAdmins;
 
-    const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
-            toast({ variant: "destructive", title: "Missing Information", description: "Please provide a first name, last name, and email." });
+    const handleAddRole = async (
+        email: string,
+        firstName: string,
+        lastName: string,
+        role: 'Admin' | 'Super Admin',
+        setLoading: (loading: boolean) => void
+    ) => {
+        if (!email || !firstName || !lastName || !firestore || !user) {
+            toast({ variant: "destructive", title: "Missing Information", description: "All fields are required and you must be logged in." });
             return;
         }
 
-        setIsAddingStaff(true);
+        setLoading(true);
         try {
-            const result = await createAdminUser({ 
-                email: newStaffEmail, 
-                firstName: newStaffFirstName, 
-                lastName: newStaffLastName 
+            // 1. Call AI flow to create the user in Firebase Auth
+            const createUserResult = await createUser({
+                email,
+                displayName: `${firstName} ${lastName}`,
             });
 
-            if (result.success) {
-                toast({ title: "Staff Added", description: `${newStaffEmail} has been created and invited.` });
+            if (!createUserResult.uid) {
+                throw new Error(createUserResult.error || 'Failed to get UID from user creation flow.');
+            }
+            const { uid } = createUserResult;
+
+            // 2. Create the user document in the `users` collection
+            const userDocRef = doc(firestore, 'users', uid);
+            await setDoc(userDocRef, {
+                id: uid,
+                firstName,
+                lastName,
+                displayName: `${firstName} ${lastName}`,
+                email,
+            });
+
+            // 3. Assign the role in the appropriate roles collection
+            const roleCollection = role === 'Admin' ? 'roles_admin' : 'roles_super_admin';
+            const roleDocRef = doc(firestore, roleCollection, uid);
+            await setDoc(roleDocRef, {
+                email,
+                role: role.toLowerCase(),
+                createdAt: Timestamp.now(),
+            });
+
+            toast({ title: `${role} Added`, description: `${email} has been created and invited.` });
+
+            // Clear input fields
+            if (role === 'Admin') {
                 setNewStaffEmail('');
                 setNewStaffFirstName('');
                 setNewStaffLastName('');
             } else {
-                throw new Error(result.error || "An unknown error occurred.");
-            }
-        } catch (error: any) {
-            toast({ variant: "destructive", title: "Failed to Add Staff", description: error.message });
-        } finally {
-            setIsAddingStaff(false);
-        }
-    };
-
-    const handleAddSuperAdmin = async () => {
-        if (!newSuperAdminEmail || !newSuperAdminFirstName || !newSuperAdminLastName) {
-            toast({ variant: "destructive", title: "Missing Information", description: "Please provide a first name, last name, and email." });
-            return;
-        }
-
-        setIsAddingSuperAdmin(true);
-        try {
-            const result = await createSuperAdminUser({
-                email: newSuperAdminEmail,
-                firstName: newSuperAdminFirstName,
-                lastName: newSuperAdminLastName
-            });
-
-            if (result.success && result.userId && firestore) {
-                 // Client-side write to roles_super_admin
-                const roleRef = doc(firestore, 'roles_super_admin', result.userId);
-                await setDoc(roleRef, {
-                    email: newSuperAdminEmail,
-                    role: 'super_admin',
-                    createdAt: Timestamp.now(),
-                });
-
-                toast({ title: "Super Admin Added", description: `${newSuperAdminEmail} has been created and invited.` });
                 setNewSuperAdminEmail('');
                 setNewSuperAdminFirstName('');
                 setNewSuperAdminLastName('');
-            } else {
-                throw new Error(result.error || "An unknown error occurred during user creation.");
             }
+
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Failed to Add Super Admin", description: error.message });
+            console.error(`Failed to Add ${role}:`, error);
+            toast({ variant: "destructive", title: `Failed to Add ${role}`, description: error.message });
         } finally {
-            setIsAddingSuperAdmin(false);
+            setLoading(false);
         }
     };
     
     const handleRemoveStaff = async (staffMember: StaffMember) => {
         if (!firestore) return;
 
-        // Prevent removing the last super admin
         if (staffMember.role === 'Super Admin' && superAdminRoles?.length === 1) {
             toast({
                 variant: 'destructive',
@@ -319,6 +318,8 @@ export default function SuperAdminPage() {
             } else if (staffMember.role === 'Super Admin') {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
             }
+            // Note: This does not delete the user from Firebase Auth, only removes their role.
+            // A full deletion would require a server-side function.
             toast({ title: "Staff Role Removed", description: `${staffMember.email} no longer has the ${staffMember.role} role.` });
         } catch (error: any) {
              toast({ variant: "destructive", title: "Failed to Remove Role", description: error.message });
@@ -361,7 +362,7 @@ export default function SuperAdminPage() {
                             onChange={(e) => setNewStaffEmail(e.target.value)}
                         />
                     </div>
-                    <Button onClick={handleAddStaff} className="w-full" disabled={isAddingStaff}>
+                    <Button onClick={() => handleAddRole(newStaffEmail, newStaffFirstName, newStaffLastName, 'Admin', setIsAddingStaff)} className="w-full" disabled={isAddingStaff}>
                         {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
                         Add Staff Member
                     </Button>
@@ -406,7 +407,7 @@ export default function SuperAdminPage() {
                                                 <DialogHeader>
                                                     <DialogTitle>Are you sure?</DialogTitle>
                                                     <DialogDescription>
-                                                        This will remove <strong>{member.role}</strong> permissions for {member.name}. They may still be able to log in but will not have admin access.
+                                                        This will remove <strong>{member.role}</strong> permissions for {member.name}. They may still be able to log in but will not have admin access. This does not delete their user account.
                                                     </DialogDescription>
                                                 </DialogHeader>
                                                 <DialogFooter>
@@ -452,7 +453,7 @@ export default function SuperAdminPage() {
                                 onChange={(e) => setNewSuperAdminEmail(e.target.value)}
                             />
                         </div>
-                        <Button onClick={handleAddSuperAdmin} className="w-full" disabled={isAddingSuperAdmin}>
+                        <Button onClick={() => handleAddRole(newSuperAdminEmail, newSuperAdminFirstName, newSuperAdminLastName, 'Super Admin', setIsAddingSuperAdmin)} className="w-full" disabled={isAddingSuperAdmin}>
                             {isAddingSuperAdmin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldPlus className="mr-2 h-4 w-4" />}
                             Add Super Admin
                         </Button>
