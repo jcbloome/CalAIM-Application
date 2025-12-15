@@ -155,7 +155,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwnerOrAdmin(userId);
       allow write: if isOwner(userId);
-      allow list: if false; // Deny listing of users for non-admins
+      allow list: if isSuperAdmin(); // Allow listing of users for super admins
       allow delete: if isOwnerOrAdmin(userId);
 
       /**
@@ -198,9 +198,9 @@ service cloud.firestore {
      */
     match /roles_admin/{userId} {
       allow get: if isSignedIn();
-      allow write: if request.auth.uid == userId;
-      allow list: if false;
-      allow delete: if false;
+      allow write: if isSuperAdmin();
+      allow list: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
     }
 
     /**
@@ -212,8 +212,10 @@ service cloud.firestore {
      */
     match /roles_super_admin/{userId} {
       allow get: if isSignedIn();
-      allow write: if request.auth.uid == userId;
+      allow write: if isSuperAdmin() || request.auth.uid == userId;
       allow list: if isSuperAdmin();
     }
   }
 }
+
+    
