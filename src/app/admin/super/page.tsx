@@ -37,8 +37,9 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { grantAdminRole } from '@/ai/flows/grant-admin-role';
-
+import { initializeApp, deleteApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { firebaseConfig } from '@/firebase/config';
 
 interface StaffMember {
   id: string;
@@ -50,7 +51,6 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
   const firestore = useFirestore();
-  const auth = useAuth();
   const { toast } = useToast();
 
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -86,8 +86,6 @@ export default function SuperAdminPage() {
                   isSuperAdmin: superAdminIds.has(id),
               };
           }
-          // If a role exists but user doc doesn't, we can't display them.
-          // This indicates a data consistency issue that grantAdminRole flow should fix.
           return null;
       });
       
@@ -112,33 +110,50 @@ export default function SuperAdminPage() {
   useEffect(() => {
     fetchStaff();
   }, [firestore, toast]);
-
+  
   const handleAddStaff = async () => {
-    if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all fields.',
-      });
+    if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore) {
+      toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
       return;
     }
     setIsAddingStaff(true);
 
+    let tempApp: FirebaseApp | null = null;
     try {
-      const result = await grantAdminRole({
-        email: newStaffEmail,
+      // Create a temporary, secondary Firebase instance to create the user.
+      // This prevents the current admin from being logged out.
+      tempApp = initializeApp(firebaseConfig, `staff-creation-${Date.now()}`);
+      const tempAuth = getAuth(tempApp);
+
+      const userCredential = await createUserWithEmailAndPassword(tempAuth, newStaffEmail, 'password123'); // Using a temporary password
+      const user = userCredential.user;
+      const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
+
+      await updateProfile(user, { displayName });
+
+      const batch = writeBatch(firestore);
+
+      // Create user profile document
+      const userDocRef = doc(firestore, 'users', user.uid);
+      batch.set(userDocRef, {
+        id: user.uid,
         firstName: newStaffFirstName,
         lastName: newStaffLastName,
+        email: newStaffEmail,
+        displayName: displayName,
       });
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      
+      // Grant admin role
+      const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
+      batch.set(adminRoleRef, { grantedAt: Timestamp.now() });
+
+      await batch.commit();
+
       toast({
         title: 'Staff Member Added',
-        description: `${result.displayName} has been granted admin privileges. They can now log in. If they are a new user, they must use the 'Forgot Password' link.`,
+        description: `${displayName} has been granted admin privileges. They must use the "Forgot Password" link on the login page to set their password.`,
         className: 'bg-green-100 text-green-900 border-green-200',
+        duration: 10000,
       });
 
       setNewStaffEmail('');
@@ -147,14 +162,21 @@ export default function SuperAdminPage() {
       await fetchStaff();
 
     } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+         toast({ variant: "destructive", title: "User Already Exists", description: "This email is already associated with an account. Please verify they are in the staff list or contact support." });
+      } else {
         console.error("Error in handleAddStaff:", error);
         toast({
-            variant: "destructive",
-            title: "Failed to Add Staff",
-            description: error.message || "An unexpected error occurred.",
+          variant: "destructive",
+          title: "Failed to Add Staff",
+          description: error.message || "An unexpected error occurred.",
         });
+      }
     } finally {
-        setIsAddingStaff(false);
+      if (tempApp) {
+        await deleteApp(tempApp);
+      }
+      setIsAddingStaff(false);
     }
   };
 
