@@ -37,8 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signOut, type Auth } from 'firebase/auth';
+import { grantAdminRole } from '@/ai/flows/grant-admin-role';
 
 
 interface StaffMember {
@@ -51,7 +50,6 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
   const firestore = useFirestore();
-  const mainApp = useFirebaseApp();
   const { toast } = useToast();
 
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -116,87 +114,41 @@ export default function SuperAdminPage() {
     fetchStaff();
   }, [firestore, toast]);
   
-  const grantAdminRoleInFirestore = async (uid: string, email: string, firstName: string, lastName: string) => {
-      if (!firestore) throw new Error("Firestore not available");
-      const displayName = `${firstName} ${lastName}`.trim();
-      const userDocRef = doc(firestore, 'users', uid);
-      const adminRoleRef = doc(firestore, 'roles_admin', uid);
-  
-      const batch = writeBatch(firestore);
-      
-      batch.set(userDocRef, {
-        id: uid,
-        email,
-        firstName,
-        lastName,
-        displayName,
-      }, { merge: true });
-  
-      batch.set(adminRoleRef, { grantedAt: Timestamp.now() });
-  
-      await batch.commit();
-  }
   
   const handleAddStaff = async () => {
     if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
       toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
       return;
     }
-    if (!mainApp) {
-        toast({ variant: "destructive", title: "Firebase Error", description: "Main Firebase app not initialized." });
-        return;
-    }
     setIsAddingStaff(true);
   
-    let tempApp: FirebaseApp | null = null;
-    let tempAuth: Auth | null = null;
-  
     try {
-      const tempAppName = `temp-auth-app-${Date.now()}`;
-      tempApp = initializeApp(mainApp.options, tempAppName);
-      tempAuth = getAuth(tempApp);
-  
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, newStaffEmail, newStaffLastName);
-      const uid = userCredential.user.uid;
-      
-      await grantAdminRoleInFirestore(uid, newStaffEmail, newStaffFirstName, newStaffLastName);
-  
-      toast({
-        title: 'Staff Member Added',
-        description: `${newStaffFirstName} ${newStaffLastName} has been granted admin privileges.`,
-        className: 'bg-green-100 text-green-900 border-green-200',
+      const result = await grantAdminRole({
+          email: newStaffEmail,
+          firstName: newStaffFirstName,
+          lastName: newStaffLastName
       });
   
-    } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-          toast({
-              title: "Existing User Found",
-              description: `This user already has an account. Granting them admin permissions now...`,
-          });
-          // This part is tricky without a backend. The best client-side approach is to inform the super admin.
-          // A proper fix requires a server-side function to lookup the user by email.
-          // For now, we will just toast and let the user know. A better solution would be a callable function.
-           toast({
-            variant: "destructive",
-            title: "Action Required",
-            description: "Could not automatically grant role to existing user. This feature requires a backend function not yet implemented. Please ask for the 'grantAdminRole' flow to be created.",
-          });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Failed to Add Staff",
-          description: error.message || "An unexpected error occurred.",
-        });
-      }
-    } finally {
-        if (tempAuth) {
-            await signOut(tempAuth);
-        }
-      setIsAddingStaff(false);
+      toast({
+        title: 'Success!',
+        description: result.message,
+        className: 'bg-green-100 text-green-900 border-green-200',
+      });
+      
+      // Reset form and refresh the staff list
       setNewStaffEmail('');
       setNewStaffFirstName('');
       setNewStaffLastName('');
       await fetchStaff();
+  
+    } catch (error: any) {
+       toast({
+          variant: "destructive",
+          title: "Failed to Add Staff",
+          description: error.message || "An unexpected error occurred on the server.",
+        });
+    } finally {
+      setIsAddingStaff(false);
     }
   };
 
