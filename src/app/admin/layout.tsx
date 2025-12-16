@@ -55,9 +55,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // If loading is finished and there's no user, redirect to login.
         if (!isLoading && !user) {
-            router.push('/login');
+            router.push('/admin/login');
         }
     }, [isLoading, user, router]);
 
@@ -70,7 +69,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         );
     }
     
-    // After loading, if there's a user but they are not an admin, show access denied.
     if (user && !isAdmin && !isSuperAdmin) {
         return (
             <>
@@ -85,6 +83,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     </CardHeader>
                     <CardContent>
                         <p>You do not have permission to view this page. Please contact an administrator if you believe this is an error.</p>
+                         <Button onClick={() => router.push('/admin/login')} className="mt-4">Return to Login</Button>
                     </CardContent>
                 </Card>
             </main>
@@ -92,7 +91,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         );
     }
 
-    // If there's no user yet (and not loading), we show nothing to prevent flicker before redirect.
     if (!user) {
         return null;
     }
