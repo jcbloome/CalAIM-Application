@@ -161,6 +161,7 @@ function PathwayPageContent() {
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
+    // Simulate upload delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const fileNames = files.map(f => f.name).join(', ');
@@ -168,6 +169,7 @@ function PathwayPageContent() {
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
+    // Clear the input value to allow re-uploading the same file
     event.target.value = '';
   };
   
@@ -184,6 +186,7 @@ function PathwayPageContent() {
             lastUpdated: serverTimestamp(),
         }, { merge: true });
 
+        // Redirect to a confirmation page
         router.push('/applications/completed');
     } catch (e: any) {
         console.error(e);
