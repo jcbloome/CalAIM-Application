@@ -22,6 +22,7 @@ import {
   setDoc,
   getDocs,
   writeBatch,
+  getDoc,
 } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth, useFirestore, useFirebaseApp } from '@/firebase';
@@ -67,34 +68,35 @@ export default function SuperAdminPage() {
       const superAdminRolesSnap = await getDocs(
         collection(firestore, 'roles_super_admin')
       );
-      const usersSnap = await getDocs(collection(firestore, 'users'));
 
       const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
       const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
+      const allRoleIds = new Set([...adminIds, ...superAdminIds]);
 
-      const userMap = new Map();
-      usersSnap.forEach(doc => userMap.set(doc.id, doc.data()));
+      const staffListPromises = Array.from(allRoleIds).map(async (id) => {
+          const userDocRef = doc(firestore, 'users', id);
+          const userDocSnap = await getDoc(userDocRef);
 
-      const allRoleIds = [
-        ...new Set([...Array.from(adminIds), ...Array.from(superAdminIds)]),
-      ];
-
-      const staffList = allRoleIds
-        .map(id => {
-          const user = userMap.get(id);
-          if (!user) return null;
-
-          return {
-            id: id,
-            name: user.displayName || `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            isSuperAdmin: superAdminIds.has(id),
-          };
-        })
+          if (userDocSnap.exists()) {
+              const user = userDocSnap.data();
+              return {
+                  id: id,
+                  name: user.displayName || `${user.firstName} ${user.lastName}`,
+                  email: user.email,
+                  isSuperAdmin: superAdminIds.has(id),
+              };
+          }
+          // If a role exists but user doc doesn't, we can't display them.
+          // This indicates a data consistency issue that grantAdminRole flow should fix.
+          return null;
+      });
+      
+      const resolvedStaffList = (await Promise.all(staffListPromises))
         .filter((s): s is StaffMember => s !== null)
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      setStaff(staffList);
+      setStaff(resolvedStaffList);
+
     } catch (error) {
       console.error('Error fetching staff:', error);
       toast({
