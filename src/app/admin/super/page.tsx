@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { findUserByEmail } from '@/ai/flows/find-user-by-email';
+import { grantAdminRole } from '@/ai/flows/grant-admin-role';
 
 interface StaffMember {
     id: string;
@@ -82,63 +83,32 @@ export default function SuperAdminPage() {
     }, [firestore, toast]);
     
     const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore) {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
         setIsAddingStaff(true);
 
         try {
-            const result = await findUserByEmail(newStaffEmail);
-            
-            if (result.error) {
-                toast({
-                    variant: 'destructive',
-                    title: 'User Not Found',
-                    description: `The user ${newStaffEmail} does not have an account. Please ask them to sign up through the regular login page first.`,
-                });
-                setIsAddingStaff(false);
-                return;
-            }
-
-            const { uid } = result;
-            if (!uid) {
-                throw new Error("Could not retrieve user ID.");
-            }
-
-            const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
-            const userDocRef = doc(firestore, 'users', uid);
-            const roleDocRef = doc(firestore, 'roles_admin', uid);
-
-            const batch = writeBatch(firestore);
-
-            // Create or update user profile
-            batch.set(userDocRef, {
-                id: uid,
-                email: newStaffEmail,
-                displayName: displayName,
-                firstName: newStaffFirstName,
-                lastName: newStaffLastName,
-            }, { merge: true });
-
-            // Assign admin role
-            batch.set(roleDocRef, {
-                uid: uid,
-                addedOn: new Date(),
-                role: 'admin',
+            const result = await grantAdminRole({
+              email: newStaffEmail,
+              firstName: newStaffFirstName,
+              lastName: newStaffLastName,
             });
 
-            await batch.commit();
+            if (result.error) {
+                throw new Error(result.error);
+            }
             
             toast({
                 title: 'Staff Member Added',
-                description: `${displayName} has been granted admin privileges.`,
+                description: `${result.displayName} has been granted admin privileges.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
             setNewStaffEmail('');
             setNewStaffFirstName('');
             setNewStaffLastName('');
-            await fetchStaff(); // Refresh the staff list
+            await fetchStaff();
 
         } catch (error: any) {
             console.error('Error adding staff member:', error);
@@ -226,7 +196,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
                     <CardDescription>
-                        Grant 'Admin' privileges to an existing user. If the user doesn't have an account, please ask them to sign up through the login page first.
+                        Grant 'Admin' privileges to a user. If the user doesn't have an account, one will be created.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
