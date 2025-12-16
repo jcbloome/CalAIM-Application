@@ -105,7 +105,6 @@ const grantAdminRoleFlow = ai.defineFlow(
        {
       console.error('grantAdminRoleFlow Error:', error);
       let errorMessage = error.message || 'An unexpected error occurred.';
-       // Specifically catch the token error to provide a more helpful message
       if (error.message?.includes('Error fetching access token')) {
           errorMessage = `Credential setup failed on the server. Please ensure Application Default Credentials are configured correctly for the environment. Details: ${error.message}`;
       }

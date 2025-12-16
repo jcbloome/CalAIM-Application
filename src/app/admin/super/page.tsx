@@ -96,13 +96,12 @@ export default function SuperAdminPage() {
             });
 
             if (result.error) {
-                // Throwing the error here will allow it to be caught by the catch block below
-                // and display a toast to the user, which is better UX than a Next.js error overlay.
                 toast({
                     variant: 'destructive',
                     title: 'Failed to Add Staff',
                     description: result.error,
                 });
+                setIsAddingStaff(false);
                 return;
             }
             
@@ -239,7 +238,7 @@ export default function SuperAdminPage() {
                     </div>
                     <Button onClick={handleAddStaff} disabled={isAddingStaff} className="w-full">
                         {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-                        Grant Admin Role
+                        Add Staff Member
                     </Button>
                 </CardContent>
             </Card>
