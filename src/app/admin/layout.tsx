@@ -116,12 +116,13 @@ function AdminHeader() {
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const { isAdmin, isSuperAdmin, isLoading, user } = useAdmin();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
-        if (!isLoading && !user) {
+        if (!isLoading && !user && pathname !== '/admin/login') {
             router.push('/admin/login');
         }
-    }, [isLoading, user, router]);
+    }, [isLoading, user, router, pathname]);
 
     if (isLoading) {
         return (
@@ -132,6 +133,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         );
     }
     
+    // Allow login page to render without the layout
+    if (pathname === '/admin/login') {
+        return <>{children}</>;
+    }
+
     if (user && !isAdmin && !isSuperAdmin) {
         return (
              <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
