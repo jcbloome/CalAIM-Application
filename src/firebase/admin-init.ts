@@ -6,9 +6,9 @@ import { initializeApp, getApps, App } from 'firebase-admin/app';
 
 // This is a guard to prevent re-initializing the app on hot reloads.
 export function initializeAdminApp(): App {
-  const adminApp = getApps().find(app => app.name === '[DEFAULT]');
-  if (adminApp) {
-    return adminApp;
+  // Check if the default app is already initialized.
+  if (getApps().length > 0) {
+    return getApps()[0];
   }
 
   // In a managed server environment (like Cloud Run, Cloud Functions, or Firebase App Hosting),

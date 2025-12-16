@@ -37,9 +37,9 @@ const syncStaffFlow = ai.defineFlow(
     
     try {
         // Initialize Admin SDK and get services inside the flow execution
-        initializeAdminApp();
-        const auth = getAuth();
-        const firestore = getFirestore();
+        const adminApp = initializeAdminApp();
+        const auth = getAuth(adminApp);
+        const firestore = getFirestore(adminApp);
         
         let usersProcessed = 0;
         
