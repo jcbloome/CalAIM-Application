@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A server-side flow to sync all Firebase Auth users and grant them admin roles.
@@ -6,10 +5,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeAdminApp } from '@/firebase/admin-init';
+import * as admin from 'firebase-admin';
 
+// Initialize Firebase Admin SDK if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 const SyncStaffOutputSchema = z.object({
   message: z.string().describe('A confirmation message summarizing the operation.'),
@@ -36,10 +37,8 @@ const syncStaffFlow = ai.defineFlow(
     console.log('[syncStaffFlow] Entered defineFlow execution.');
     
     try {
-        // Initialize Admin SDK and get services inside the flow execution
-        const adminApp = initializeAdminApp();
-        const auth = getAuth(adminApp);
-        const firestore = getFirestore(adminApp);
+        const auth = admin.auth();
+        const firestore = admin.firestore();
         
         let usersProcessed = 0;
         
