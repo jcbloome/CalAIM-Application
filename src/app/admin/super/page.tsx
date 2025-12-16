@@ -9,13 +9,13 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trash2, Loader2, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query } from 'firebase/firestore';
+import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { createUser } from '@/ai/flows/create-user';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 interface StaffMember {
     id: string;
@@ -27,6 +27,7 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
     const firestore = useFirestore();
+    const auth = useAuth();
     const { toast } = useToast();
     
     const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -83,21 +84,47 @@ export default function SuperAdminPage() {
     }, [firestore, toast]);
     
     const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !auth || !firestore) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
         setIsAddingStaff(true);
-        try {
-            const result = await createUser({ email: newStaffEmail, firstName: newStaffFirstName, lastName: newStaffLastName });
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add staff.' });
+            setIsAddingStaff(false);
+            return;
+        }
 
-            if (result.error) {
-                throw new Error(result.error);
+        try {
+            // Check if user already exists in users collection by email
+            const usersRef = collection(firestore, 'users');
+            const q = query(usersRef, where('email', '==', newStaffEmail));
+            const querySnapshot = await getDocs(q);
+
+            let userId: string;
+
+            if (!querySnapshot.empty) {
+                // User already exists in Firestore, just grant admin role
+                const existingUserDoc = querySnapshot.docs[0];
+                userId = existingUserDoc.id;
+                
+                const roleDocRef = doc(firestore, 'roles_admin', userId);
+                await setDoc(roleDocRef, { uid: userId, addedOn: new Date(), role: 'admin' });
+
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'User Not Found',
+                    description: 'This user does not have a profile. For security, please have them sign up first, then you can grant them Super Admin access here.',
+                });
+                setIsAddingStaff(false);
+                return;
             }
             
             toast({
                 title: 'Staff Member Added',
-                description: `${newStaffFirstName} ${newStaffLastName} has been granted admin privileges. They can now log in.`,
+                description: `${newStaffFirstName} ${newStaffLastName} has been granted admin privileges.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
             setNewStaffEmail('');
@@ -106,10 +133,14 @@ export default function SuperAdminPage() {
             await fetchStaff(); // Refresh the staff list
         } catch (error: any) {
             console.error('Error adding staff member:', error);
+            let errorMessage = error.message || 'An unknown error occurred.';
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = 'This email is already in use. If they should be an admin, their account may need manual correction.';
+            }
             toast({
                 variant: 'destructive',
                 title: 'Failed to Add Staff',
-                description: error.message || 'An unknown error occurred.',
+                description: errorMessage,
             });
         } finally {
             setIsAddingStaff(false);
@@ -188,7 +219,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
                     <CardDescription>
-                        Add a new user with 'Admin' privileges. They can be promoted to 'Super Admin' from the staff list below. New users will be created with a temporary password and will need to use the "Forgot Password" link on the login page to set their own.
+                        Grant 'Admin' privileges to an existing user. For security, new users must first create an account through the main <a href='/login' className='text-primary underline'>Sign Up page</a>. Once their account exists, you can add them here.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -224,7 +255,7 @@ export default function SuperAdminPage() {
                     </div>
                     <Button onClick={handleAddStaff} disabled={isAddingStaff} className="w-full">
                         {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-                        Add Staff Member
+                        Grant Admin Role
                     </Button>
                 </CardContent>
             </Card>
@@ -302,3 +333,5 @@ export default function SuperAdminPage() {
     </div>
   );
 }
+
+    
