@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -38,12 +39,9 @@ export function useAdmin(): AdminStatus & { user: ReturnType<typeof useUser>['us
     });
 
     const unsubSuperAdmin = onSnapshot(superAdminRef, (doc) => {
+      // Set loading to false only after we get the result for the most powerful role.
       setAdminStatus(prev => ({ ...prev, isSuperAdmin: doc.exists(), isLoading: false }));
     });
-
-    // Initial check before snapshots might return
-    setAdminStatus(prev => ({ ...prev, isLoading: false }));
-
 
     return () => {
       unsubAdmin();

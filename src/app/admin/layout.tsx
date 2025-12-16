@@ -1,8 +1,9 @@
+
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
 import { useAdmin } from '@/hooks/use-admin';
@@ -50,7 +51,15 @@ function AdminSidebar() {
 
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-    const { isAdmin, isSuperAdmin, isLoading } = useAdmin();
+    const { isAdmin, isSuperAdmin, isLoading, user } = useAdmin();
+    const router = useRouter();
+
+    useEffect(() => {
+        // If loading is finished and there's no user, redirect to login.
+        if (!isLoading && !user) {
+            router.push('/login');
+        }
+    }, [isLoading, user, router]);
 
     if (isLoading) {
         return (
@@ -61,7 +70,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         );
     }
     
-    if (!isAdmin && !isSuperAdmin) {
+    // After loading, if there's a user but they are not an admin, show access denied.
+    if (user && !isAdmin && !isSuperAdmin) {
         return (
             <>
             <Header />
@@ -80,6 +90,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </main>
             </>
         );
+    }
+
+    // If there's no user yet (and not loading), we show nothing to prevent flicker before redirect.
+    if (!user) {
+        return null;
     }
 
   return (
