@@ -1,19 +1,17 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trash2, UserPlus, Loader2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query, where } from 'firebase/firestore';
+import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore, useUser, useAuth } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
 
@@ -28,13 +26,7 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
     const firestore = useFirestore();
-    const auth = useAuth();
     const { toast } = useToast();
-    
-    const [newStaffEmail, setNewStaffEmail] = useState('');
-    const [newStaffFirstName, setNewStaffFirstName] = useState('');
-    const [newStaffLastName, setNewStaffLastName] = useState('');
-    const [isAddingStaff, setIsAddingStaff] = useState(false);
     
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
@@ -45,24 +37,16 @@ export default function SuperAdminPage() {
         try {
             const adminRolesSnap = await getDocs(collection(firestore, 'roles_admin'));
             const superAdminRolesSnap = await getDocs(collection(firestore, 'roles_super_admin'));
+            const usersSnap = await getDocs(collection(firestore, 'users'));
 
             const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
             const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
             
-            const allRoleIds = [...new Set([...Array.from(adminIds), ...Array.from(superAdminIds)])];
-
-            if (allRoleIds.length === 0) {
-                setStaff([]);
-                setIsLoadingStaff(false);
-                return;
-            }
-            
-            const usersQuery = query(collection(firestore, 'users'), where('id', 'in', allRoleIds));
-            const usersSnap = await getDocs(usersQuery);
-            
             const userMap = new Map();
             usersSnap.forEach(doc => userMap.set(doc.id, doc.data()));
 
+            const allRoleIds = [...new Set([...Array.from(adminIds), ...Array.from(superAdminIds)])];
+            
             const staffList = allRoleIds.map(id => {
                 const user = userMap.get(id);
                 if (!user) return null;
@@ -92,75 +76,6 @@ export default function SuperAdminPage() {
     useEffect(() => {
         fetchStaff();
     }, [firestore]);
-
-
-    const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore || !auth) {
-            toast({ variant: "destructive", title: "Missing Information", description: "All fields are required." });
-            return;
-        }
-    
-        setIsAddingStaff(true);
-    
-        try {
-            // Check if user already exists in the `users` collection in Firestore
-            const existingUsersQuery = query(collection(firestore, 'users'), where('email', '==', newStaffEmail));
-            const existingUsersSnap = await getDocs(existingUsersQuery);
-            
-            if (!existingUsersSnap.empty) {
-                // User document exists in Firestore, just grant them the admin role.
-                const userId = existingUsersSnap.docs[0].id;
-                const adminRoleDocRef = doc(firestore, 'roles_admin', userId);
-                await setDoc(adminRoleDocRef, { uid: userId, addedOn: Timestamp.now() });
-                toast({ title: "Existing User Found", description: `Admin role granted to ${newStaffEmail}.`});
-            } else {
-                // No user document in Firestore, so try to create a new one in Auth.
-                const tempPassword = `temp-password-${Date.now()}`;
-                try {
-                    const { user: newUser } = await createUserWithEmailAndPassword(auth, newStaffEmail, tempPassword);
-                    // On success, create their user and role documents.
-                    const userDocRef = doc(firestore, 'users', newUser.uid);
-                    await setDoc(userDocRef, {
-                        id: newUser.uid,
-                        firstName: newStaffFirstName,
-                        lastName: newStaffLastName,
-                        displayName: `${newStaffFirstName} ${newStaffLastName}`,
-                        email: newStaffEmail,
-                    });
-                    const adminRoleDocRef = doc(firestore, 'roles_admin', newUser.uid);
-                    await setDoc(adminRoleDocRef, { uid: newUser.uid, addedOn: Timestamp.now() });
-                } catch (error: any) {
-                    if (error.code === 'auth/email-already-in-use') {
-                       // THIS IS THE FIX: The user is in Auth but not Firestore. We cannot get their UID from the client.
-                       // So, we must throw a specific error and ask the super admin to resolve this one case manually
-                       // by creating the user document in the Firestore `users` collection.
-                       // This is a rare state, but we need to handle it gracefully.
-                       throw new Error("This email is registered in Firebase Auth but not in the 'users' collection. Please resolve manually in Firebase Console.");
-                    }
-                    throw error;
-                }
-            }
-    
-            toast({
-                title: `Admin Role Granted`,
-                description: `${newStaffEmail} has been granted Admin privileges.`,
-                className: 'bg-green-100 text-green-900 border-green-200',
-            });
-
-            // Refresh the staff list
-            await fetchStaff();
-            
-            setNewStaffEmail('');
-            setNewStaffFirstName('');
-            setNewStaffLastName('');
-    
-        } catch (error: any) {
-            console.error(`Failed to Add Staff:`, error);
-            toast({ variant: "destructive", title: `Failed to Add Staff`, description: error.message });
-        } finally {
-            setIsAddingStaff(false);
-        }
-    };
     
     const handleRemoveStaff = async (staffMember: StaffMember) => {
         if (!firestore) return;
@@ -235,36 +150,15 @@ export default function SuperAdminPage() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Add Staff Member</CardTitle>
-                    <CardDescription>Grant standard Admin privileges to a new or existing user. You can grant Super Admin privileges from the staff list after they are added.</CardDescription>
+                    <CardTitle>Staff Management</CardTitle>
+                    <CardDescription>
+                        To add a new staff member, first create their account in the Firebase Console under Authentication. Then, add a corresponding document in the `users` collection with their `uid`, `email`, `firstName`, and `lastName`. Finally, add a document in `roles_admin` with their `uid` to grant them access.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="firstName">First Name</Label>
-                              <Input id="firstName" value={newStaffFirstName} onChange={e => setNewStaffFirstName(e.target.value)} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="lastName">Last Name</Label>
-                              <Input id="lastName" value={newStaffLastName} onChange={e => setNewStaffLastName(e.target.value)} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="add-staff-email">Staff Email</Label>
-                            <Input 
-                                id="add-staff-email" 
-                                type="email" 
-                                placeholder="new.staff@example.com"
-                                value={newStaffEmail}
-                                onChange={(e) => setNewStaffEmail(e.target.value)}
-                            />
-                        </div>
-                        <Button onClick={handleAddStaff} className="w-full" disabled={isAddingStaff}>
-                            {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-                            Add Staff Member
-                        </Button>
-                    </div>
+                    <Button onClick={() => window.open(`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/authentication/users`, '_blank')} className="w-full">
+                        Open Firebase Authentication
+                    </Button>
                 </CardContent>
             </Card>
 
@@ -274,7 +168,7 @@ export default function SuperAdminPage() {
         <Card>
             <CardHeader>
                 <CardTitle>Current Staff</CardTitle>
-                <CardDescription>A list of all users with Admin or Super Admin roles.</CardDescription>
+                <CardDescription>A list of all users with Admin or Super Admin roles. Promote or remove staff here.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-96">
