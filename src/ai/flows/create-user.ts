@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -52,6 +51,7 @@ const createUserFlow = ai.defineFlow(
       try {
         const userRecord = await adminAuth.getUserByEmail(input.email);
         uid = userRecord.uid;
+        // User exists in Auth, we will proceed to ensure their Firestore docs are correct.
       } catch (error: any) {
         if (error.code === 'auth/user-not-found') {
           // 2. If user does not exist, create them
