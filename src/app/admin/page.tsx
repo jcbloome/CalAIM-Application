@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
   const recentApplications = useMemo(() => {
     if (!applications) return [];
     return [...applications]
-      .sort((a, b) => b.lastUpdated.toMillis() - a.lastUpdated.toMillis())
+      .sort((a, b) => (b.lastUpdated?.toMillis() || 0) - (a.lastUpdated?.toMillis() || 0))
       .slice(0, 5);
   }, [applications]);
 

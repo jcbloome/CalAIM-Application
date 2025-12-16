@@ -30,7 +30,6 @@ export function useAdmin(): AdminStatus & { user: ReturnType<typeof useUser>['us
 
     if (!user || !firestore) {
       setAdminStatus({ isAdmin: false, isSuperAdmin: false, isLoading: false });
-      // No user, but don't redirect here. The layout will handle it.
       return;
     }
 
@@ -42,7 +41,6 @@ export function useAdmin(): AdminStatus & { user: ReturnType<typeof useUser>['us
     });
 
     const unsubSuperAdmin = onSnapshot(superAdminRef, (doc) => {
-      // Set loading to false only after we get the result for the most powerful role.
       setAdminStatus(prev => ({ ...prev, isSuperAdmin: doc.exists(), isLoading: false }));
     });
 
