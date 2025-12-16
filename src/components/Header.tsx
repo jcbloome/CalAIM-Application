@@ -84,7 +84,7 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <Button asChild>
-              <Link href="/login">Login</Link>
+              <Link href="/admin/login">Login</Link>
             </Button>
           )}
         </nav>
@@ -126,7 +126,7 @@ export function Header() {
                                 </div>
                             ) : (
                                 <Button asChild className="w-full">
-                                    <Link href="/login" onClick={() => setSheetOpen(false)}>Login</Link>
+                                    <Link href="/admin/login" onClick={() => setSheetOpen(false)}>Login</Link>
                                 </Button>
                             )}
                         </div>

@@ -48,7 +48,7 @@ const WebhookInputSchema = z.object({
   bestContactRelationship: z.string(),
   bestContactPhone: z.string(),
   bestContactEmail: z.string().email(),
-  bestContactLanguage: zstring(),
+  bestContactLanguage: z.string(),
 
   // Secondary Contact
   secondaryContactFirstName: z.string().optional().nullable(),
@@ -79,7 +79,7 @@ const WebhookInputSchema = z.object({
   customaryCity: z.string(),
   customaryState: z.string(),
   customaryZip: z.string(),
-customaryCounty: z.string(),
+  customaryCounty: z.string(),
 
   // Health Plan & Pathway
   healthPlan: z.enum(['Kaiser', 'Health Net', 'Other']),
