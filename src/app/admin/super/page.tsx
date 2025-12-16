@@ -36,14 +36,8 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  deleteUser,
-} from 'firebase/auth';
-import { initializeApp, deleteApp } from 'firebase/app';
-import { firebaseConfig } from '@/firebase/config';
-import { randomBytes } from 'crypto';
+import { grantAdminRole } from '@/ai/flows/grant-admin-role';
+
 
 interface StaffMember {
   id: string;
@@ -128,47 +122,20 @@ export default function SuperAdminPage() {
     }
     setIsAddingStaff(true);
 
-    const tempAppName = `temp-staff-creation-app-${Date.now()}`;
-    const tempApp = initializeApp(firebaseConfig, tempAppName);
-    const tempAuth = getAuth(tempApp);
-
     try {
-      const tempPassword = randomBytes(16).toString('hex');
-      const userCredential = await createUserWithEmailAndPassword(
-        tempAuth,
-        newStaffEmail,
-        tempPassword
-      );
-      const newUser = userCredential.user;
-      const uid = newUser.uid;
-      const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
-
-      // Now use the main app's Firestore instance to write data
-      if (!firestore) throw new Error('Firestore not available');
-
-      const batch = writeBatch(firestore);
-
-      const userDocRef = doc(firestore, 'users', uid);
-      batch.set(userDocRef, {
-        id: uid,
+      const result = await grantAdminRole({
         email: newStaffEmail,
         firstName: newStaffFirstName,
         lastName: newStaffLastName,
-        displayName: displayName,
       });
 
-      const adminRoleDocRef = doc(firestore, 'roles_admin', uid);
-      batch.set(adminRoleDocRef, {
-        uid: uid,
-        grantedBy: auth?.currentUser?.uid || 'SuperAdmin',
-        grantedAt: new Date().toISOString(),
-      });
+      if (result.error) {
+        throw new Error(result.error);
+      }
       
-      await batch.commit();
-
       toast({
         title: 'Staff Member Added',
-        description: `${displayName} has been granted admin privileges. They can now log in.`,
+        description: `${result.displayName} has been granted admin privileges. They can now log in. If they are a new user, they must use the 'Forgot Password' link.`,
         className: 'bg-green-100 text-green-900 border-green-200',
       });
 
@@ -176,22 +143,16 @@ export default function SuperAdminPage() {
       setNewStaffFirstName('');
       setNewStaffLastName('');
       await fetchStaff();
+
     } catch (error: any) {
-      console.error('Error adding staff member:', error);
-      let description = 'An unknown error occurred.';
-      if (error.code === 'auth/email-already-in-use') {
-        description = 'This email is already in use. Please check if the user is already a staff member. If not, you may need to check the Firebase console.';
-      } else {
-        description = error.message;
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Add Staff',
-        description: description,
-      });
+        console.error("Error in handleAddStaff:", error);
+        toast({
+            variant: "destructive",
+            title: "Failed to Add Staff",
+            description: error.message || "An unexpected error occurred.",
+        });
     } finally {
-      await deleteApp(tempApp);
-      setIsAddingStaff(false);
+        setIsAddingStaff(false);
     }
   };
 

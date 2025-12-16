@@ -1,5 +1,12 @@
-import { config } from 'dotenv';
-config();
+import { initializeApp, getApps, App, cert } from 'firebase-admin/app';
 
-import '@/ai/flows/ai-prioritize-form-fields.ts';
-import '@/ai/flows/ai-suggest-next-steps.ts';
+// This is a guard to prevent re-initializing the app on hot reloads.
+export function initializeAdminApp(): App {
+  const a = getApps().find(app => app.name === 'firebase-admin');
+  if (a) {
+    return a;
+  }
+  
+  // Initialize without arguments to use Application Default Credentials
+  return initializeApp({}, 'firebase-admin');
+}
