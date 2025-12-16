@@ -38,7 +38,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
 import { initializeApp, deleteApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 interface StaffMember {
@@ -51,6 +51,7 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
   const firestore = useFirestore();
+  const auth = useAuth();
   const { toast } = useToast();
 
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -112,72 +113,68 @@ export default function SuperAdminPage() {
   }, [firestore, toast]);
   
   const handleAddStaff = async () => {
-    if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore) {
-      toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
-      return;
-    }
-    setIsAddingStaff(true);
-
-    let tempApp: FirebaseApp | null = null;
-    try {
-      // Create a temporary, secondary Firebase instance to create the user.
-      // This prevents the current admin from being logged out.
-      tempApp = initializeApp(firebaseConfig, `staff-creation-${Date.now()}`);
-      const tempAuth = getAuth(tempApp);
-
-      const userCredential = await createUserWithEmailAndPassword(tempAuth, newStaffEmail, 'password123'); // Using a temporary password
-      const user = userCredential.user;
-      const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
-
-      await updateProfile(user, { displayName });
-
-      const batch = writeBatch(firestore);
-
-      // Create user profile document
-      const userDocRef = doc(firestore, 'users', user.uid);
-      batch.set(userDocRef, {
-        id: user.uid,
-        firstName: newStaffFirstName,
-        lastName: newStaffLastName,
-        email: newStaffEmail,
-        displayName: displayName,
-      });
-
-      // Grant admin role
-      const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
-      batch.set(adminRoleRef, { grantedAt: Timestamp.now() });
-
-      await batch.commit();
-
-      toast({
-        title: 'Staff Member Added',
-        description: `${displayName} has been granted admin privileges. They must use the "Forgot Password" link on the login page to set their password.`,
-        className: 'bg-green-100 text-green-900 border-green-200',
-        duration: 10000,
-      });
-
-      setNewStaffEmail('');
-      setNewStaffFirstName('');
-      setNewStaffLastName('');
-      await fetchStaff();
-
-    } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-         toast({ variant: "destructive", title: "User Already Exists", description: "This email is already associated with an account. Please verify they are in the staff list or contact support." });
-      } else {
-        console.error("Error in handleAddStaff:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to Add Staff",
-          description: error.message || "An unexpected error occurred.",
+      if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore || !auth) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
+        return;
+      }
+      setIsAddingStaff(true);
+  
+      let tempApp: FirebaseApp | null = null;
+      try {
+        tempApp = initializeApp(firebaseConfig, `staff-creation-${Date.now()}`);
+        const tempAuth = getAuth(tempApp);
+        const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
+  
+        // Create user with temporary password.
+        const userCredential = await createUserWithEmailAndPassword(tempAuth, newStaffEmail, 'password123');
+        const user = userCredential.user;
+        await updateProfile(user, { displayName });
+  
+        // Now commit user data and roles to Firestore
+        const batch = writeBatch(firestore);
+        const userDocRef = doc(firestore, 'users', user.uid);
+        batch.set(userDocRef, {
+          id: user.uid,
+          firstName: newStaffFirstName,
+          lastName: newStaffLastName,
+          email: newStaffEmail,
+          displayName: displayName,
         });
+  
+        const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
+        batch.set(adminRoleRef, { grantedAt: Timestamp.now() });
+  
+        await batch.commit();
+  
+        toast({
+          title: 'Staff Member Added',
+          description: `${displayName} has been granted admin privileges. They must use the "Forgot Password" link to set their password.`,
+          className: 'bg-green-100 text-green-900 border-green-200',
+          duration: 10000,
+        });
+  
+        setNewStaffEmail('');
+        setNewStaffFirstName('');
+        setNewStaffLastName('');
+        await fetchStaff();
+  
+      } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+           toast({ variant: "destructive", title: "User Already Exists", description: "This email is already associated with an account. Please verify they are in the staff list or contact support." });
+        } else {
+          console.error("Error in handleAddStaff:", error);
+          toast({
+            variant: "destructive",
+            title: "Failed to Add Staff",
+            description: error.message || "An unexpected error occurred.",
+          });
+        }
+      } finally {
+        if (tempApp) {
+          await deleteApp(tempApp);
+        }
+        setIsAddingStaff(false);
       }
-    } finally {
-      if (tempApp) {
-        await deleteApp(tempApp);
-      }
-      setIsAddingStaff(false);
-    }
   };
 
   const handleRemoveStaff = async (staffMember: StaffMember) => {
