@@ -25,7 +25,7 @@ interface ApplicationStatusPayload {
   memberName: string;
   staffName: string;
   message: string;
-  status: 'Deleted' | 'Approved' | 'Submitted'; // Example statuses
+  status: 'Deleted' | 'Approved' | 'Submitted' | 'Requires Revision' | 'In Progress' | 'Completed & Submitted';
 }
 
 export const sendRevisionRequestEmail = async (payload: SendEmailPayload) => {

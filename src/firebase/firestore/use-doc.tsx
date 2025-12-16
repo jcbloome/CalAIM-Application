@@ -1,7 +1,7 @@
 
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -45,9 +45,11 @@ type UseDocOptions<T> = {
  * @returns {UseDocResult<T>} Object with data, isLoading, error.
  */
 export function useDoc<T = any>(
-  memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
+  docRef: DocumentReference<DocumentData> | null | undefined,
   options?: UseDocOptions<T>,
+  deps: any[] = [] // Added dependency array
 ): UseDocResult<T> {
+  const memoizedDocRef = useMemo(() => docRef, [docRef, ...deps]);
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(() => {
@@ -67,8 +69,6 @@ export function useDoc<T = any>(
       return;
     }
 
-    // If we have initial data, we aren't "loading" from the user's perspective initially.
-    // The listener will update the data in the background.
     if (!options?.initialData) {
       setIsLoading(true);
     }
@@ -80,10 +80,9 @@ export function useDoc<T = any>(
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
         } else {
-          // Document does not exist
           setData(null);
         }
-        setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
+        setError(null); 
         setIsLoading(false);
       },
       (error: FirestoreError) => {
@@ -96,13 +95,12 @@ export function useDoc<T = any>(
         setData(null)
         setIsLoading(false)
 
-        // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef, options?.initialData]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef, options?.initialData]);
 
   return { data, isLoading, error };
 }

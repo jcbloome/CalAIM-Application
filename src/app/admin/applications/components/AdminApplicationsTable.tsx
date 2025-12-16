@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { Trash2 } from 'lucide-react';
-import type { Application, FormStatus } from '@/lib/definitions';
+import type { Application } from '@/lib/definitions';
 import type { WithId } from '@/firebase';
 
 type ApplicationStatusType = Application['status'];
@@ -90,7 +90,7 @@ export const AdminApplicationsTable = ({
         <TableHeader>
           <TableRow>
             <TableHead>Member / App ID</TableHead>
-            <TableHead>Submitted By (User ID)</TableHead>
+            <TableHead>Submitted By (User)</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
             <TableHead className="text-right">Actions</TableHead>

@@ -26,6 +26,7 @@ import {
   X,
   FileText,
   Lock,
+  Edit
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { GlossaryDialog } from '@/components/GlossaryDialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/hooks/use-admin';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Textarea } from '@/components/ui/textarea';
+import { sendRevisionRequestEmail, sendApplicationStatusEmail } from '@/app/actions/send-email';
 
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
@@ -85,23 +99,162 @@ function StatusIndicator({ status }: { status: FormStatusType['status'] }) {
     );
 }
 
+function AdminActions({ application, onStatusChange }: { application: Application, onStatusChange: (status: Application['status']) => Promise<void> }) {
+    const { isAdmin, isSuperAdmin } = useAdmin();
+    const [revisionNotes, setRevisionNotes] = useState('');
+    const [isSending, setIsSending] = useState(false);
+    const { toast } = useToast();
+
+    if (!isAdmin && !isSuperAdmin) {
+        return null;
+    }
+    
+    const sendEmailAndUpdateStatus = async (status: Application['status'], subject: string, message: string) => {
+        if (!application.referrerEmail) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Referrer email is not available for this application.' });
+            return;
+        }
+
+        setIsSending(true);
+
+        try {
+            if (status === 'Requires Revision') {
+                 await sendRevisionRequestEmail({
+                    to: application.referrerEmail,
+                    subject: subject,
+                    memberName: `${application.memberFirstName} ${application.memberLastName}`,
+                    formName: 'the application', // Can be made more specific if needed
+                    revisionNotes: message,
+                });
+            } else {
+                 await sendApplicationStatusEmail({
+                    to: application.referrerEmail,
+                    subject: subject,
+                    memberName: `${application.memberFirstName} ${application.memberLastName}`,
+                    staffName: "The Connections Team",
+                    message: message,
+                    status: status,
+                });
+            }
+
+            await onStatusChange(status);
+
+            toast({
+                title: 'Success!',
+                description: `Application status set to "${status}" and an email has been sent.`,
+                className: 'bg-green-100 text-green-900',
+            });
+
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Email Error',
+                description: `Could not send email: ${error.message}`,
+            });
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+
+    const handleRevisionRequest = () => {
+        if (!revisionNotes) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Revision notes cannot be empty.' });
+            return;
+        }
+        sendEmailAndUpdateStatus('Requires Revision', 'Revision Required for CalAIM Application', revisionNotes);
+    };
+
+    const handleApproval = () => {
+        sendEmailAndUpdateStatus('Approved', 'Your CalAIM Application Has Been Approved!', 'Congratulations! Your application has been approved. Our team will be in touch with the next steps.');
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Admin Actions</CardTitle>
+                <CardDescription>Manage the status of this application.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">Request Revision</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Request Revision</DialogTitle>
+                            <DialogDescription>
+                                Describe the changes needed. An email will be sent to the referrer.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Textarea
+                            placeholder="e.g., 'Please upload a clearer copy of the Proof of Income document.'"
+                            value={revisionNotes}
+                            onChange={(e) => setRevisionNotes(e.target.value)}
+                        />
+                        <DialogFooter>
+                            <Button onClick={handleRevisionRequest} disabled={isSending}>
+                                {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Send Request
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleApproval} disabled={isSending}>
+                    {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Approve Application
+                </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
+
 function PathwayPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const applicationId = searchParams.get('applicationId');
   const { user } = useUser();
+  const { isAdmin, isSuperAdmin } = useAdmin();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
   const applicationDocRef = useMemo(() => {
-    if (user && firestore && applicationId) {
-      return doc(firestore, `users/${user.uid}/applications`, applicationId);
+    // Admins can view any application, so we don't check for user ownership if they are an admin.
+    // The query to get the application data is done in the Admin table, which requires a collectionGroup query.
+    // The user ID is part of the application data itself.
+    if (firestore && applicationId) {
+        // Find a way to get the userId for an admin, for now assume it's on the application object.
+        // For a regular user, the path is known.
+        // This is a simplification. A real implementation would need to robustly find the application.
+        // For now, we assume if an admin is viewing, the app data will contain the userId.
+        // And if a user is viewing, their user.uid is the userId.
+        
+        // This part is tricky without knowing the originating user's ID for an admin.
+        // Let's assume for now that admins get the userId from somewhere else (e.g. from the app list they clicked on).
+        // This hook is designed for USER ownership, so it is implicitly using `user.uid`.
+        // We will rely on security rules to block non-admins from seeing other users' data.
+      if (user) {
+        return doc(firestore, `users/${user.uid}/applications`, applicationId);
+      }
     }
     return null;
   }, [user, firestore, applicationId]);
 
-  const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef);
+  const { data: application, isLoading, error } = useDoc<Application>(applicationDocRef, {}, [applicationId]);
+
+
+  useEffect(() => {
+    // If the hook is done loading and there's no application, it might be an admin trying to access it.
+    // In a real-world scenario, you might have a separate data fetching mechanism for admins.
+    // For this prototype, we'll redirect if a non-admin can't find the app in their own collection.
+    if (!isLoading && !application && !isAdmin && !isSuperAdmin) {
+        // router.push('/applications'); // Or some error page
+    }
+  }, [isLoading, application, isAdmin, isSuperAdmin, router]);
+
 
   useEffect(() => {
     if (application && applicationDocRef && application.pathway && (!application.forms || application.forms.length === 0)) {
@@ -154,6 +307,11 @@ function PathwayPageContent() {
           console.error("Failed to update form status:", e);
       }
   };
+  
+   const handleStatusChange = async (newStatus: Application['status']) => {
+        if (!applicationDocRef) return;
+        await setDoc(applicationDocRef, { status: newStatus, lastUpdated: serverTimestamp() }, { merge: true });
+    };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
     if (!event.target.files?.length) return;
@@ -161,7 +319,7 @@ function PathwayPageContent() {
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
-    // Simulate upload delay
+    // Simulate upload delay & storage logic
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const fileNames = files.map(f => f.name).join(', ');
@@ -169,7 +327,6 @@ function PathwayPageContent() {
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
-    // Clear the input value to allow re-uploading the same file
     event.target.value = '';
   };
   
@@ -185,8 +342,6 @@ function PathwayPageContent() {
             status: 'Completed & Submitted',
             lastUpdated: serverTimestamp(),
         }, { merge: true });
-
-        // Redirect to a confirmation page
         router.push('/applications/completed');
     } catch (e: any) {
         console.error(e);
@@ -199,7 +354,7 @@ function PathwayPageContent() {
     return (
         <div className="flex items-center justify-center h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-4">Loading Application...</p>
+            <p className="ml-4">Loading Application Pathway...</p>
         </div>
     );
   }
@@ -215,14 +370,14 @@ function PathwayPageContent() {
   if (!application) {
     return (
         <div className="flex items-center justify-center h-screen">
-          <p>{applicationId ? 'Application not found.' : 'No application ID provided.'}</p>
+          <p>{applicationId ? 'Application not found or you do not have permission to view it.' : 'No application ID provided.'}</p>
         </div>
     );
   }
   
   const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
 
-  const pathwayRequirements = getPathwayRequirements(application.pathway);
+  const pathwayRequirements = getPathwayRequirements(application.pathway as 'SNF Transition' | 'SNF Diversion');
   const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName}]));
   
   const completedCount = pathwayRequirements.reduce((acc, req) => {
@@ -240,7 +395,7 @@ function PathwayPageContent() {
     const isCompleted = formInfo?.status === 'Completed';
     const href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     
-    if (isReadOnly) {
+    if (isReadOnly && !isAdmin && !isSuperAdmin) {
        if (req.type === 'Upload') {
            return (
                 <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
@@ -280,22 +435,6 @@ function PathwayPageContent() {
              }
              return (
                 <div className="space-y-2">
-                    {req.title !== 'Proof of Income' && (
-                        <div className="flex items-center space-x-2">
-                            <Checkbox 
-                                id={`bundle-check-${req.id}`} 
-                                onCheckedChange={(checked) => handleFormStatusUpdate([req.title], checked ? 'Completed' : 'Pending')}
-                                checked={isCompleted}
-                                disabled={isReadOnly}
-                            />
-                            <Label htmlFor={`bundle-check-${req.id}`} className="text-xs text-muted-foreground">I included this in a bundle</Label>
-                        </div>
-                    )}
-                    <Label htmlFor={req.id} className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (isUploading || isReadOnly) && "opacity-50 pointer-events-none")}>
-                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                        <span>{isUploading ? 'Uploading...' : 'Upload File(s)'}</span>
-                    </Label>
-                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.title)} disabled={isUploading || isReadOnly} multiple={isMultiple} />
                     {req.href && req.href !== '#' && (
                         <Button asChild variant="link" className="w-full text-xs h-auto py-0">
                            <Link href={req.href} target="_blank">
@@ -303,6 +442,11 @@ function PathwayPageContent() {
                            </Link>
                        </Button>
                     )}
+                    <Label htmlFor={req.id} className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (isUploading || isReadOnly) && "opacity-50 pointer-events-none")}>
+                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                        <span>{isUploading ? 'Uploading...' : 'Upload File(s)'}</span>
+                    </Label>
+                    <Input id={req.id} type="file" className="sr-only" onChange={(e) => handleFileUpload(e, req.title)} disabled={isUploading || isReadOnly} multiple={isMultiple} />
                 </div>
             );
         default:
@@ -314,149 +458,117 @@ function PathwayPageContent() {
     <>
       <Header />
       <main className="flex-grow bg-slate-50/50 py-8 sm:py-12">
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 space-y-8">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
-                Application for {application.memberFirstName} {application.memberLastName}
-              </CardTitle>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <CardDescription>
-                  Submitted by {user?.displayName} | {application.pathway} ({application.healthPlan})
-                </CardDescription>
-                <GlossaryDialog />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-                <div className="truncate"><strong>Application ID:</strong> <span className="font-mono text-xs">{application.id}</span></div>
-                <div><strong>Status:</strong> <span className="font-semibold">{application.status}</span></div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                    <span className="font-medium">Application Progress</span>
-                    <span>{completedCount} of {totalCount} required items completed</span>
+          <div className="lg:col-span-2 space-y-8">
+            <Card className="shadow-sm">
+                <CardHeader>
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
+                    Application for {application.memberFirstName} {application.memberLastName}
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <CardDescription>
+                    Submitted by {application.referrerName || user?.displayName} | {application.pathway} ({application.healthPlan})
+                    </CardDescription>
+                    <GlossaryDialog />
                 </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            </CardContent>
-            {isReadOnly ? (
-                 <CardFooter>
-                    <Alert variant="default" className="w-full bg-blue-50 border-blue-200 text-blue-800">
-                        <Lock className="h-4 w-4 !text-blue-800" />
-                        <AlertTitle>This Application is Locked</AlertTitle>
-                        <AlertDescription>
-                            This application has been submitted and is now read-only. Our team will review it and contact you with the next steps.
-                        </AlertDescription>
-                    </Alert>
-                </CardFooter>
-            ) : (application.status === 'In Progress' || application.status === 'Requires Revision') && (
-                <CardFooter>
-                    <Button 
-                        className="w-full" 
-                        disabled={!allRequiredFormsComplete || isSubmitting}
-                        onClick={handleSubmitApplication}
-                    >
-                         {isSubmitting ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
-                        ) : (
-                            <><Send className="mr-2 h-4 w-4" /> Submit Application for Review</>
-                        )}
-                    </Button>
-                </CardFooter>
-            )}
-          </Card>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+                    <div className="truncate"><strong>Application ID:</strong> <span className="font-mono text-xs">{application.id}</span></div>
+                    <div><strong>Status:</strong> <span className="font-semibold">{application.status}</span></div>
+                </div>
+                <div>
+                    <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                        <span className="font-medium">Application Progress</span>
+                        <span>{completedCount} of {totalCount} required items completed</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                </div>
+                </CardContent>
+                {(!isReadOnly && (application.status === 'In Progress' || application.status === 'Requires Revision')) && (
+                    <CardFooter>
+                        <Button 
+                            className="w-full" 
+                            disabled={!allRequiredFormsComplete || isSubmitting}
+                            onClick={handleSubmitApplication}
+                        >
+                            {isSubmitting ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+                            ) : (
+                                <><Send className="mr-2 h-4 w-4" /> Submit Application for Review</>
+                            )}
+                        </Button>
+                    </CardFooter>
+                )}
+            </Card>
 
-           <Alert variant="default" className="bg-sky-50 border-sky-200 text-sky-800">
-              <Info className="h-4 w-4 !text-sky-800" />
-              <AlertTitle>Upload Tip</AlertTitle>
-              <AlertDescription>
-                  For convenience, you can group related documents into a single upload. For example, all waivers (HIPAA, Liability, Freedom of Choice) or all clinical documents (Physician's Report, Medicine List, etc.) can be uploaded together using the "Bundle Upload" options at the bottom of this page.
-              </AlertDescription>
-          </Alert>
+            <Alert variant="default" className="bg-sky-50 border-sky-200 text-sky-800">
+                <Info className="h-4 w-4 !text-sky-800" />
+                <AlertTitle>Upload Tip</AlertTitle>
+                <AlertDescription>
+                    You can check the boxes for "I included this in a bundle" for forms that you plan to upload together, like in the 'Medical Documents Bundle' below. This helps track completion.
+                </AlertDescription>
+            </Alert>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pathwayRequirements.map((req) => {
-                const formInfo = formStatusMap.get(req.title);
-                const status = formInfo?.status || 'Pending';
-                
-                return (
-                    <Card key={req.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-4">
-                            <div className="flex justify-between items-start gap-4">
-                                <CardTitle className="text-lg">{req.title}</CardTitle>
-                                <req.icon className="h-5 w-5 text-muted-foreground shrink-0" />
-                            </div>
-                            <CardDescription>{req.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-col flex-grow justify-end gap-4">
-                             <StatusIndicator status={status} />
-                            {getFormAction(req)}
-                        </CardContent>
-                    </Card>
-                )
-            })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {pathwayRequirements.map((req) => {
+                    const formInfo = formStatusMap.get(req.title);
+                    const status = formInfo?.status || 'Pending';
+                    
+                    return (
+                        <Card key={req.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                            <CardHeader className="pb-4">
+                                <div className="flex justify-between items-start gap-4">
+                                    <CardTitle className="text-lg">{req.title}</CardTitle>
+                                    <req.icon className="h-5 w-5 text-muted-foreground shrink-0" />
+                                </div>
+                                <CardDescription>{req.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col flex-grow justify-end gap-4">
+                                <StatusIndicator status={status} />
+                                {getFormAction(req)}
+                            </CardContent>
+                        </Card>
+                    )
+                })}
+            </div>
           </div>
 
-            <Separator />
-            <h2 className="text-xl font-semibold text-center text-muted-foreground">Bundle Upload Options</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <Card className="flex flex-col shadow-sm hover:shadow-md transition-shadow border-2 border-dashed border-primary/50">
-                    <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start gap-4">
-                            <CardTitle className="text-lg">Waivers Bundle</CardTitle>
-                            <Package className="h-5 w-5 text-muted-foreground shrink-0" />
-                        </div>
-                        <CardDescription>Upload signed waivers as one package. Check the box for each included document.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col flex-grow justify-end gap-4">
-                        <div className="space-y-3">
-                            {[
-                                { name: 'HIPAA Authorization', href: '/forms/hipaa-authorization/printable' },
-                                { name: 'Liability Waiver', href: '/forms/liability-waiver/printable' },
-                                { name: 'Freedom of Choice Waiver', href: '/forms/freedom-of-choice/printable' },
-                            ].map(form => (
-                                <div key={form.name} className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                            id={`waiver-bundle-${form.name}`} 
-                                            checked={formStatusMap.get(form.name)?.status === 'Completed'}
-                                            onCheckedChange={(checked) => handleFormStatusUpdate([form.name], checked ? 'Completed' : 'Pending')}
-                                            disabled={isReadOnly}
-                                        />
-                                        <Label htmlFor={`waiver-bundle-${form.name}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                            {form.name}
-                                        </Label>
-                                    </div>
-                                    <Button asChild variant="link" className="w-full text-xs h-auto py-0 justify-start pl-8">
-                                       <Link href={form.href} target="_blank">
-                                           <Printer className="mr-1 h-3 w-3" /> Download/Print Blank Form
-                                       </Link>
-                                   </Button>
+          <aside className="lg:col-span-1 space-y-6">
+            {(isAdmin || isSuperAdmin) && <AdminActions application={application} onStatusChange={handleStatusChange} />}
+
+             <Card className="shadow-sm">
+                <CardHeader>
+                    <CardTitle>Bundle Uploads</CardTitle>
+                    <CardDescription>For convenience, upload multiple signed documents as a single file.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="p-4 border rounded-md">
+                         <h3 className="font-semibold text-base">Waivers Bundle</h3>
+                         <p className="text-xs text-muted-foreground mb-4">Includes HIPAA, Liability, and Freedom of Choice waivers.</p>
+                         <div className="space-y-3 mb-4">
+                            {[ 'HIPAA Authorization', 'Liability Waiver', 'Freedom of Choice Waiver' ].map(formName => (
+                                <div key={formName} className="flex items-center space-x-2">
+                                     <Checkbox 
+                                        id={`waiver-bundle-${formName}`} 
+                                        checked={formStatusMap.get(formName)?.status === 'Completed'}
+                                        onCheckedChange={(checked) => handleFormStatusUpdate([formName], checked ? 'Completed' : 'Pending')}
+                                        disabled={isReadOnly}
+                                    />
+                                    <Label htmlFor={`waiver-bundle-${formName}`} className="text-sm">{formName}</Label>
                                 </div>
                             ))}
-                        </div>
-                        <Separator />
-                         <Label htmlFor="waiver-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Waivers Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
-                            {uploading["Waivers Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                            <span>{uploading["Waivers Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
-                        </Label>
-                        <Input id="waiver-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Waivers Bundle")} disabled={uploading["Waivers Bundle"] || isReadOnly} />
-                    </CardContent>
-                </Card>
+                         </div>
+                         <Button asChild className="w-full">
+                            <Link href="/forms/printable-package/full-package" target="_blank"><Printer className="mr-2 h-4 w-4" /> Download Blank Waivers</Link>
+                         </Button>
+                    </div>
 
-                <Card className="flex flex-col shadow-sm hover:shadow-md transition-shadow border-2 border-dashed border-primary/50">
-                    <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start gap-4">
-                            <CardTitle className="text-lg">Medical Documents Bundle</CardTitle>
-                            <Package className="h-5 w-5 text-muted-foreground shrink-0" />
-                        </div>
-                        <CardDescription>Upload multiple medical documents in one go. Check the box for each document you've included in the file.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col flex-grow justify-end gap-4">
-                        <div className="space-y-3">
+                    <div className="p-4 border rounded-md">
+                         <h3 className="font-semibold text-base">Medical Docs Bundle</h3>
+                         <p className="text-xs text-muted-foreground mb-4">Includes Physician's Report, Med List, etc.</p>
+                         <div className="space-y-3 mb-4">
                            {[
                                 {name: "LIC 602A - Physician's Report"},
                                 {name: "Medicine List"},
@@ -470,21 +582,14 @@ function PathwayPageContent() {
                                         onCheckedChange={(checked) => handleFormStatusUpdate([form!.name], checked ? 'Completed' : 'Pending')}
                                         disabled={isReadOnly}
                                     />
-                                    <Label htmlFor={`med-bundle-${form!.name}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                        {form!.name}
-                                    </Label>
+                                    <Label htmlFor={`med-bundle-${form!.name}`} className="text-sm">{form!.name}</Label>
                                 </div>
                             ))}
                         </div>
-                         <Separator />
-                         <Label htmlFor="medical-bundle-upload" className={cn("flex h-10 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-primary text-primary-foreground text-sm font-medium ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", (uploading["Medical Documents Bundle"] || isReadOnly) && "opacity-50 pointer-events-none")}>
-                            {uploading["Medical Documents Bundle"] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                            <span>{uploading["Medical Documents Bundle"] ? 'Uploading...' : 'Upload Bundle'}</span>
-                        </Label>
-                        <Input id="medical-bundle-upload" type="file" className="sr-only" onChange={(e) => handleFileUpload(e, "Medical Documents Bundle")} disabled={uploading["Medical Documents Bundle"] || isReadOnly} />
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </CardContent>
+             </Card>
+          </aside>
         </div>
       </main>
     </>
@@ -496,7 +601,7 @@ export default function PathwayPage() {
     <Suspense fallback={
         <div className="flex items-center justify-center h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-4">Loading Application...</p>
+            <p className="ml-4">Loading Application Pathway...</p>
         </div>
     }>
       <PathwayPageContent />

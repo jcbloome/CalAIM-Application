@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
        <Card>
-        <CardHeader className="flex items-center justify-between">
+        <CardHeader className="flex items-center justify-between flex-row">
             <div>
               <CardTitle>Recent Applications</CardTitle>
               <CardDescription>A list of the 5 most recently updated applications.</CardDescription>

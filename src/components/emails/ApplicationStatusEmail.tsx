@@ -5,7 +5,7 @@ interface ApplicationStatusEmailProps {
   memberName: string;
   staffName: string;
   message: string;
-  status: 'Deleted' | 'Approved' | 'Submitted';
+  status: 'Deleted' | 'Approved' | 'Submitted' | 'Requires Revision' | 'In Progress' | 'Completed & Submitted';
 }
 
 const container = {
@@ -65,7 +65,10 @@ const getStatusMessage = (status: ApplicationStatusEmailProps['status']) => {
     case 'Approved':
       return 'has been approved!';
     case 'Submitted':
+    case 'Completed & Submitted':
         return 'has been successfully submitted for review.'
+    case 'Requires Revision':
+        return 'has been marked as requiring revision.'
     default:
       return 'has been updated.';
   }
