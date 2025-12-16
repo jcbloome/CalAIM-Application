@@ -2,12 +2,19 @@
 'use server';
 
 /**
- * @fileOverview This AI flow is deprecated and no longer functional.
- * User creation is now handled on the client-side in /admin/super/page.tsx.
+ * @fileOverview Creates a user in Firebase Auth and Firestore, and assigns an admin role.
+ * This flow is designed to be called from a secure, admin-only context.
+ *
+ * - createUser - A function that handles the user creation and role assignment process.
+ * - CreateUserInput - The input type for the createUser function.
+ * - CreateUserOutput - The return type for the createUser function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { initializeAdminApp } from '@/firebase/admin-init';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const CreateUserInputSchema = z.object({
   email: z.string().email(),
@@ -32,13 +39,64 @@ const createUserFlow = ai.defineFlow(
     outputSchema: CreateUserOutputSchema,
   },
   async (input) => {
-    // This flow is non-functional due to server-side auth issues.
-    // It returns an error to be handled by the client, though the client
-    // no longer calls this flow.
-    return {
-      error: 'Automatic user creation via AI flow is disabled.',
-    };
+    try {
+      const adminApp = initializeAdminApp();
+      const adminAuth = getAuth(adminApp);
+      const adminFirestore = getFirestore(adminApp);
+
+      let uid: string;
+      let userExists = false;
+
+      // 1. Check if user already exists in Firebase Auth
+      try {
+        const userRecord = await adminAuth.getUserByEmail(input.email);
+        uid = userRecord.uid;
+        userExists = true;
+      } catch (error: any) {
+        if (error.code === 'auth/user-not-found') {
+          // 2. If user does not exist, create them
+          const tempPassword = Math.random().toString(36).slice(-8); // Generate a temporary password
+          const newUserRecord = await adminAuth.createUser({
+            email: input.email,
+            displayName: input.displayName,
+            password: tempPassword,
+          });
+          uid = newUserRecord.uid;
+        } else {
+          // Re-throw other auth errors
+          throw error;
+        }
+      }
+
+      const nameParts = input.displayName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // 3. Create or update user profile in 'users' collection
+      const userDocRef = adminFirestore.collection('users').doc(uid);
+      await userDocRef.set({
+        id: uid,
+        email: input.email,
+        displayName: input.displayName,
+        firstName: firstName,
+        lastName: lastName,
+      }, { merge: true });
+
+      // 4. Assign admin role in 'roles_admin' collection
+      const roleDocRef = adminFirestore.collection('roles_admin').doc(uid);
+      await roleDocRef.set({
+        uid: uid,
+        addedOn: new Date(),
+        role: 'admin',
+      });
+
+      return { uid };
+
+    } catch (error: any) {
+      console.error('Create User Flow Error:', error);
+      return {
+        error: error.message || 'An unexpected error occurred during user creation.',
+      };
+    }
   }
 );
-
-    

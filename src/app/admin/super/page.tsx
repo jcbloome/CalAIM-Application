@@ -4,9 +4,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Timestamp, collection, doc, deleteDoc, setDoc, getDocs, query } from 'firebase/firestore';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,7 +15,7 @@ import { useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-
+import { createUser } from '@/ai/flows/create-user';
 
 interface StaffMember {
     id: string;
@@ -30,6 +31,9 @@ export default function SuperAdminPage() {
     
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
+    const [newStaffEmail, setNewStaffEmail] = useState('');
+    const [newStaffName, setNewStaffName] = useState('');
+    const [isAddingStaff, setIsAddingStaff] = useState(false);
 
     const fetchStaff = async () => {
         if (!firestore) return;
@@ -77,6 +81,39 @@ export default function SuperAdminPage() {
         fetchStaff();
     }, [firestore]);
     
+    const handleAddStaff = async () => {
+        if (!newStaffEmail || !newStaffName) {
+            toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter both a name and an email.' });
+            return;
+        }
+        setIsAddingStaff(true);
+        try {
+            const result = await createUser({ email: newStaffEmail, displayName: newStaffName });
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            toast({
+                title: 'Staff Member Added',
+                description: `${newStaffName} has been granted admin privileges. They can now log in.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+            setNewStaffEmail('');
+            setNewStaffName('');
+            await fetchStaff(); // Refresh the staff list
+        } catch (error: any) {
+            console.error('Error adding staff member:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Failed to Add Staff',
+                description: error.message || 'An unknown error occurred.',
+            });
+        } finally {
+            setIsAddingStaff(false);
+        }
+    };
+
     const handleRemoveStaff = async (staffMember: StaffMember) => {
         if (!firestore) return;
 
@@ -111,7 +148,6 @@ export default function SuperAdminPage() {
                 title: 'Action Not Allowed',
                 description: 'Cannot remove the only remaining Super Admin.',
             });
-            // Re-fetch to reset the toggle in the UI
             await fetchStaff(); 
             return;
         }
@@ -127,13 +163,11 @@ export default function SuperAdminPage() {
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
                 toast({ title: "Role Updated", description: `${staffMember.name} is now a standard Admin.` });
             }
-            // Update local state to reflect the change immediately
             setStaff(prev => prev.map(s => s.id === staffMember.id ? { ...s, isSuperAdmin: isSuper } : s));
     
         } catch (error: any) {
             console.error("Failed to toggle role:", error);
             toast({ variant: "destructive", title: "Failed to Update Role", description: error.message });
-            // Re-fetch to reset the UI on error
             await fetchStaff();
         }
     };
@@ -148,16 +182,36 @@ export default function SuperAdminPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="space-y-6">
-            <Card>
+           <Card>
                 <CardHeader>
-                    <CardTitle>Staff Management</CardTitle>
+                    <CardTitle>Add Staff Member</CardTitle>
                     <CardDescription>
-                        To add a new staff member, first create their account in the Firebase Console under Authentication. Then, add a corresponding document in the `users` collection with their `uid`, `email`, `firstName`, and `lastName`. Finally, add a document in `roles_admin` with their `uid` to grant them access.
+                        Add a new user with 'Admin' privileges. They can be promoted to 'Super Admin' from the staff list below. New users will be created with a temporary password and will need to use the "Forgot Password" link on the login page to set their own.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Button onClick={() => window.open(`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/authentication/users`, '_blank')} className="w-full">
-                        Open Firebase Authentication
+                <CardContent className="space-y-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="new-staff-name">Full Name</Label>
+                        <Input 
+                            id="new-staff-name" 
+                            placeholder="e.g., Jane Doe" 
+                            value={newStaffName}
+                            onChange={(e) => setNewStaffName(e.target.value)}
+                        />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="new-staff-email">Email Address</Label>
+                        <Input 
+                            id="new-staff-email" 
+                            type="email" 
+                            placeholder="e.g., jane.doe@example.com"
+                            value={newStaffEmail}
+                            onChange={(e) => setNewStaffEmail(e.target.value)}
+                        />
+                    </div>
+                    <Button onClick={handleAddStaff} disabled={isAddingStaff} className="w-full">
+                        {isAddingStaff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Add Staff Member
                     </Button>
                 </CardContent>
             </Card>
