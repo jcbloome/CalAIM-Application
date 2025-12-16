@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { createUser } from '@/ai/flows/create-user';
+import { findUserByEmail } from '@/ai/flows/find-user-by-email';
 
 interface StaffMember {
     id: string;
@@ -27,7 +26,6 @@ interface StaffMember {
 
 export default function SuperAdminPage() {
     const firestore = useFirestore();
-    const auth = useAuth();
     const { toast } = useToast();
     
     const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -84,26 +82,57 @@ export default function SuperAdminPage() {
     }, [firestore, toast]);
     
     const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !firestore) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
         setIsAddingStaff(true);
 
         try {
-            const result = await createUser({
+            const result = await findUserByEmail(newStaffEmail);
+            
+            if (result.error) {
+                toast({
+                    variant: 'destructive',
+                    title: 'User Not Found',
+                    description: `The user ${newStaffEmail} does not have an account. Please ask them to sign up through the regular login page first.`,
+                });
+                setIsAddingStaff(false);
+                return;
+            }
+
+            const { uid } = result;
+            if (!uid) {
+                throw new Error("Could not retrieve user ID.");
+            }
+
+            const displayName = `${newStaffFirstName} ${newStaffLastName}`.trim();
+            const userDocRef = doc(firestore, 'users', uid);
+            const roleDocRef = doc(firestore, 'roles_admin', uid);
+
+            const batch = writeBatch(firestore);
+
+            // Create or update user profile
+            batch.set(userDocRef, {
+                id: uid,
                 email: newStaffEmail,
+                displayName: displayName,
                 firstName: newStaffFirstName,
                 lastName: newStaffLastName,
+            }, { merge: true });
+
+            // Assign admin role
+            batch.set(roleDocRef, {
+                uid: uid,
+                addedOn: new Date(),
+                role: 'admin',
             });
 
-            if (result.error) {
-                throw new Error(result.error);
-            }
+            await batch.commit();
             
             toast({
                 title: 'Staff Member Added',
-                description: `${newStaffFirstName} ${newStaffLastName} has been granted admin privileges.`,
+                description: `${displayName} has been granted admin privileges.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
             setNewStaffEmail('');
@@ -136,10 +165,15 @@ export default function SuperAdminPage() {
         }
 
         try {
-            // Remove both admin and super_admin roles to fully revoke access
-            await deleteDoc(doc(firestore, 'roles_admin', staffMember.id));
-            await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
-
+            const batch = writeBatch(firestore);
+            const adminRoleRef = doc(firestore, 'roles_admin', staffMember.id);
+            const superAdminRoleRef = doc(firestore, 'roles_super_admin', staffMember.id);
+            
+            batch.delete(adminRoleRef);
+            batch.delete(superAdminRoleRef);
+            
+            await batch.commit();
+            
             setStaff(prev => prev.filter(s => s.id !== staffMember.id));
             toast({ title: "Staff Roles Removed", description: `${staffMember.email} no longer has admin privileges.` });
         } catch (error: any) {
@@ -150,7 +184,6 @@ export default function SuperAdminPage() {
     const handleRoleToggle = async (staffMember: StaffMember, isSuper: boolean) => {
         if (!firestore) return;
     
-        // Prevent removing the last Super Admin
         if (!isSuper && staffMember.isSuperAdmin && staff.filter(s => s.isSuperAdmin).length <= 1) {
             toast({
                 variant: 'destructive',
@@ -163,12 +196,10 @@ export default function SuperAdminPage() {
     
         try {
             if (isSuper) {
-                // Grant Super Admin
                 const superAdminDocRef = doc(firestore, 'roles_super_admin', staffMember.id);
                 await setDoc(superAdminDocRef, { uid: staffMember.id, addedOn: Timestamp.now() });
                 toast({ title: "Role Updated", description: `${staffMember.name} is now a Super Admin.` });
             } else {
-                // Revoke Super Admin
                 await deleteDoc(doc(firestore, 'roles_super_admin', staffMember.id));
                 toast({ title: "Role Updated", description: `${staffMember.name} is now a standard Admin.` });
             }
@@ -195,7 +226,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
                     <CardDescription>
-                        Grant 'Admin' privileges to a new or existing user. This will create an account if one doesn't exist.
+                        Grant 'Admin' privileges to an existing user. If the user doesn't have an account, please ask them to sign up through the login page first.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -309,5 +340,3 @@ export default function SuperAdminPage() {
     </div>
   );
 }
-
-    
