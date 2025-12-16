@@ -14,7 +14,13 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { initializeAdminApp } from '@/firebase/admin-init';
 
 // Ensure the admin app is initialized
-initializeAdminApp();
+try {
+    initializeAdminApp();
+    console.log("Firebase Admin SDK initialized successfully in grant-admin-role flow.");
+} catch (e) {
+    console.error("CRITICAL: Firebase Admin SDK failed to initialize in grant-admin-role flow.", e);
+}
+
 
 const GrantAdminRoleInputSchema = z.object({
   email: z.string().email().describe('The email address of the user to be granted admin privileges.'),
@@ -36,6 +42,7 @@ export type GrantAdminRoleOutput = z.infer<typeof GrantAdminRoleOutputSchema>;
  * This wraps the Genkit flow.
  */
 export async function grantAdminRole(input: GrantAdminRoleInput): Promise<GrantAdminRoleOutput> {
+  console.log(`[grantAdminRole] Starting flow for email: ${input.email}`);
   return grantAdminRoleFlow(input);
 }
 
@@ -47,8 +54,9 @@ const grantAdminRoleFlow = ai.defineFlow(
     outputSchema: GrantAdminRoleOutputSchema,
   },
   async (input) => {
-    const auth = getAuth(initializeAdminApp());
-    const firestore = getFirestore(initializeAdminApp());
+    console.log('[grantAdminRoleFlow] Entered defineFlow execution.');
+    const auth = getAuth();
+    const firestore = getFirestore();
     const { email, firstName, lastName } = input;
     const displayName = `${firstName} ${lastName}`.trim();
 
@@ -56,32 +64,33 @@ const grantAdminRoleFlow = ai.defineFlow(
     let userExists = false;
 
     try {
+      console.log(`[grantAdminRoleFlow] Attempting to find user by email: ${email}`);
       const userRecord = await auth.getUserByEmail(email);
       uid = userRecord.uid;
       userExists = true;
+      console.log(`[grantAdminRoleFlow] Found existing user with UID: ${uid}`);
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {
-        // User doesn't exist, so create them.
+        console.log(`[grantAdminRoleFlow] User not found. Creating new user for: ${email}`);
         const newUserRecord = await auth.createUser({
           email: email,
           displayName: displayName,
-          // A secure temporary password. User will need to reset this.
           password: `temp_${new Date().getTime()}`,
         });
         uid = newUserRecord.uid;
+        console.log(`[grantAdminRoleFlow] Created new user with UID: ${uid}`);
       } else {
-        // Re-throw other errors
+        console.error('[grantAdminRoleFlow] Error looking up or creating user:', error);
         throw error;
       }
     }
 
-    // Now, with the UID, create the necessary Firestore documents in a batch
+    console.log(`[grantAdminRoleFlow] Proceeding with UID: ${uid}. Starting Firestore batch write.`);
     const userDocRef = firestore.collection('users').doc(uid);
     const adminRoleRef = firestore.collection('roles_admin').doc(uid);
 
     const batch = firestore.batch();
 
-    // Create/update the user profile document
     batch.set(userDocRef, {
       id: uid,
       email: email,
@@ -89,18 +98,23 @@ const grantAdminRoleFlow = ai.defineFlow(
       lastName: lastName,
       displayName: displayName,
     }, { merge: true });
+    console.log(`[grantAdminRoleFlow] Batch: Set user document at ${userDocRef.path}`);
 
-    // Assign the admin role
     batch.set(adminRoleRef, { grantedAt: new Date() });
+    console.log(`[grantAdminRoleFlow] Batch: Set admin role at ${adminRoleRef.path}`);
 
     await batch.commit();
+    console.log('[grantAdminRoleFlow] Batch commit successful.');
 
+    const message = userExists 
+        ? `Successfully granted admin role to existing user ${email}.`
+        : `Successfully created new user ${email} and granted admin role.`;
+
+    console.log(`[grantAdminRoleFlow] Flow successful. Returning message: "${message}"`);
     return {
       uid,
       email,
-      message: userExists 
-        ? `Successfully granted admin role to existing user ${email}.`
-        : `Successfully created new user ${email} and granted admin role.`,
+      message,
     };
   }
 );
