@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trash2, Loader2, UserPlus, RefreshCw } from 'lucide-react';
+import { Trash2, Loader2, UserPlus, RefreshCw, Server } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Timestamp,
@@ -56,6 +56,7 @@ export default function SuperAdminPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [isLoadingStaff, setIsLoadingStaff] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
 
   const fetchStaff = async () => {
     if (!firestore) return;
@@ -115,9 +116,11 @@ export default function SuperAdminPage() {
   
   const handleSyncStaff = async () => {
     setIsSyncing(true);
-    toast({ title: 'Syncing Staff...', description: 'Fetching all users and assigning roles. This may take a moment.' });
+    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] Starting staff sync...`]);
+    
     try {
         const result = await syncStaff();
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] SUCCESS: ${result.message}`]);
         toast({
             title: 'Sync Complete!',
             description: result.message,
@@ -125,13 +128,16 @@ export default function SuperAdminPage() {
         });
         await fetchStaff(); // Refresh the list
     } catch (error: any) {
+        const errorMessage = error.message || "An unexpected error occurred on the server.";
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ERROR: ${errorMessage}`]);
         toast({
             variant: "destructive",
             title: "Failed to Sync Staff",
-            description: error.message || "An unexpected error occurred on the server.",
+            description: "Please check the on-screen logs for details.",
         });
     } finally {
         setIsSyncing(false);
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] Sync process finished.`]);
     }
   };
 
@@ -241,6 +247,23 @@ export default function SuperAdminPage() {
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                     Sync All Staff
                 </Button>
+            </CardContent>
+          </Card>
+          
+           <Card>
+             <CardHeader>
+                <div className="flex items-center gap-3">
+                    <Server className="h-5 w-5" />
+                    <CardTitle>Sync Process Log</CardTitle>
+                </div>
+                <CardDescription>Real-time output from the staff sync process will appear here.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-48 w-full bg-muted rounded-md border">
+                    <pre className="p-4 text-xs font-mono whitespace-pre-wrap break-all">
+                        {logs.length > 0 ? logs.join('\n') : 'Click "Sync All Staff" to see logs...'}
+                    </pre>
+                </ScrollArea>
             </CardContent>
           </Card>
 
