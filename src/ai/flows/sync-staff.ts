@@ -10,12 +10,6 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeAdminApp } from '@/firebase/admin-init';
 
-// Ensure the admin app is initialized
-try {
-    initializeAdminApp();
-} catch (e) {
-    console.error("CRITICAL: Firebase Admin SDK failed to initialize in sync-staff flow.", e);
-}
 
 const SyncStaffOutputSchema = z.object({
   message: z.string().describe('A confirmation message summarizing the operation.'),
@@ -40,13 +34,17 @@ const syncStaffFlow = ai.defineFlow(
   },
   async () => {
     console.log('[syncStaffFlow] Entered defineFlow execution.');
-    const auth = getAuth();
-    const firestore = getFirestore();
-    let usersProcessed = 0;
     
-    const SUPER_ADMIN_EMAIL = 'jason@carehomefinders.com';
-
     try {
+        // Initialize Admin SDK and get services inside the flow execution
+        initializeAdminApp();
+        const auth = getAuth();
+        const firestore = getFirestore();
+        
+        let usersProcessed = 0;
+        
+        const SUPER_ADMIN_EMAIL = 'jason@carehomefinders.com';
+
         const listUsersResult = await auth.listUsers(1000); // Adjust page size if needed
 
         const batch = firestore.batch();
@@ -90,9 +88,9 @@ const syncStaffFlow = ai.defineFlow(
         console.log(`[syncStaffFlow] Flow successful. ${message}`);
         return { message };
 
-    } catch (error) {
-        console.error('[syncStaffFlow] An error occurred:', error);
-        throw new Error('Failed to sync staff roles. Please check server logs.');
+    } catch (error: any) {
+        console.error('[syncStaffFlow] An error occurred during the sync process:', error);
+        throw new Error(`Failed to sync staff roles. Server error: ${error.message}`);
     }
   }
 );
