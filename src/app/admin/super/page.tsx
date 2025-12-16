@@ -15,7 +15,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { WebhookPreparer } from './WebhookPreparer';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUser } from '@/ai/flows/create-user';
 
 interface StaffMember {
     id: string;
@@ -84,42 +84,21 @@ export default function SuperAdminPage() {
     }, [firestore, toast]);
     
     const handleAddStaff = async () => {
-        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName || !auth || !firestore) {
+        if (!newStaffEmail || !newStaffFirstName || !newStaffLastName) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
         setIsAddingStaff(true);
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add staff.' });
-            setIsAddingStaff(false);
-            return;
-        }
 
         try {
-            // Check if user already exists in users collection by email
-            const usersRef = collection(firestore, 'users');
-            const q = query(usersRef, where('email', '==', newStaffEmail));
-            const querySnapshot = await getDocs(q);
+            const result = await createUser({
+                email: newStaffEmail,
+                firstName: newStaffFirstName,
+                lastName: newStaffLastName,
+            });
 
-            let userId: string;
-
-            if (!querySnapshot.empty) {
-                // User already exists in Firestore, just grant admin role
-                const existingUserDoc = querySnapshot.docs[0];
-                userId = existingUserDoc.id;
-                
-                const roleDocRef = doc(firestore, 'roles_admin', userId);
-                await setDoc(roleDocRef, { uid: userId, addedOn: new Date(), role: 'admin' });
-
-            } else {
-                 toast({
-                    variant: 'destructive',
-                    title: 'User Not Found',
-                    description: 'This user does not have a profile. For security, please have them sign up first, then you can grant them Super Admin access here.',
-                });
-                setIsAddingStaff(false);
-                return;
+            if (result.error) {
+                throw new Error(result.error);
             }
             
             toast({
@@ -131,16 +110,13 @@ export default function SuperAdminPage() {
             setNewStaffFirstName('');
             setNewStaffLastName('');
             await fetchStaff(); // Refresh the staff list
+
         } catch (error: any) {
             console.error('Error adding staff member:', error);
-            let errorMessage = error.message || 'An unknown error occurred.';
-            if (error.code === 'auth/email-already-in-use') {
-                errorMessage = 'This email is already in use. If they should be an admin, their account may need manual correction.';
-            }
             toast({
                 variant: 'destructive',
                 title: 'Failed to Add Staff',
-                description: errorMessage,
+                description: error.message || 'An unknown error occurred.',
             });
         } finally {
             setIsAddingStaff(false);
@@ -219,7 +195,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Add Staff Member</CardTitle>
                     <CardDescription>
-                        Grant 'Admin' privileges to an existing user. For security, new users must first create an account through the main <a href='/login' className='text-primary underline'>Sign Up page</a>. Once their account exists, you can add them here.
+                        Grant 'Admin' privileges to a new or existing user. This will create an account if one doesn't exist.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
