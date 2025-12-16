@@ -13,20 +13,19 @@ export interface UserHookResult {
 
 export const useUser = (): UserHookResult => {
   const auth = useAuth();
-  const [userState, setUserState] = useState<UserHookResult>({
-    user: null,
-    isUserLoading: true,
+  const [userState, setUserState] = useState<UserHookResult>(() => ({
+    user: auth?.currentUser || null,
+    isUserLoading: !auth?.currentUser,
     userError: null,
-  });
+  }));
 
   useEffect(() => {
     if (!auth) {
-      setUserState({ user: null, isUserLoading: false, userError: new Error("Auth service not available.") });
+      if (!userState.userError) { // Prevent setting error repeatedly
+        setUserState(s => ({ ...s, isUserLoading: false, userError: new Error("Auth service not available.") }));
+      }
       return;
     }
-
-    // Set initial loading state
-    setUserState({ user: null, isUserLoading: true, userError: null });
 
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -40,7 +39,7 @@ export const useUser = (): UserHookResult => {
     );
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth]); // Dependency on auth instance is correct
 
   return userState;
 };
