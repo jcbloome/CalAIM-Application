@@ -159,7 +159,7 @@ function ReviewPageComponent({ isAdminView = false }: { isAdminView?: boolean })
     
     const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
     const getEditLink = (step: number) => {
-      const baseUrl = isAdminView ? '/admin/forms/cs-summary-form' : '/forms/cs-summary-form';
+      const baseUrl = isAdminView ? '/admin/forms/edit' : '/forms/cs-summary-form';
       const userIdParam = isAdminView && appUserId ? `&userId=${appUserId}` : '';
       return `${baseUrl}?applicationId=${applicationId}&step=${step}${userIdParam}`;
     };
@@ -177,7 +177,7 @@ function ReviewPageComponent({ isAdminView = false }: { isAdminView?: boolean })
                      <Button variant="outline" asChild>
                         <Link href={backLink}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back
+                            Back to Application Details
                         </Link>
                     </Button>
                 </div>
