@@ -1,10 +1,212 @@
-
 'use client';
 
 // This is a wrapper around the main review page component.
 // It ensures that the review page is loaded within the admin layout.
-import ReviewPage from '@/app/forms/cs-summary-form/review/page';
+import React, { Suspense, useMemo } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, ArrowLeft, Send, Edit, CheckCircle2 } from 'lucide-react';
+import { format, parse } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
+import type { FormValues } from '@/app/forms/cs-summary-form/schema';
+import type { FormStatus as FormStatusType, Application } from '@/lib/definitions';
+
+
+const Field = ({ label, value, fullWidth = false }: { label: string; value?: string | number | null; fullWidth?: boolean }) => (
+    <div className={fullWidth ? 'col-span-2' : ''}>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="font-semibold">{value || <span className="font-normal text-gray-400">N/A</span>}</p>
+    </div>
+);
+
+const Section = ({ title, children, editLink, isReadOnly }: { title: string; children: React.ReactNode; editLink: string, isReadOnly: boolean }) => (
+    <div className="relative">
+        {!isReadOnly && (
+            <Button asChild variant="ghost" size="sm" className="absolute top-0 right-0">
+                <Link href={editLink}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                </Link>
+            </Button>
+        )}
+        <h3 className="text-lg font-semibold mb-4">{title}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            {children}
+        </div>
+    </div>
+);
+
+// Safely formats a date that might be a string or a Timestamp
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date === 'string') {
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+            try {
+                const parsedDate = parse(date, 'MM/dd/yyyy', new Date());
+                return format(parsedDate, 'PPP');
+            } catch (e) { return date; }
+        }
+        try {
+            const parsedDate = new Date(date);
+            if (!isNaN(parsedDate.getTime())) return format(parsedDate, 'PPP');
+        } catch (e) { /* Fallthrough */ }
+    }
+    if (date && typeof date.toDate === 'function') {
+        return format(date.toDate(), 'PPP');
+    }
+    return 'Invalid Date';
+};
+
+function ReviewPageComponent() {
+    const searchParams = useSearchParams();
+    const applicationId = searchParams.get('applicationId');
+    const appUserId = searchParams.get('userId');
+    const firestore = useFirestore();
+
+    const applicationDocRef = useMemo(() => {
+        if (appUserId && firestore && applicationId) {
+            return doc(firestore, `users/${appUserId}/applications`, applicationId);
+        }
+        return null;
+    }, [appUserId, firestore, applicationId]);
+
+    const { data: application, isLoading } = useDoc<Application & FormValues>(applicationDocRef);
+    
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-4">Loading Application Summary...</p>
+            </div>
+        );
+    }
+
+    if (!application) {
+        return <p>Application not found.</p>;
+    }
+
+    const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
+    const getEditLink = (step: number) => `/admin/forms/edit?applicationId=${applicationId}&step=${step}&userId=${appUserId}`;
+    const dobFormatted = formatDate(application.memberDob);
+    const backLink = `/admin/applications/${applicationId}?userId=${appUserId}`;
+
+    return (
+        <div className="flex-grow py-8 sm:py-12">
+            <div className="container mx-auto max-w-4xl px-4 sm:px-6 space-y-8">
+                 <div className="mb-6">
+                     <Button variant="outline" asChild>
+                        <Link href={backLink}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Application Details
+                        </Link>
+                    </Button>
+                </div>
+
+                <Card className="shadow-lg">
+                    <CardHeader>
+                        <div className="flex items-center gap-3">
+                            <CheckCircle2 className="h-8 w-8 text-green-500" />
+                            <div>
+                                <CardTitle className="text-2xl">Review Information</CardTitle>
+                                <CardDescription>Reviewing CS Member Summary for {application.memberFirstName} {application.memberLastName}.</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        <Section title="Member Information" editLink={getEditLink(1)} isReadOnly={isReadOnly}>
+                            <Field label="First Name" value={application.memberFirstName} />
+                            <Field label="Last Name" value={application.memberLastName} />
+                            <Field label="Date of Birth" value={dobFormatted} />
+                            <Field label="Age" value={application.memberAge} />
+                            <Field label="Medi-Cal Number" value={application.memberMediCalNum} />
+                            <Field label="Medical Record Number (MRN)" value={application.memberMrn} />
+                            <Field label="Preferred Language" value={application.memberLanguage} />
+                            <Field label="County" value={application.memberCounty} />
+                        </Section>
+
+                        <Separator />
+
+                        <Section title="Referrer Information" editLink={getEditLink(1)} isReadOnly={isReadOnly}>
+                            <Field label="Name" value={application.referrerName} />
+                            <Field label="Email" value={application.referrerEmail} />
+                            <Field label="Phone" value={application.referrerPhone} />
+                            <Field label="Relationship to Member" value={application.referrerRelationship} />
+                            <Field label="Agency" value={application.agency} />
+                        </Section>
+                        
+                         <Separator />
+
+                        <Section title="Primary Contact" editLink={getEditLink(1)} isReadOnly={isReadOnly}>
+                            <Field label="First Name" value={application.bestContactFirstName} />
+                            <Field label="Last Name" value={application.bestContactLastName} />
+                            <Field label="Relationship" value={application.bestContactRelationship} />
+                            <Field label="Phone" value={application.bestContactPhone} />
+                            <Field label="Email" value={application.bestContactEmail} />
+                            <Field label="Language" value={application.bestContactLanguage} />
+                        </Section>
+                        
+                        <Separator />
+                        
+                         <Section title="Legal Representative" editLink={getEditLink(1)} isReadOnly={isReadOnly}>
+                            <Field label="Member Has Capacity" value={application.hasCapacity} />
+                            <Field label="Has Legal Representative" value={application.hasLegalRep} />
+                            <Field label="Representative First Name" value={application.repFirstName} />
+                            <Field label="Representative Last Name" value={application.repLastName} />
+                            <Field label="Representative Relationship" value={application.repRelationship} />
+                            <Field label="Representative Phone" value={application.repPhone} />
+                            <Field label="Representative Email" value={application.repEmail} />
+                        </Section>
+
+                        <Separator />
+
+                        <Section title="Location Information" editLink={getEditLink(2)} isReadOnly={isReadOnly}>
+                            <Field label="Current Location Type" value={application.currentLocation} />
+                            <Field label="Current Address" value={`${application.currentAddress || ''}, ${application.currentCity || ''}, ${application.currentState || ''} ${application.currentZip || ''}`.replace(/, , /g, ', ').replace(/^, |, $/g, '')} fullWidth />
+                            <Field label="Customary Residence Location Type" value={application.customaryLocationType} />
+                            <Field label="Customary Residence" value={`${application.customaryAddress || ''}, ${application.customaryCity || ''}, ${application.customaryState || ''} ${application.customaryZip || ''}`.replace(/, , /g, ', ').replace(/^, |, $/g, '')} fullWidth />
+                        </Section>
+
+                        <Separator />
+
+                        <Section title="Health Plan &amp; Pathway" editLink={getEditLink(3)} isReadOnly={isReadOnly}>
+                            <Field label="Health Plan" value={application.healthPlan} />
+                            {application.healthPlan === 'Other' && (
+                                <>
+                                    <Field label="Existing Plan" value={application.existingHealthPlan} />
+                                    <Field label="Switching Plans?" value={application.switchingHealthPlan} />
+                                </>
+                            )}
+                            <Field label="Pathway" value={application.pathway} />
+                            <Field label="Meets Criteria" value={application.meetsPathwayCriteria ? 'Yes' : 'No'} fullWidth />
+                            {application.pathway === 'SNF Diversion' && <Field label="Reason for Diversion" value={application.snfDiversionReason} fullWidth />}
+                        </Section>
+                        
+                        <Separator />
+
+                        <Section title="ISP &amp; RCFE Information" editLink={getEditLink(4)} isReadOnly={isReadOnly}>
+                            <Field label="ISP Contact Name" value={`${application.ispFirstName} ${application.ispLastName}`} />
+                            <Field label="ISP Contact Phone" value={application.ispPhone} />
+                            <Field label="ISP Assessment Location" value={application.ispAddress} fullWidth />
+                            <Field label="On ALW Waitlist?" value={application.onALWWaitlist} />
+                            <Field label="Has Preferred RCFE?" value={application.hasPrefRCFE} />
+                            <Field label="RCFE Name" value={application.rcfeName} fullWidth />
+                        </Section>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
+
 
 export default function AdminReviewFormPage() {
-    return <ReviewPage />;
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>}>
+            <ReviewPageComponent />
+        </Suspense>
+    );
 }
