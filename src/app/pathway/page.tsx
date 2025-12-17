@@ -126,7 +126,7 @@ function PathwayPageContent() {
 
   useEffect(() => {
     if (application && docRef && application.pathway && (!application.forms || application.forms.length === 0)) {
-        const pathwayRequirements = getPathwayRequirements(application.pathway);
+        const pathwayRequirements = getPathwayRequirements(application.pathway as 'SNF Transition' | 'SNF Diversion');
         const initialForms: FormStatusType[] = pathwayRequirements.map(req => ({
             name: req.title,
             status: 'Pending',
