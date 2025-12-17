@@ -95,6 +95,8 @@ export type FormStatus = {
   signerType?: 'member' | 'representative' | null;
   signerName?: string | null;
   signerRelationship?: string | null;
+  monthlyIncome?: number | null;
+  ackRoomAndBoard?: boolean;
 };
 
 export type Acronym = {
@@ -121,3 +123,6 @@ export type StaffTracker = {
 };
 
 
+
+
+    

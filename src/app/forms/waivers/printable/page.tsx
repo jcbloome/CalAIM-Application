@@ -119,10 +119,17 @@ export default function WaiverFormPage() {
                 Room & Board Obligation
                 </h2>
                 <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
-                    <p>I understand that if I enroll in the CalAIM Community Supports program for assisted living, I will be responsible for paying a "Room and Board" fee directly to the assisted living facility (RCFE/ARF).</p>
-                    <p>This fee is based on my monthly income. The current rate is the Supplemental Security Income/State Supplementary Payment (SSI/SSP) rate for a non-medical out-of-home care recipient. As of 2024, this amount is <strong>$1,575.07 per month</strong>.</p>
-                    <p>This fee covers the cost of my housing, meals, and utilities. The separate "care" portion of my assisted living costs will be paid by my Managed Care Plan (Health Net or Kaiser) through the CalAIM program.</p>
-                    <p>I acknowledge that this Room and Board fee is my personal financial responsibility and is subject to change in the future based on SSI/SSP rate adjustments.</p>
+                    <p>The MCP member is responsible for paying the RCFE the “room and board” and the MCP is responsible for paying the RCFE the “assisted living” portion.</p>
+                    <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for “room and board”.</p>
+                    <p>For example, Mr. Johnson is eligible for NMOHC and receives $500/month. The NMOHC will bump up the payment to the RCFE to $1,444.07 for “room and board” and he will retain $182 for personal needs expenses.</p>
+                    <p>Members not eligible for the NMOHC will still have a “room and board” obligation but the amount could be flexible depending on the RCFE and the assessed tiered level.</p>
+                    <p>Members who cannot pay any “room and board” portion or who do not have families who could pay this portion are not eligible for the CS since program requirements mandate a "room and board” payment from the member (or their family).</p>
+                </div>
+                <div className="mt-4">
+                    <label className="block text-xs uppercase font-bold text-slate-500 mb-1">
+                        Total Monthly Income:
+                    </label>
+                    <div className="border-b border-slate-400 h-8"></div>
                 </div>
                  <CheckboxField label="I have read and understood my financial obligation for Room and Board." />
             </section>
@@ -163,3 +170,5 @@ export default function WaiverFormPage() {
     </div>
   );
 }
+
+    

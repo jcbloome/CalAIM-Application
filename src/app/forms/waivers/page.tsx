@@ -45,6 +45,7 @@ function WaiversFormComponent() {
     const [signerName, setSignerName] = useState('');
     const [signerRelationship, setSignerRelationship] = useState('');
     const [signatureDate, setSignatureDate] = useState('');
+    const [monthlyIncome, setMonthlyIncome] = useState('');
 
     const [ackHipaa, setAckHipaa] = useState(false);
     const [ackLiability, setAckLiability] = useState(false);
@@ -71,10 +72,11 @@ function WaiversFormComponent() {
                 setSignerName(form.signerName || '');
                 setSignerRelationship(form.signerRelationship || '');
                 setFocChoice(form.choice || '');
+                setMonthlyIncome(form.monthlyIncome?.toString() || '');
                 setAckHipaa(true);
                 setAckLiability(true);
                 setAckFoc(true);
-                setAckRoomAndBoard(true); // Assume completed forms have this acknowledged
+                setAckRoomAndBoard(form.ackRoomAndBoard || false);
                 setSignatureDate(form.dateCompleted ? new Date(form.dateCompleted.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString());
             } else {
                  setSignatureDate(new Date().toLocaleDateString());
@@ -85,7 +87,7 @@ function WaiversFormComponent() {
     }, [application]);
 
     const isFormComplete = () => {
-        if (!signerType || !signerName || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
+        if (!signerType || !signerName || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard || !monthlyIncome) return false;
         if (signerType === 'representative' && !signerRelationship) return false;
         return true;
     };
@@ -112,10 +114,12 @@ function WaiversFormComponent() {
         
         const newFormData: Partial<FormStatus> = {
             status: 'Completed',
-            choice: focChoice === '' ? undefined : focChoice,
+            choice: focChoice,
             signerType,
             signerName,
             signerRelationship: signerType === 'representative' ? signerRelationship : undefined,
+            ackRoomAndBoard: ackRoomAndBoard,
+            monthlyIncome: parseFloat(monthlyIncome) || null,
             dateCompleted: Timestamp.now(),
         };
 
@@ -270,10 +274,23 @@ function WaiversFormComponent() {
                             </Section>
 
                             <Section title="Room & Board Obligation" icon={Home}>
-                                <p>I understand that if I enroll in the CalAIM Community Supports program for assisted living, I will be responsible for paying a "Room and Board" fee directly to the assisted living facility (RCFE/ARF).</p>
-                                <p>This fee is based on my monthly income. The current rate is the Supplemental Security Income/State Supplementary Payment (SSI/SSP) rate for a non-medical out-of-home care recipient. As of 2024, this amount is <strong>$1,575.07 per month</strong>.</p>
-                                <p>This fee covers the cost of my housing, meals, and utilities. The separate "care" portion of my assisted living costs will be paid by my Managed Care Plan (Health Net or Kaiser) through the CalAIM program.</p>
-                                <p>I acknowledge that this Room and Board fee is my personal financial responsibility and is subject to change in the future based on SSI/SSP rate adjustments.</p>
+                                <p>The MCP member is responsible for paying the RCFE the “room and board” and the MCP is responsible for paying the RCFE the “assisted living” portion.</p>
+                                <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for “room and board”.</p>
+                                <p>For example, Mr. Johnson is eligible for NMOHC and receives $500/month. The NMOHC will bump up the payment to the RCFE to $1,444.07 for “room and board” and he will retain $182 for personal needs expenses.</p>
+                                <p>Members not eligible for the NMOHC will still have a “room and board” obligation but the amount could be flexible depending on the RCFE and the assessed tiered level.</p>
+                                <p>Members who cannot pay any “room and board” portion or who do not have families who could pay this portion are not eligible for the CS since program requirements mandate a "room and board” payment from the member (or their family).</p>
+                                
+                                <div className="space-y-2 mt-4">
+                                    <Label htmlFor="monthly-income">Total Monthly Income</Label>
+                                    <Input 
+                                        id="monthly-income" 
+                                        type="number" 
+                                        value={monthlyIncome} 
+                                        onChange={e => setMonthlyIncome(e.target.value)} 
+                                        placeholder="Enter total monthly income amount" 
+                                        disabled={isReadOnly} 
+                                    />
+                                </div>
                                 <Alert variant="warning" className="mt-4">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertTitle>Acknowledgment</AlertTitle>
@@ -368,3 +385,5 @@ export default function WaiversPage() {
         </Suspense>
     );
 }
+
+    
