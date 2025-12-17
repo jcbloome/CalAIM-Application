@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useFirestore, useCollection } from '@/firebase';
 import { collectionGroup, query, Query } from 'firebase/firestore';
 import type { Application } from '@/lib/definitions';
-import { Loader2, Users, Map as MapIcon, HeartHandshake, Forklift, Building, Crown, Trophy } from 'lucide-react';
+import { Loader2, Users, Map as MapIcon, HeartHandshake, Forklift, Trophy } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -35,16 +35,10 @@ const DataList = ({ data, emptyText = "No data available." }: { data: { name: st
         {data.length > 0 ? data.map((item, index) => (
             <div 
                 key={item.name} 
-                className={cn(
-                    "flex items-center justify-between p-2 rounded-md",
-                    index === 0 && "bg-amber-50"
-                )}
+                className="flex items-center justify-between p-2 rounded-md"
             >
-                <div className="flex items-center gap-2">
-                    {index === 0 && <Crown className="h-4 w-4 text-amber-500" />}
-                    <p className={cn("text-sm", index === 0 ? "font-semibold text-amber-800" : "text-muted-foreground")}>{item.name}</p>
-                </div>
-                <p className={cn("text-sm font-medium", index === 0 ? "text-amber-900" : "text-foreground")}>{item.value}</p>
+                <p className={cn("text-sm", index === 0 ? "font-semibold" : "text-foreground")}>{item.name}</p>
+                <p className={cn("text-sm font-medium", index === 0 ? "font-semibold" : "")}>{item.value}</p>
             </div>
         )) : <p className="text-sm text-muted-foreground p-2">{emptyText}</p>}
     </div>
@@ -84,7 +78,7 @@ export default function AdminStatisticsPage() {
         if (app.pathway) {
             counts.byPathway.set(app.pathway, (counts.byPathway.get(app.pathway) || 0) + 1);
         }
-        // Referrer
+        // Referrer (user who created application)
         if (app.referrerName) {
             counts.byReferrer.set(app.referrerName, (counts.byReferrer.get(app.referrerName) || 0) + 1);
         }
@@ -153,7 +147,7 @@ export default function AdminStatisticsPage() {
                             </TableHeader>
                             <TableBody>
                                 {stats.topReferrers.map((r, index) => (
-                                    <TableRow key={r.name} className={cn(index < 3 && 'bg-purple-50/50')}>
+                                    <TableRow key={r.name} className={cn(index < 3 && "bg-purple-50/50")}>
                                         <TableCell className="font-medium w-16">
                                             <div className="flex items-center gap-2">
                                                 {index === 0 && <Trophy className="h-4 w-4 text-amber-400"/>}
