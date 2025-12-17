@@ -136,7 +136,7 @@ export default function Step4() {
                 />
             </CardContent>
         </Card>
-        
+      
       <Card className="border-l-4 border-accent">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function Step4() {
             <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for “room and board”. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for "room and board" for a private room or to open up RCFEs in more expensive areas.</p>
             <p>For example, Mr. Johnson is eligible for NMOHC and receives $500/month. The NMOHC will bump up the payment to the RCFE to $1,444.07 for “room and board” and he will retain $182 for personal needs expenses.</p>
             <p>Members not eligible for the NMOHC will still have a “room and board” obligation but the amount could be flexible depending on the RCFE and the assessed tiered level.</p>
-            <p><strong>Members who cannot pay any “room and board” portion or who do not have families who could pay this portion are not eligible for the CS since program requirements mandate a "room and board” payment from the member (or their family).</strong></p>
+            <p>Members who cannot pay any room and board portion usually are not eligible for the CS since program requirements mandate a "room and board” payment from the member (or their family).</p>
           </div>
 
            <FormField
