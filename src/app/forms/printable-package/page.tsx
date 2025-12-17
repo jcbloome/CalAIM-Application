@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Header } from '@/components/Header';
@@ -77,9 +76,11 @@ export default function ApplicationSubmissionPage() {
                                     </Button>
                                 ))}
                                 <div className="pt-4">
-                                     <Button className="w-full" onClick={() => window.print()}>
-                                        <Printer className="mr-2 h-4 w-4" />
-                                        Print Full Blank Application Package
+                                     <Button className="w-full" asChild>
+                                        <Link href="/forms/printable-package/full-package">
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Print Full Blank Application Package
+                                        </Link>
                                     </Button>
                                 </div>
                             </div>
