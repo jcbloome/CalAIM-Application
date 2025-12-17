@@ -239,7 +239,7 @@ function PathwayPageContent() {
   const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
 
   const pathwayRequirements = getPathwayRequirements(application.pathway as 'SNF Transition' | 'SNF Diversion');
-  const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName, ...f}]));
+  const formStatusMap = new Map(application.forms?.map(f => [f.name, f]));
   
   const completedCount = pathwayRequirements.reduce((acc, req) => {
     const form = formStatusMap.get(req.title);
