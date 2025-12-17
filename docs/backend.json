@@ -408,6 +408,47 @@
         "id",
         "applicationId"
       ]
+    },
+    "StaffTracker": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StaffTracker",
+      "type": "object",
+      "description": "Tracks the internal staff progress for an application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the tracker, often same as applicationId."
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "Reference to the application this tracker belongs to."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The user who owns the application."
+        },
+        "healthPlan": {
+          "type": "string",
+          "enum": ["Kaiser", "Health Net", "Other"],
+          "description": "The health plan of the application."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current step in the staff's workflow."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the status was last updated."
+        }
+      },
+      "required": [
+        "id",
+        "applicationId",
+        "userId",
+        "healthPlan",
+        "status"
+      ]
     }
   },
   "auth": {
@@ -618,6 +659,30 @@
             {
               "name": "eligibilityScreeningId",
               "description": "The unique identifier of the eligibility screening."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/applications/{applicationId}/staffTrackers/{trackerId}",
+        "definition": {
+          "entityName": "StaffTracker",
+          "schema": {
+            "$ref": "#/backend/entities/StaffTracker"
+          },
+          "description": "Stores internal staff progress for an application.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the application."
+            },
+            {
+              "name": "applicationId",
+              "description": "The unique identifier of the application."
+            },
+            {
+              "name": "trackerId",
+              "description": "The unique identifier for the tracker."
             }
           ]
         }

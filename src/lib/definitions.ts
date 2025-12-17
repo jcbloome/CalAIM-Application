@@ -49,3 +49,13 @@ export type Activity = {
   details: string;
   applicationId?: string;
 };
+
+export type StaffTracker = {
+  id: string;
+  applicationId: string;
+  userId: string;
+  healthPlan: 'Kaiser' | 'Health Net' | 'Other';
+  status: string;
+  lastUpdated: Timestamp;
+};
+

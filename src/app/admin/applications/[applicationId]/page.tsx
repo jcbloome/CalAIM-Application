@@ -10,7 +10,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -29,9 +28,9 @@ import {
   Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Application, FormStatus as FormStatusType } from '@/lib/definitions';
+import type { Application, FormStatus as FormStatusType, StaffTracker } from '@/lib/definitions';
 import { useDoc, useUser, useFirestore } from '@/firebase';
-import { doc, setDoc, serverTimestamp, Timestamp, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, Timestamp, onSnapshot, collection } from 'firebase/firestore';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -50,6 +49,30 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from '@/components/ui/textarea';
 import { sendRevisionRequestEmail, sendApplicationStatusEmail } from '@/app/actions/send-email';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+
+const healthNetSteps = [
+  "Application Being Reviewed",
+  "Scheduling ISP",
+  "ISP Completed",
+  "Locating RCFEs",
+  "Submitted to Health Net",
+  "Authorization Status"
+];
+
+const kaiserSteps = [
+  "Initial Authorization Received or Authorization Requested",
+  "Collecting Documents",
+  "RN Visit Scheduled",
+  "RN Visit Completed",
+  "Tiered Level Request to Kaiser",
+  "Tier Level Received",
+  "Locating RCFEs",
+  "RCFE Selected",
+  "RCFE Sent to ILS for Contracting/Member Move-In"
+];
+
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
@@ -92,6 +115,76 @@ function StatusIndicator({ status }: { status: FormStatusType['status'] }) {
         )}
         <span>{isCompleted ? 'Completed' : 'Pending'}</span>
       </div>
+    );
+}
+
+function StaffApplicationTracker({ application }: { application: Application }) {
+    const firestore = useFirestore();
+    const { user } = useUser();
+    
+    const trackerDocRef = useMemo(() => {
+        if (!firestore || !application.userId || !application.id) return null;
+        return doc(firestore, `users/${application.userId}/applications/${application.id}/staffTrackers`, application.id);
+    }, [firestore, application.id, application.userId]);
+
+    const { data: tracker, isLoading } = useDoc<StaffTracker>(trackerDocRef);
+    const { toast } = useToast();
+
+    const steps = application.healthPlan?.toLowerCase().includes('kaiser') ? kaiserSteps : healthNetSteps;
+
+    const handleStatusChange = async (newStatus: string) => {
+        if (!trackerDocRef || !user || !application.userId) return;
+        
+        const dataToSave: StaffTracker = {
+            id: application.id,
+            applicationId: application.id,
+            userId: application.userId,
+            healthPlan: application.healthPlan as 'Kaiser' | 'Health Net',
+            status: newStatus,
+            lastUpdated: Timestamp.now(),
+        };
+
+        try {
+            await setDoc(trackerDocRef, dataToSave, { merge: true });
+            toast({
+                title: "Tracker Updated",
+                description: `Status changed to "${newStatus}".`,
+            });
+        } catch (error: any) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not update tracker status.",
+            });
+            console.error("Error updating tracker:", error);
+        }
+    };
+    
+    if (isLoading) {
+        return <div className="p-4 text-center"><Loader2 className="h-5 w-5 animate-spin inline-block" /></div>
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Staff Application Tracker</CardTitle>
+                <CardDescription>Internal progress for the {application.healthPlan} pathway.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <RadioGroup
+                    value={tracker?.status}
+                    onValueChange={handleStatusChange}
+                    className="space-y-2"
+                >
+                    {steps.map((step, index) => (
+                        <div key={step} className="flex items-center space-x-2">
+                             <RadioGroupItem value={step} id={`step-${index}`} />
+                             <Label htmlFor={`step-${index}`}>{step}</Label>
+                        </div>
+                    ))}
+                </RadioGroup>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -288,26 +381,6 @@ function ApplicationDetailPageContent() {
         await setDoc(docRef, { status: newStatus, lastUpdated: serverTimestamp() }, { merge: true });
     };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, requirementTitle: string) => {
-    if (!event.target.files?.length) return;
-    const files = Array.from(event.target.files);
-    
-    setUploading(prev => ({...prev, [requirementTitle]: true}));
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const fileNames = files.map(f => f.name).join(', ');
-    await handleFormStatusUpdate([requirementTitle], 'Completed', fileNames);
-
-    setUploading(prev => ({...prev, [requirementTitle]: false}));
-    
-    event.target.value = '';
-  };
-  
-  const handleFileRemove = async (requirementTitle: string) => {
-    await handleFormStatusUpdate([requirementTitle], 'Pending', null);
-  };
-
   if (isLoading || isUserLoading) {
     return (
         <div className="flex items-center justify-center h-full">
@@ -333,8 +406,6 @@ function ApplicationDetailPageContent() {
     );
   }
   
-  const isReadOnly = application.status === 'Completed & Submitted' || application.status === 'Approved';
-
   const pathwayRequirements = getPathwayRequirements(application.pathway as 'SNF Transition' | 'SNF Diversion');
   const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName}]));
   
@@ -349,24 +420,20 @@ function ApplicationDetailPageContent() {
 
   const getFormAction = (req: (typeof pathwayRequirements)[0]) => {
     const formInfo = formStatusMap.get(req.title);
-    const isCompleted = formInfo?.status === 'Completed';
     let href = req.href ? `${req.href}${req.href.includes('?') ? '&' : '?'}applicationId=${applicationId}` : '#';
     // Admins need userId to view forms
     href += `&userId=${appUserId}`;
-    
-    const isUploading = uploading[req.title];
-    const isMultiple = req.title === 'Proof of Income';
     
     switch (req.type) {
         case 'online-form':
         case 'Info':
             return (
                 <Button asChild variant="outline" className="w-full bg-slate-50 hover:bg-slate-100">
-                    <Link href={href}>{isCompleted ? 'View/Edit' : 'Start'} &rarr;</Link>
+                    <Link href={href}>View &rarr;</Link>
                 </Button>
             );
         case 'Upload':
-             if (isCompleted) {
+             if (formInfo?.status === 'Completed') {
                  return (
                     <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-green-50 border border-green-200 text-sm">
                         <span className="truncate flex-1 text-green-800 font-medium">{formInfo?.fileName || 'Completed'}</span>
@@ -405,7 +472,7 @@ function ApplicationDetailPageContent() {
             </div>
             <div>
                 <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                    <span className="font-medium">Application Progress</span>
+                    <span className="font-medium">User-Submitted Documents</span>
                     <span>{completedCount} of {totalCount} required items completed</span>
                 </div>
                 <Progress value={progress} className="h-2" />
@@ -438,6 +505,7 @@ function ApplicationDetailPageContent() {
       </div>
 
       <aside className="lg:col-span-1 space-y-6">
+        <StaffApplicationTracker application={application} />
         <AdminActions application={application} onStatusChange={handleStatusChange} />
       </aside>
     </div>

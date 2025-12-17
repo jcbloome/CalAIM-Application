@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   Table,
@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { useFirestore } from '@/firebase';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, Timestamp } from 'firebase/firestore';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +28,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
-import { Trash2 } from 'lucide-react';
+import { Trash2, FileText } from 'lucide-react';
 import type { Application } from '@/lib/definitions';
 import type { WithId } from '@/firebase';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Separator } from '@/components/ui/separator';
 
 type ApplicationStatusType = Application['status'];
 
@@ -48,6 +56,68 @@ const getBadgeVariant = (status: ApplicationStatusType) => {
   }
 };
 
+const QuickViewField = ({ label, value }: { label: string, value?: string | number | null }) => (
+    <div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="font-semibold">{value || <span className="font-normal text-gray-400">N/A</span>}</p>
+    </div>
+);
+
+const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    if (typeof date === 'string') {
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+            try {
+                const parsedDate = parse(date, 'MM/dd/yyyy', new Date());
+                return format(parsedDate, 'PPP');
+            } catch (e) { return date; }
+        }
+        try {
+            const parsedDate = new Date(date);
+            if (!isNaN(parsedDate.getTime())) return format(parsedDate, 'PPP');
+        } catch (e) { /* Fallthrough */ }
+    }
+    if (date && typeof date.toDate === 'function') {
+        return format(date.toDate(), 'PPP');
+    }
+    return 'Invalid Date';
+};
+
+
+const QuickViewDialog = ({ application }: { application: WithId<Application> }) => {
+    return (
+         <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">Quick View</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Quick Summary: {application.memberFirstName} {application.memberLastName}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Member Information</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <QuickViewField label="DOB" value={formatDate(application.memberDob)} />
+                            <QuickViewField label="MRN" value={application.memberMrn} />
+                            <QuickViewField label="County" value={application.memberCounty} />
+                            <QuickViewField label="Health Plan" value={application.healthPlan} />
+                            <QuickViewField label="Pathway" value={application.pathway} />
+                        </div>
+                    </div>
+                    <Separator />
+                     <div>
+                        <h3 className="text-lg font-semibold mb-2">Referrer Information</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <QuickViewField label="Name" value={application.referrerName} />
+                            <QuickViewField label="Email" value={application.referrerEmail} />
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 export const AdminApplicationsTable = ({
   applications,
@@ -79,8 +149,8 @@ export const AdminApplicationsTable = ({
     
     // Sort applications by lastUpdated timestamp, most recent first
     const sortedApplications = [...applications].sort((a, b) => {
-        const dateA = a.lastUpdated?.toMillis() || 0;
-        const dateB = b.lastUpdated?.toMillis() || 0;
+        const dateA = a.lastUpdated ? (a.lastUpdated as Timestamp).toMillis() : 0;
+        const dateB = b.lastUpdated ? (b.lastUpdated as Timestamp).toMillis() : 0;
         return dateB - dateA;
     });
 
@@ -120,11 +190,12 @@ export const AdminApplicationsTable = ({
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                    {app.lastUpdated ? format(app.lastUpdated.toDate(), 'MM/dd/yyyy p') : 'N/A'}
+                    {app.lastUpdated ? format((app.lastUpdated as Timestamp).toDate(), 'MM/dd/yyyy p') : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right space-x-2">
+                  <QuickViewDialog application={app} />
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/admin/applications/${app.id}?userId=${app.userId}`}>View</Link>
+                    <Link href={`/admin/applications/${app.id}?userId=${app.userId}`}>View Details</Link>
                   </Button>
                    <AlertDialog>
                         <AlertDialogTrigger asChild>
