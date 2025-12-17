@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFirestore, useCollection } from '@/firebase';
-import { collectionGroup, query, Query } from 'firebase/firestore';
+import { collectionGroup, query, Query, Timestamp } from 'firebase/firestore';
 import type { Application } from '@/lib/definitions';
-import { Loader2, Users, Map as MapIcon, HeartHandshake, Forklift, Trophy } from 'lucide-react';
+import { Loader2, Users, Map as MapIcon, HeartHandshake, Forklift, Trophy, CalendarDays } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -15,7 +15,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 
 const StatCard = ({ title, icon: Icon, children, borderColor }: { title: string, icon: React.ElementType, children: React.ReactNode, borderColor?: string }) => (
@@ -47,6 +55,7 @@ const DataList = ({ data, emptyText = "No data available." }: { data: { name: st
 
 export default function AdminStatisticsPage() {
   const firestore = useFirestore();
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const applicationsQuery = useMemo(() => {
     if (!firestore) return null;
@@ -55,8 +64,8 @@ export default function AdminStatisticsPage() {
 
   const { data: applications, isLoading, error } = useCollection<Application>(applicationsQuery);
 
-  const stats = useMemo(() => {
-    if (!applications) return { byCounty: [], byHealthPlan: [], byPathway: [], topReferrers: [] };
+  const { stats, availableYears } = useMemo(() => {
+    if (!applications) return { stats: { byCounty: [], byHealthPlan: [], byPathway: [], topReferrers: [], submissionsByMonth: [] }, availableYears: [] };
     
     const counts = {
         byCounty: new Map<string, number>(),
@@ -64,6 +73,12 @@ export default function AdminStatisticsPage() {
         byPathway: new Map<string, number>(),
         byReferrer: new Map<string, number>(),
     };
+    
+    const years = new Set<number>();
+    const submissionsByMonth = new Array(12).fill(0).map((_, i) => ({
+      name: format(new Date(0, i), 'MMMM'),
+      value: 0
+    }));
 
     applications.forEach(app => {
         // County
@@ -82,6 +97,16 @@ export default function AdminStatisticsPage() {
         if (app.referrerName) {
             counts.byReferrer.set(app.referrerName, (counts.byReferrer.get(app.referrerName) || 0) + 1);
         }
+
+        // Submissions by month/year
+        if (app.lastUpdated) {
+            const date = (app.lastUpdated as Timestamp).toDate();
+            years.add(date.getFullYear());
+            if (date.getFullYear() === selectedYear) {
+                const month = date.getMonth();
+                submissionsByMonth[month].value++;
+            }
+        }
     });
 
     const toSortedArray = (map: Map<string, number>) => Array.from(map.entries())
@@ -89,12 +114,16 @@ export default function AdminStatisticsPage() {
         .sort((a, b) => b.value - a.value);
 
     return {
-        byCounty: toSortedArray(counts.byCounty),
-        byHealthPlan: toSortedArray(counts.byHealthPlan),
-        byPathway: toSortedArray(counts.byPathway),
-        topReferrers: toSortedArray(counts.byReferrer).slice(0, 10),
+        stats: {
+            byCounty: toSortedArray(counts.byCounty),
+            byHealthPlan: toSortedArray(counts.byHealthPlan),
+            byPathway: toSortedArray(counts.byPathway),
+            topReferrers: toSortedArray(counts.byReferrer).slice(0, 10),
+            submissionsByMonth: submissionsByMonth.filter(m => m.value > 0).sort((a, b) => b.value - a.value),
+        },
+        availableYears: Array.from(years).sort((a, b) => b - a),
     };
-  }, [applications]);
+  }, [applications, selectedYear]);
 
   if (isLoading) {
     return (
@@ -129,6 +158,41 @@ export default function AdminStatisticsPage() {
             <StatCard title="Applications by Pathway" icon={Forklift} borderColor="border-orange-500">
                 <DataList data={stats.byPathway} />
             </StatCard>
+            
+             <Card className="border-t-4 border-yellow-500">
+                <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-0">
+                             <CardTitle className="text-sm font-medium">Submissions by Month</CardTitle>
+                        </div>
+                        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="pt-2">
+                         <Select 
+                            value={selectedYear.toString()} 
+                            onValueChange={(value) => setSelectedYear(Number(value))}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableYears.length > 0 ? (
+                                    availableYears.map(year => (
+                                        <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                                    ))
+                                ) : (
+                                    <SelectItem value={new Date().getFullYear().toString()} disabled>
+                                        {new Date().getFullYear()}
+                                    </SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <DataList data={stats.submissionsByMonth} emptyText="No submissions for this year." />
+                </CardContent>
+            </Card>
 
              <Card className="border-t-4 border-purple-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -147,12 +211,9 @@ export default function AdminStatisticsPage() {
                             </TableHeader>
                             <TableBody>
                                 {stats.topReferrers.map((r, index) => (
-                                    <TableRow key={r.name} className={cn(index < 3 && "bg-purple-50/50")}>
+                                    <TableRow key={r.name}>
                                         <TableCell className="font-medium w-16">
                                             <div className="flex items-center gap-2">
-                                                {index === 0 && <Trophy className="h-4 w-4 text-amber-400"/>}
-                                                {index === 1 && <Trophy className="h-4 w-4 text-slate-400"/>}
-                                                {index === 2 && <Trophy className="h-4 w-4 text-amber-700"/>}
                                                 <span>#{index + 1}</span>
                                             </div>
                                         </TableCell>
