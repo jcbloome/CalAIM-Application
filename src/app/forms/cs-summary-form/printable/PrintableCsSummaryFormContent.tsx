@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -240,6 +241,20 @@ export function PrintableCsSummaryFormContent() {
               <Field label="Administrator Phone" description="(xxx) xxx-xxxx" />
               <Field label="Administrator Email" className="sm:col-span-2" />
           </div>
+        </div>
+
+        <div>
+            <SectionTitle>Room & Board Obligation</SectionTitle>
+            <div className="prose prose-sm max-w-none text-gray-700 space-y-3 p-4 border rounded-lg bg-gray-50 text-xs">
+                <p>The MCP member is responsible for paying the RCFE the “room and board” and the MCP is responsible for paying the RCFE the “assisted living” portion.</p>
+                <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for “room and board”. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for "room and board" for a private room or to open up RCFEs in more expensive areas.</p>
+                <p>For example, Mr. Johnson is eligible for NMOHC and receives $500/month. The NMOHC will bump up the payment to the RCFE to $1,444.07 for “room and board” and he will retain $182 for personal needs expenses.</p>
+                <p>Members not eligible for the NMOHC will still have a “room and board” obligation but the amount could be flexible depending on the RCFE and the assessed tiered level.</p>
+                <p><strong>Members who cannot pay any “room and board” portion or who do not have families who could pay this portion are not eligible for the CS since program requirements mandate a "room and board” payment from the member (or their family).</strong></p>
+            </div>
+             <Field label="Total Monthly Income" />
+            <p className="text-xs text-gray-500 pt-1">Please note that proof of income (e.g., Social Security award letter) will need to be submitted later.</p>
+            <CheckboxField label="I have read and understood the financial obligation for Room and Board." />
         </div>
       </div>
     </form>

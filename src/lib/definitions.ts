@@ -75,6 +75,8 @@ export type Application = {
   ispAddress?: string;
   ispFacilityName?: string;
   onALWWaitlist?: 'Yes' | 'No' | 'Unknown';
+  monthlyIncome?: string;
+  ackRoomAndBoard?: boolean;
   hasPrefRCFE?: 'Yes' | 'No';
   rcfeName?: string | null;
   rcfeAddress?: string | null;
@@ -95,7 +97,6 @@ export type FormStatus = {
   signerType?: 'member' | 'representative' | null;
   signerName?: string | null;
   signerRelationship?: string | null;
-  monthlyIncome?: number | null;
   ackRoomAndBoard?: boolean;
 };
 

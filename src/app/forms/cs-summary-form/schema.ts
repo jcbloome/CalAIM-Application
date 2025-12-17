@@ -103,6 +103,10 @@ export const formSchema = z.object({
     ispAddress: requiredString,
     ispFacilityName: requiredString,
     onALWWaitlist: z.enum(['Yes', 'No', 'Unknown'], { required_error: 'Please select an option for ALW waitlist.' }),
+    monthlyIncome: requiredString,
+    ackRoomAndBoard: z.boolean().refine(val => val === true, {
+      message: "You must acknowledge the room and board obligation.",
+    }),
     hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: 'Please select an option for preferred RCFE.' }),
     rcfeName: optionalString,
     rcfeAddress: optionalString,
