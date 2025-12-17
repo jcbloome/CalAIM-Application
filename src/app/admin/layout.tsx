@@ -1,7 +1,6 @@
-
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,7 @@ import {
   FolderKanban,
   BarChart3,
   ListChecks,
+  Menu,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
 const adminNavLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -80,12 +81,12 @@ function AdminHeader() {
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
                 return (
                   <NavigationMenuItem key={link.href}>
-                    <NavigationMenuLink asChild active={isActive}>
-                      <Link href={link.href} className={navigationMenuTriggerStyle()}>
+                    <Link href={link.href} legacyBehavior passHref>
+                      <NavigationMenuLink active={isActive} className={navigationMenuTriggerStyle()}>
                         <link.icon className="mr-2 h-4 w-4" />
                         {link.label}
-                      </Link>
-                    </NavigationMenuLink>
+                      </NavigationMenuLink>
+                    </Link>
                   </NavigationMenuItem>
                 );
               })}
@@ -115,6 +116,32 @@ function AdminHeader() {
                 </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <nav className="flex flex-col gap-4 mt-8">
+                    {adminNavLinks.map((link) => {
+                      if (link.super && !isSuperAdmin) return null;
+                      return (
+                        <SheetClose asChild key={link.href}>
+                          <Link href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                            <link.icon className="h-4 w-4" />
+                            {link.label}
+                          </Link>
+                        </SheetClose>
+                      );
+                    })}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
         </div>
       </div>
     </header>
