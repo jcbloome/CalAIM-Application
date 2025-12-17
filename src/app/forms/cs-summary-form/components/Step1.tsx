@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PhoneInput } from '@/components/ui/phone-input';
 
 
-export default function Step1() {
+export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
   const { control, watch, setValue } = useFormContext<FormValues>();
   
   const memberDob = watch('memberDob');
@@ -190,6 +190,7 @@ export default function Step1() {
       <Card className="border-l-4 border-accent">
         <CardHeader>
           <CardTitle>Your Information (Person Filling Form)</CardTitle>
+           <CardDescription>This section shows the original submitter of the application and cannot be changed.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -224,7 +225,7 @@ export default function Step1() {
               name="referrerEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input type="email" {...field} value={field.value ?? ''} readOnly className="bg-muted" />
                   </FormControl>
@@ -237,11 +238,10 @@ export default function Step1() {
               name="referrerPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <PhoneInput {...field} />
+                    <PhoneInput {...field} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
                   </FormControl>
-                  <FormDescription>(xxx) xxx-xxxx</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -253,9 +253,9 @@ export default function Step1() {
               name="referrerRelationship"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Relationship to Member <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Relationship to Member</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
+                    <Input {...field} value={field.value ?? ''} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
                   </FormControl>
                   <FormDescription>e.g., Son, POA, Self, etc.</FormDescription>
                   <FormMessage />
@@ -269,7 +269,7 @@ export default function Step1() {
                 <FormItem>
                   <FormLabel>Agency</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
+                    <Input {...field} value={field.value ?? ''} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
                   </FormControl>
                   <FormDescription>If not applicable, leave blank.</FormDescription>
                   <FormMessage />

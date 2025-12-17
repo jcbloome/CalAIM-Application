@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, setDoc, getDoc, serverTimestamp, collection, Timestamp, query, where, getDocs } from 'firebase/firestore';
+import Link from 'next/link';
 
 import Step1 from './Step1';
 import Step2 from './Step2';
@@ -74,6 +75,8 @@ function CsSummaryFormComponent() {
   const { formState: { errors, isValid }, trigger, getValues, handleSubmit, reset } = methods;
 
   const targetUserId = appUserId || user?.uid;
+  const isAdminView = !!appUserId;
+  const backLink = isAdminView ? `/admin/applications/${internalApplicationId}?userId=${appUserId}` : `/applications`;
 
   useEffect(() => {
     const fetchApplicationData = async () => {
@@ -85,12 +88,13 @@ function CsSummaryFormComponent() {
           reset(data);
         } else {
             setInternalApplicationId(null);
-            if (user) {
+            if (user && !isAdminView) { // Only reset referrer for new user forms
                 const displayName = user.displayName || '';
                 const nameParts = displayName.split(' ');
                 const firstName = nameParts[0] || '';
                 const lastName = nameParts.slice(1).join(' ') || '';
                 reset({
+                    ...getValues(), // keep existing data
                     referrerFirstName: firstName,
                     referrerLastName: lastName,
                     referrerEmail: user.email || '',
@@ -98,7 +102,7 @@ function CsSummaryFormComponent() {
                 });
             }
         }
-      } else if (user && !internalApplicationId) {
+      } else if (user && !internalApplicationId && !isAdminView) {
           const displayName = user.displayName || '';
           const nameParts = displayName.split(' ');
           const firstName = nameParts[0] || '';
@@ -112,7 +116,8 @@ function CsSummaryFormComponent() {
       }
     };
     fetchApplicationData();
-  }, [internalApplicationId, targetUserId, user, firestore, reset]);
+  }, [internalApplicationId, targetUserId, user, firestore, reset, isAdminView, getValues]);
+
 
   useEffect(() => {
     if (isValid && validationError) {
@@ -147,7 +152,8 @@ function CsSummaryFormComponent() {
       userId: targetUserId,
       status: 'In Progress' as const,
       lastUpdated: serverTimestamp(),
-      referrerName: `${currentData.referrerFirstName} ${currentData.referrerLastName}`.trim(),
+      // Only set referrerName on initial creation, otherwise keep existing
+      ...( !getValues('referrerName') && { referrerName: `${currentData.referrerFirstName} ${currentData.referrerLastName}`.trim() } ),
     };
   
     try {
@@ -291,7 +297,7 @@ function CsSummaryFormComponent() {
     }
   };
 
-  if (isUserLoading || !targetUserId) {
+  if (isUserLoading || (!targetUserId && !isUserLoading)) {
     return (
       <div className="flex-grow flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -307,6 +313,16 @@ function CsSummaryFormComponent() {
       <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex-grow">
         <div className="container mx-auto px-4 py-8 sm:px-6">
           <div className="max-w-4xl mx-auto">
+             {isAdminView && internalApplicationId && (
+                <div className="mb-6">
+                    <Button variant="outline" asChild>
+                        <Link href={backLink}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Application Details
+                        </Link>
+                    </Button>
+                </div>
+            )}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                    <div className="flex items-center gap-4">
@@ -323,7 +339,7 @@ function CsSummaryFormComponent() {
             </div>
 
             <div className="min-h-[450px]">
-              {currentStep === 1 && <Step1 />}
+              {currentStep === 1 && <Step1 isAdminView={isAdminView} />}
               {currentStep === 2 && <Step2 />}
               {currentStep === 3 && <Step3 />}
               {currentStep === 4 && <Step4 />}
