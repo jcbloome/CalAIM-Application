@@ -40,6 +40,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type ApplicationStatusType = Application['status'];
 
@@ -172,30 +173,14 @@ const QuickViewDialog = ({ application }: { application: WithId<Application & Fo
 export const AdminApplicationsTable = ({
   applications,
   isLoading,
+  onSelectionChange,
+  selected,
 }: {
   applications: WithId<Application & FormValues>[];
   isLoading: boolean;
+  onSelectionChange: (id: string, checked: boolean) => void;
+  selected: string[];
 }) => {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-
-    const handleDelete = async (userId: string, appId: string) => {
-        if (!firestore) return;
-        const docRef = doc(firestore, `users/${userId}/applications`, appId);
-        try {
-            await deleteDoc(docRef);
-            toast({
-                title: 'Application Deleted',
-                description: `Application ${appId} has been successfully deleted.`,
-            });
-        } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: `Could not delete application: ${error.message}`,
-            });
-        }
-    };
     
     const sortedApplications = [...applications].sort((a, b) => {
         const dateA = a.lastUpdated ? (a.lastUpdated as Timestamp).toMillis() : 0;
@@ -208,6 +193,15 @@ export const AdminApplicationsTable = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">
+                <Checkbox
+                    checked={selected.length === sortedApplications.length && sortedApplications.length > 0}
+                    onCheckedChange={(checked) => {
+                        sortedApplications.forEach(app => onSelectionChange(app.id, !!checked))
+                    }}
+                    aria-label="Select all"
+                />
+            </TableHead>
             <TableHead>Member / App ID</TableHead>
             <TableHead className="hidden md:table-cell">Submitted By (User)</TableHead>
             <TableHead>Status</TableHead>
@@ -219,13 +213,20 @@ export const AdminApplicationsTable = ({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 Loading applications...
               </TableCell>
             </TableRow>
           ) : sortedApplications.length > 0 ? (
             sortedApplications.map(app => (
               <TableRow key={app.id}>
+                <TableCell>
+                    <Checkbox
+                        checked={selected.includes(app.id)}
+                        onCheckedChange={(checked) => onSelectionChange(app.id, !!checked)}
+                        aria-label={`Select application for ${app.memberFirstName}`}
+                    />
+                </TableCell>
                 <TableCell className="font-medium">
                   <div>{`${app.memberFirstName} ${app.memberLastName}`}</div>
                   <div className="text-xs text-muted-foreground font-mono truncate">{app.id}</div>
@@ -251,34 +252,12 @@ export const AdminApplicationsTable = ({
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/admin/applications/${app.id}?userId=${app.userId}`}>View Details</Link>
                   </Button>
-                   <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="icon" className='h-8 w-8'>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the application
-                                for {app.memberFirstName} {app.memberLastName}.
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(app.userId!, app.id)}>
-                                Continue
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
                 </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No applications found.
               </TableCell>
             </TableRow>
