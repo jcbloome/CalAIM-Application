@@ -81,12 +81,12 @@ function AdminHeader() {
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
                 return (
                   <NavigationMenuItem key={link.href}>
-                    <NavigationMenuLink asChild active={isActive}>
-                      <Link href={link.href} className={navigationMenuTriggerStyle()}>
+                    <Link href={link.href} legacyBehavior passHref>
+                      <NavigationMenuLink active={isActive} className={navigationMenuTriggerStyle()}>
                         <link.icon className="mr-2 h-4 w-4" />
                         {link.label}
-                      </Link>
-                    </NavigationMenuLink>
+                      </NavigationMenuLink>
+                    </Link>
                   </NavigationMenuItem>
                 );
               })}
@@ -95,9 +95,6 @@ function AdminHeader() {
         </div>
 
         <div className="flex items-center gap-4">
-            <div className="hidden lg:block text-sm text-muted-foreground">
-                <span className="border-r pr-4 mr-4 font-medium">Admin Portal</span>
-            </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="rounded-full">
