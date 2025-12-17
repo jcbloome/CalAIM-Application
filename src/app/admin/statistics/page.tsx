@@ -64,7 +64,8 @@ export default function AdminStatisticsPage() {
   const { data: applications, isLoading, error } = useCollection<Application>(applicationsQuery);
 
   const { stats, availableYears } = useMemo(() => {
-    if (!applications) return { stats: { byCounty: [], byHealthPlan: [], byPathway: [], topReferrers: [], submissionsByMonth: [] }, availableYears: [] };
+    const defaultHealthPlans = new Map<string, number>([['Kaiser', 0], ['Health Net', 0]]);
+    if (!applications) return { stats: { byCounty: [], byHealthPlan: Array.from(defaultHealthPlans.entries()).map(([name, value]) => ({ name, value })), byPathway: [], topReferrers: [], submissionsByMonth: [] }, availableYears: [] };
     
     const counts = {
         byCounty: new Map<string, number>(),
@@ -154,7 +155,7 @@ export default function AdminStatisticsPage() {
                 A visual breakdown of all applications in the system.
             </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatCard title="Applications by County" borderColor="border-blue-500">
                 <DataList data={stats.byCounty} />
             </StatCard>
