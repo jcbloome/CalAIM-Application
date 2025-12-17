@@ -98,6 +98,9 @@ export type FormStatus = {
   signerName?: string | null;
   signerRelationship?: string | null;
   ackRoomAndBoard?: boolean;
+  ackHipaa?: boolean;
+  ackLiability?: boolean;
+  ackFoc?: boolean;
 };
 
 export type Acronym = {
