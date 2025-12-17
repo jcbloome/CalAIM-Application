@@ -79,9 +79,9 @@ const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => 
   const commonRequirements = [
     { id: 'cs-summary', title: 'CS Member Summary', description: 'This form MUST be completed online, as it provides the necessary data for the rest of the application.', type: 'online-form', href: '/admin/forms/review', editHref: '/admin/forms/edit', icon: FileText },
     { id: 'waivers', title: 'Waivers & Authorizations', description: 'Complete the consolidated HIPAA, Liability, and Freedom of Choice waiver form.', type: 'online-form', href: '/admin/forms/waivers', icon: FileText },
+    { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'Upload', icon: UploadCloud, href: '#' },
     { id: 'lic-602a', title: "LIC 602A - Physician's Report", description: "Download, complete, and upload the signed physician's report.", type: 'Upload', icon: Printer, href: 'https://www.cdss.ca.gov/cdssweb/entres/forms/english/lic602a.pdf' },
     { id: 'medicine-list', title: 'Medicine List', description: "Upload a current list of all prescribed medications.", type: 'Upload', icon: UploadCloud, href: '#' },
-    { id: 'proof-of-income', title: 'Proof of Income', description: "Upload the most recent Social Security annual award letter or 3 months of recent bank statements.", type: 'Upload', icon: UploadCloud, href: '#' },
   ];
   
   if (pathway === 'SNF Diversion') {
@@ -424,7 +424,7 @@ function ApplicationDetailPageContent() {
   }
   
   const pathwayRequirements = getPathwayRequirements(application.pathway as 'SNF Transition' | 'SNF Diversion');
-  const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName}]));
+  const formStatusMap = new Map(application.forms?.map(f => [f.name, {status: f.status, fileName: f.fileName, ...f}]));
   
   const completedCount = pathwayRequirements.reduce((acc, req) => {
     const form = formStatusMap.get(req.title);
@@ -434,6 +434,15 @@ function ApplicationDetailPageContent() {
   
   const totalCount = pathwayRequirements.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  
+  const waiverFormStatus = formStatusMap.get('Waivers & Authorizations') as FormStatusType | undefined;
+  const waiverSubTasks = [
+      { id: 'hipaa', label: 'HIPAA Authorization', completed: !!waiverFormStatus?.ackHipaa },
+      { id: 'liability', label: 'Liability Waiver', completed: !!waiverFormStatus?.ackLiability },
+      { id: 'foc', label: 'Freedom of Choice', completed: !!waiverFormStatus?.ackFoc },
+      { id: 'room-board', label: 'Room & Board Acknowledgment', completed: !!waiverFormStatus?.ackRoomAndBoard }
+  ];
+
 
   const getFormAction = (req: (typeof pathwayRequirements)[0]) => {
     const formInfo = formStatusMap.get(req.title);
@@ -452,7 +461,25 @@ function ApplicationDetailPageContent() {
 
     switch (req.type) {
         case 'online-form':
-        case 'Info':
+             if (req.id === 'waivers') {
+                return (
+                    <div className="space-y-3">
+                        <div className="space-y-2 rounded-md border p-3">
+                            {waiverSubTasks.map(task => (
+                                <div key={task.id} className="flex items-center space-x-2">
+                                    <Checkbox id={`waiver-${task.id}`} checked={task.completed} disabled />
+                                    <label htmlFor={`waiver-${task.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        {task.label}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                        <Button asChild variant="secondary" className="w-full">
+                          <Link href={viewHref}>View/Edit Waivers</Link>
+                      </Button>
+                    </div>
+                );
+            }
             return (
                 <div className="flex gap-2">
                     <Button asChild variant="outline" className="w-full bg-slate-50 hover:bg-slate-100 flex-1">
