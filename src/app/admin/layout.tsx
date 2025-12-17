@@ -62,7 +62,7 @@ function AdminHeader() {
     <header className="bg-card border-b sticky top-0 z-40">
       <div className="container mx-auto flex items-center justify-between h-16 px-4 sm:px-6">
         <div className="flex items-center gap-6">
-          <Link href="/admin" className="flex items-center gap-2 font-bold text-lg text-primary">
+          <Link href="/admin">
             <Image
               src="/calaimlogopdf.png"
               alt="CalAIM Pathfinder Logo"
@@ -80,12 +80,12 @@ function AdminHeader() {
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
                 return (
                   <NavigationMenuItem key={link.href}>
-                    <Link href={link.href} legacyBehavior passHref>
-                      <NavigationMenuLink active={isActive} className={navigationMenuTriggerStyle()}>
+                    <NavigationMenuLink asChild active={isActive}>
+                      <Link href={link.href} className={navigationMenuTriggerStyle()}>
                         <link.icon className="mr-2 h-4 w-4" />
                         {link.label}
-                      </NavigationMenuLink>
-                    </Link>
+                      </Link>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
                 );
               })}
