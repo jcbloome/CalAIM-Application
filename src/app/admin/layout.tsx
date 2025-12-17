@@ -57,7 +57,8 @@ function AdminHeader() {
     if (auth) {
       await auth.signOut();
     }
-    router.push('/admin/login');
+    // Always force a full reload to the login page to clear all state.
+    window.location.href = '/admin/login';
   };
 
   return (
@@ -153,12 +154,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { isAdmin, isSuperAdmin, isLoading, user } = useAdmin();
   const router = useRouter();
   const pathname = usePathname();
+  const auth = useAuth();
 
   useEffect(() => {
+    // If not loading and there's no user, redirect to admin login.
     if (!isLoading && !user && pathname !== '/admin/login') {
       router.push('/admin/login');
     }
-  }, [isLoading, user, router, pathname]);
+    // If user is loaded but is not an admin, sign them out and redirect.
+    // This handles the case where a regular user tries to access /admin URLs.
+    if (!isLoading && user && !isAdmin && !isSuperAdmin) {
+        if (auth) {
+            auth.signOut();
+        }
+        router.push('/admin/login');
+    }
+  }, [isLoading, user, isAdmin, isSuperAdmin, router, pathname, auth]);
 
   if (isLoading) {
     return (
@@ -169,12 +180,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // Allow login page to render without the layout
+  // Allow login page to render without the layout and checks.
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  if (user && !isAdmin && !isSuperAdmin) {
+  // If user is not an admin (covers both not-logged-in and non-admin users)
+  if (!isAdmin && !isSuperAdmin) {
     return (
       <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
         <Card className="w-full max-w-md text-center">
@@ -193,17 +205,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user) {
-    // This state is briefly hit during the redirect, returning null prevents a flash of unstyled content.
-    return null;
+  // If we have a user and they are an admin, render the full layout.
+  if (user && (isAdmin || isSuperAdmin)) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AdminHeader />
+        <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
+          {children}
+        </main>
+      </div>
+    );
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <AdminHeader />
-      <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
-        {children}
-      </main>
-    </div>
-  );
+  // Fallback for transitional states, prevents content flashes.
+  return null;
 }

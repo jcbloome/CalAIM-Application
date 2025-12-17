@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { LogOut, User, Menu, UserCog } from 'lucide-react';
+import { LogOut, User, Menu, UserCog, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { useUser } from '@/firebase';
 import { useAuth } from '@/firebase/provider';
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useAdmin } from '@/hooks/use-admin';
 
 const navLinks = [
     { href: "/info", label: "Program Information" },
@@ -28,6 +29,7 @@ const navLinks = [
 
 export function Header() {
   const { user, isUserLoading } = useUser();
+  const { isAdmin, isSuperAdmin } = useAdmin();
   const auth = useAuth();
   const router = useRouter();
   const [isSheetOpen, setSheetOpen] = useState(false);
@@ -38,6 +40,8 @@ export function Header() {
     }
     router.push('/');
   };
+  
+  const hasAdminRole = isAdmin || isSuperAdmin;
 
   return (
     <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-40">
@@ -53,14 +57,25 @@ export function Header() {
           />
         </Link>
         <nav className="hidden md:flex items-center gap-2">
-            {navLinks.map(link => (
-                 <Button key={link.href} variant="ghost" asChild>
-                    <Link href={link.href}>{link.label}</Link>
-                </Button>
-            ))}
+            {navLinks.map(link => {
+                if(hasAdminRole && (link.href === '/applications' || link.href === '/profile')) return null;
+                return (
+                    <Button key={link.href} variant="ghost" asChild>
+                        <Link href={link.href}>{link.label}</Link>
+                    </Button>
+                )
+            })}
+
            {isUserLoading ? (
             <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
           ) : user ? (
+            hasAdminRole ? (
+                 <Button asChild>
+                    <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" /> Switch to Admin View
+                    </Link>
+                </Button>
+            ) : (
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="rounded-full">
@@ -82,9 +97,10 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            )
           ) : (
             <Button asChild>
-              <Link href="/admin/login">Login</Link>
+              <Link href="/login">Login</Link>
             </Button>
           )}
         </nav>
@@ -103,16 +119,26 @@ export function Header() {
                     </SheetHeader>
                     <div className="flex flex-col h-full">
                         <nav className="flex flex-col gap-4 py-8">
-                             {navLinks.map(link => (
-                                <Link key={link.href} href={link.href} className="text-lg font-medium text-foreground hover:text-primary" onClick={() => setSheetOpen(false)}>
-                                    {link.label}
-                                </Link>
-                            ))}
+                             {navLinks.map(link => {
+                                if(hasAdminRole && (link.href === '/applications' || link.href === '/profile')) return null;
+                                return (
+                                    <Link key={link.href} href={link.href} className="text-lg font-medium text-foreground hover:text-primary" onClick={() => setSheetOpen(false)}>
+                                        {link.label}
+                                    </Link>
+                                )
+                            })}
                         </nav>
                         <div className="mt-auto border-t pt-6">
                              {isUserLoading ? (
                                 <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
                             ) : user ? (
+                                hasAdminRole ? (
+                                     <Button asChild className="w-full">
+                                        <Link href="/admin" onClick={() => setSheetOpen(false)}>
+                                            <Shield className="mr-2 h-4 w-4" /> Switch to Admin
+                                        </Link>
+                                    </Button>
+                                ) : (
                                 <div className="flex flex-col gap-4">
                                      <p className="text-sm text-muted-foreground text-center truncate">{user.displayName || user.email}</p>
                                       <Button onClick={() => { router.push('/profile'); setSheetOpen(false); }} variant="outline" className="w-full">
@@ -124,9 +150,10 @@ export function Header() {
                                         Log out
                                      </Button>
                                 </div>
+                                )
                             ) : (
                                 <Button asChild className="w-full">
-                                    <Link href="/admin/login" onClick={() => setSheetOpen(false)}>Login</Link>
+                                    <Link href="/login" onClick={() => setSheetOpen(false)}>Login</Link>
                                 </Button>
                             )}
                         </div>
