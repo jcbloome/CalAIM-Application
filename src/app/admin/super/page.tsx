@@ -262,7 +262,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Make.com Webhook Test</CardTitle>
                     <CardDescription>
-                        Send a sample CS Summary Form to your Make.com webhook to test the integration.
+                        Send a sample CS Summary Form to your Make.com webhook to test the integration. This can be used to set up staff notifications for new applications.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
