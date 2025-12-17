@@ -230,7 +230,7 @@ export default function SuperAdminPage() {
                 <CardHeader>
                     <CardTitle>Staff Synchronization</CardTitle>
                     <CardDescription>
-                        This tool synchronizes all registered users in Firebase Authentication, granting them 'Admin' role access. This is useful for onboarding new team members who have already created an account.
+                        This tool synchronizes all registered users in Firebase Authentication, granting them 'Admin' role access. This is useful for onboarding new staff members who have already created an account.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -316,3 +316,5 @@ export default function SuperAdminPage() {
         </div>
     );
 }
+
+    

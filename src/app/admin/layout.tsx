@@ -157,18 +157,27 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
 
   useEffect(() => {
-    // If not loading and there's no user, redirect to admin login.
-    if (!isLoading && !user && pathname !== '/admin/login') {
-      router.push('/admin/login');
+    // If auth state is still loading, do nothing.
+    if (isLoading) {
+      return;
     }
-    // If user is loaded but is not an admin, sign them out and redirect.
-    // This handles the case where a regular user tries to access /admin URLs.
-    if (!isLoading && user && !isAdmin && !isSuperAdmin) {
+
+    // If not loading and there's no user, redirect to admin login.
+    if (!user && pathname !== '/admin/login') {
+      router.push('/admin/login');
+      return;
+    }
+    
+    // If a user is logged in but they are not any kind of admin,
+    // they do not have permission. Sign them out and redirect.
+    if (user && !isAdmin && !isSuperAdmin) {
         if (auth) {
             auth.signOut();
         }
         router.push('/admin/login');
+        return;
     }
+
   }, [isLoading, user, isAdmin, isSuperAdmin, router, pathname, auth]);
 
   if (isLoading) {
@@ -185,8 +194,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  // If user is not an admin (covers both not-logged-in and non-admin users)
-  if (!isAdmin && !isSuperAdmin) {
+  // If after loading, the user is not an authorized admin, show access denied.
+  // This state is hit if a non-admin user somehow gets here.
+  if (!user || (!isAdmin && !isSuperAdmin)) {
     return (
       <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
         <Card className="w-full max-w-md text-center">
@@ -197,7 +207,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p>You do not have permission to view this page. Please contact an administrator if you believe this is an error.</p>
+            <p>You do not have permission to view this page. Please log in with a staff account.</p>
             <Button onClick={() => router.push('/admin/login')} className="mt-4">Return to Login</Button>
           </CardContent>
         </Card>
@@ -205,18 +215,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If we have a user and they are an admin, render the full layout.
-  if (user && (isAdmin || isSuperAdmin)) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <AdminHeader />
-        <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  // Fallback for transitional states, prevents content flashes.
-  return null;
+  // If we have an authorized user, render the full admin layout.
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AdminHeader />
+      <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
+        {children}
+      </main>
+    </div>
+  );
 }
+
+    
