@@ -32,7 +32,7 @@ import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
 import type { Application, FormStatus as FormStatusType } from '@/lib/definitions';
 import { useDoc, useUser, useFirestore, useCollection } from '@/firebase';
-import { doc, setDoc, serverTimestamp, Timestamp, collection, query, where, getDocs, collectionGroup } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, Timestamp, collection, query, where, getDocs, collectionGroup, onSnapshot } from 'firebase/firestore';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -242,7 +242,7 @@ function PathwayPageContent() {
     }
 
     setIsLoading(true);
-    const unsubscribe = onSnapshot(doc(docRef), (docSnap) => {
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         setApplication({ id: docSnap.id, ...docSnap.data() } as Application);
       } else {
