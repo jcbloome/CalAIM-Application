@@ -157,30 +157,35 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const auth = useAuth();
 
   useEffect(() => {
-    // If auth state is still loading, do nothing.
+    // This allows the login page to be rendered without any checks.
+    if (pathname === '/admin/login') {
+      return;
+    }
+
+    // While authentication and admin roles are being checked, do nothing.
     if (isLoading) {
       return;
     }
 
-    // If not loading and there's no user, redirect to admin login.
-    if (!user && pathname !== '/admin/login') {
+    // If loading is finished and there's still no user, redirect to login.
+    if (!user) {
       router.push('/admin/login');
       return;
     }
-    
-    // If a user is logged in but they are not any kind of admin,
-    // they do not have permission. Sign them out and redirect.
-    if (user && !isAdmin && !isSuperAdmin) {
-        if (auth) {
-            auth.signOut();
-        }
-        router.push('/admin/login');
-        return;
-    }
 
+    // If loading is finished and the user is present but is not an admin,
+    // they don't have permission. Sign them out and redirect to login.
+    if (!isAdmin && !isSuperAdmin) {
+      if (auth) {
+        auth.signOut();
+      }
+      router.push('/admin/login');
+      return;
+    }
   }, [isLoading, user, isAdmin, isSuperAdmin, router, pathname, auth]);
 
-  if (isLoading) {
+  // While loading, show a full-page loader to prevent content flash.
+  if (isLoading && pathname !== '/admin/login') {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -189,14 +194,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // Allow login page to render without the layout and checks.
+  // Allow login page to render without the main layout.
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  // If after loading, the user is not an authorized admin, show access denied.
-  // This state is hit if a non-admin user somehow gets here.
-  if (!user || (!isAdmin && !isSuperAdmin)) {
+  // If after all checks, the user is still not an admin, show Access Denied.
+  // This is a fallback for edge cases.
+  if (!isLoading && user && !isAdmin && !isSuperAdmin) {
     return (
       <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
         <Card className="w-full max-w-md text-center">
@@ -215,13 +220,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If we have an authorized user, render the full admin layout.
-  return (
-    <div className="flex flex-col min-h-screen">
-      <AdminHeader />
-      <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
-        {children}
-      </main>
-    </div>
-  );
+  // If the user is authenticated and authorized, render the full admin layout.
+  if (user && (isAdmin || isSuperAdmin)) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AdminHeader />
+        <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Default return null or a loader while waiting for the useEffect to redirect.
+  return null;
 }
