@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ReactNode, useEffect } from 'react';
@@ -80,12 +81,12 @@ function AdminHeader() {
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
                 return (
                   <NavigationMenuItem key={link.href}>
-                    <Link href={link.href} legacyBehavior={false}>
-                      <NavigationMenuLink active={isActive} className={navigationMenuTriggerStyle()}>
+                    <NavigationMenuLink asChild active={isActive}>
+                      <Link href={link.href} className={navigationMenuTriggerStyle()}>
                         <link.icon className="mr-2 h-4 w-4" />
                         {link.label}
-                      </NavigationMenuLink>
-                    </Link>
+                      </Link>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
                 );
               })}
