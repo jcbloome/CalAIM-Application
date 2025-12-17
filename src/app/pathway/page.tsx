@@ -182,6 +182,7 @@ function PathwayPageContent() {
     
     setUploading(prev => ({...prev, [requirementTitle]: true}));
     
+    // Simulate upload time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const fileNames = files.map(f => f.name).join(', ');
@@ -189,6 +190,7 @@ function PathwayPageContent() {
 
     setUploading(prev => ({...prev, [requirementTitle]: false}));
     
+    // Clear the input value to allow re-uploading the same file
     event.target.value = '';
   };
   
