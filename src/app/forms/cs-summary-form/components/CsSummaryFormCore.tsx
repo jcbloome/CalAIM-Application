@@ -339,7 +339,7 @@ function CsSummaryFormComponent() {
                         <h1 className="text-2xl font-bold hidden sm:block">CS Member Summary</h1>
                    </div>
                   <div className="flex items-center gap-4">
-                     <GlossaryDialog className="hidden md:inline-flex" />
+                     {!isAdminView && <GlossaryDialog className="hidden md:inline-flex" />}
                       <span className="text-sm font-medium text-muted-foreground">
                           Step {currentStep} of {steps.length}: {steps[currentStep - 1].name}
                       </span>
