@@ -33,7 +33,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { GlossaryDialog } from '@/components/GlossaryDialog';
 
 const getPathwayRequirements = (pathway: 'SNF Transition' | 'SNF Diversion') => {
   const commonRequirements = [
@@ -330,7 +329,6 @@ function PathwayPageContent() {
                     <CardDescription>
                     Submitted by {application.referrerName || user?.displayName} | {application.pathway} ({application.healthPlan})
                     </CardDescription>
-                    <GlossaryDialog />
                 </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
