@@ -17,7 +17,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https'
+        protocol: 'https',
+        hostname: 'images.squarespace-cdn.com',
       }
     ]
   },
