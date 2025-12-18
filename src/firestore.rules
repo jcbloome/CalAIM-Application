@@ -171,6 +171,15 @@ service cloud.firestore {
         allow update: if isExistingOwnerOrAdmin(userId) && hasValidApplicationDataOnUpdate();
         allow delete: if isExistingOwnerOrAdmin(userId);
 
+        /**
+         * @description Rules for the internal staff progress tracker.
+         * @path /users/{userId}/applications/{applicationId}/staffTrackers/{trackerId}
+         * @allow (read, write) Only admins can read or write to the tracker.
+         */
+        match /staffTrackers/{trackerId} {
+          allow read, write: if isAdmin() || isSuperAdmin();
+        }
+
         // Wildcard match for all nested subcollections of an application
         // (contacts, legalRepresentatives, locations, ispContacts, rcfeSelections, formStatuses, eligibilityScreenings)
         /**
@@ -214,6 +223,17 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow write: if isSuperAdmin();
       allow list: if isSuperAdmin();
+    }
+
+    /**
+     * @description Global system settings.
+     * @path /system_settings/{settingId}
+     * @allow (read) Authenticated users can read settings.
+     * @allow (write) Only super admins can write settings.
+     */
+    match /system_settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
     }
   }
 }
