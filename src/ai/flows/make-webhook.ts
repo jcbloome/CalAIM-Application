@@ -11,13 +11,10 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { firebaseConfig } from '@/firebase/config';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: firebaseConfig.projectId,
-  });
+  admin.initializeApp();
 }
 
 const firestore = admin.firestore();
@@ -70,7 +67,7 @@ const WebhookInputSchema = z.object({
 
   // Location
   currentLocation: z.string(),
-  currentAddress: zूंstring(),
+  currentAddress: z.string(),
   currentCity: z.string(),
   currentState: z.string(),
   currentZip: z.string(),

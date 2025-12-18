@@ -17,41 +17,60 @@ export function useAdmin(): AdminStatus & { user: ReturnType<typeof useUser>['us
   const [adminStatus, setAdminStatus] = useState<AdminStatus>({
     isAdmin: false,
     isSuperAdmin: false,
-    isLoading: true,
+    isLoading: true, // Start in a loading state
   });
 
   useEffect(() => {
-    if (isUserLoading || !user || !firestore) {
-      setAdminStatus({ isAdmin: false, isSuperAdmin: false, isLoading: isUserLoading });
+    // If the user object is still loading, we are definitely in a loading state.
+    if (isUserLoading) {
+      setAdminStatus({ isAdmin: false, isSuperAdmin: false, isLoading: true });
       return;
     }
+
+    // If user loading is finished but there's no user or no firestore, we're done loading.
+    if (!user || !firestore) {
+      setAdminStatus({ isAdmin: false, isSuperAdmin: false, isLoading: false });
+      return;
+    }
+
+    // At this point, we have a user and firestore, so we start checking roles.
+    // We set isLoading to true until both role checks complete.
+    setAdminStatus(prev => ({ ...prev, isLoading: true }));
 
     const adminRef = doc(firestore, 'roles_admin', user.uid);
     const superAdminRef = doc(firestore, 'roles_super_admin', user.uid);
 
     let isAdmin = false;
     let isSuperAdmin = false;
-    let adminCheckDone = false;
-    let superAdminCheckDone = false;
 
-    const checkCompletion = () => {
-        if (adminCheckDone && superAdminCheckDone) {
-            setAdminStatus({ isAdmin, isSuperAdmin, isLoading: false });
-        }
-    }
+    // Use a counter to track when both listeners have fired once.
+    let checksCompleted = 0;
+    const totalChecks = 2;
+
+    const onCheckComplete = () => {
+      checksCompleted++;
+      if (checksCompleted === totalChecks) {
+        setAdminStatus({ isAdmin, isSuperAdmin, isLoading: false });
+      }
+    };
 
     const unsubAdmin = onSnapshot(adminRef, (doc) => {
-        isAdmin = doc.exists();
-        adminCheckDone = true;
-        checkCompletion();
+      isAdmin = doc.exists();
+      onCheckComplete();
+    }, () => {
+      isAdmin = false;
+      onCheckComplete();
     });
 
     const unsubSuperAdmin = onSnapshot(superAdminRef, (doc) => {
-        isSuperAdmin = doc.exists();
-        superAdminCheckDone = true;
-        checkCompletion();
+      isSuperAdmin = doc.exists();
+      onCheckComplete();
+    }, () => {
+      isSuperAdmin = false;
+      onCheckComplete();
     });
 
+    // Cleanup function to unsubscribe from listeners on component unmount
     return () => {
       unsubAdmin();
       unsubSuperAdmin();
