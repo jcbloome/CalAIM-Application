@@ -18,6 +18,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+
 
 interface StaffMember {
     uid: string;
@@ -309,10 +312,24 @@ export default function SuperAdminPage() {
                                     {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Syncing...</> : <><RefreshCw className="mr-2 h-4 w-4" /> Sync All Staff to Admin Role</>}
                                 </Button>
                             </div>
+                            <Separator />
                             {/* Webhook Test */}
                              <div>
                                 <h4 className="font-medium">Make.com Webhook Test</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Send a sample CS Summary Form to your configured webhook URL.</p>
+                                <Collapsible className="mt-2">
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="outline" size="sm" className="w-full justify-between">
+                                            View Webhook Data
+                                            <ChevronDown className="h-4 w-4" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <pre className="mt-2 p-2 bg-muted rounded-md text-xs overflow-x-auto">
+                                            {JSON.stringify(sampleApplicationData, null, 2)}
+                                        </pre>
+                                    </CollapsibleContent>
+                                </Collapsible>
                                 <Alert variant="warning" className="my-2 text-xs">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertDescription>Ensure your webhook URL is set in the `.env` file.</AlertDescription>
