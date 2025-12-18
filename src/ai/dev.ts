@@ -3,12 +3,14 @@ import { config } from 'dotenv';
 config();
 
 import * as admin from 'firebase-admin';
+import serviceAccount from '../../../service-account_key.json';
 
 // Initialize Firebase Admin SDK only if it hasn't been already.
 // This single initialization is used by all server-side functions.
-// It automatically uses GOOGLE_APPLICATION_CREDENTIALS from the environment.
 if (!admin.apps.length) {
-  admin.initializeApp();
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  });
 }
 
 // Import flows after initialization

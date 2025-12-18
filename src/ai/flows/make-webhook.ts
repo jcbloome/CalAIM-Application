@@ -127,8 +127,8 @@ const makeWebhookFlow = ai.defineFlow(
     outputSchema: WebhookOutputSchema,
   },
   async (data) => {
-    console.log('[makeWebhookFlow] Received data for processing.');
     const firestore = admin.firestore();
+    console.log('[makeWebhookFlow] Received data for processing.');
 
     const { userId, applicationId, ...applicationData } = data;
 

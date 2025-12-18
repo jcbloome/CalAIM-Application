@@ -1,4 +1,3 @@
-
 'use server';
 
 import { Resend } from 'resend';
@@ -7,8 +6,8 @@ import * as admin from 'firebase-admin';
 
 // This file shares the server-side admin context. Initialization is handled
 // in the main server entrypoint, `src/ai/dev.ts`.
+// This check is a safeguard, but initialization should happen in `src/ai/dev.ts`.
 if (!admin.apps.length) {
-  // This check is a safeguard, but initialization should happen in `src/ai/dev.ts`.
   // In a deployed environment, credentials are automatically discovered.
   admin.initializeApp();
 }
