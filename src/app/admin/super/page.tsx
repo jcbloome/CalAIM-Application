@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronDown } from 'lucide-react';
+import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 
 
 interface StaffMember {
@@ -99,12 +100,20 @@ export default function SuperAdminPage() {
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
     const [notificationRecipients, setNotificationRecipients] = useState<string[]>([]);
     const [isSavingNotifications, setIsSavingNotifications] = useState(false);
+    const [testEmail, setTestEmail] = useState('');
+    const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
 
     // State for new staff form
     const [newStaffFirstName, setNewStaffFirstName] = useState('');
     const [newStaffLastName, setNewStaffLastName] = useState('');
     const [newStaffEmail, setNewStaffEmail] = useState('');
     const [isAddingStaff, setIsAddingStaff] = useState(false);
+
+    useEffect(() => {
+        if (currentUser?.email) {
+            setTestEmail(currentUser.email);
+        }
+    }, [currentUser]);
 
 
     useEffect(() => {
@@ -237,7 +246,34 @@ export default function SuperAdminPage() {
         } finally {
             setIsSavingNotifications(false);
         }
-    }
+    };
+
+    const handleSendTestEmail = async () => {
+        if (!testEmail) {
+            toast({ variant: 'destructive', title: 'Missing Email', description: 'Please enter an email address to send the test to.' });
+            return;
+        }
+        setIsSendingTestEmail(true);
+        try {
+            await sendApplicationStatusEmail({
+                to: testEmail,
+                subject: 'Test Email from CalAIM Pathfinder',
+                memberName: currentUser?.displayName || 'Test User',
+                staffName: 'The CalAIM Team',
+                message: 'This is a test email to confirm that notification settings are working correctly.',
+                status: 'In Progress',
+            });
+            toast({
+                title: 'Test Email Sent!',
+                description: `An email has been sent to ${testEmail}.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Email Error', description: `Could not send email: ${error.message}` });
+        } finally {
+            setIsSendingTestEmail(false);
+        }
+    };
 
 
     if (isAdminLoading) {
@@ -325,6 +361,27 @@ export default function SuperAdminPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Test Email Notifications</CardTitle>
+                        </CardHeader>
+                         <CardContent className="space-y-4">
+                            <div>
+                                <Label htmlFor="test-email-input">Recipient Email</Label>
+                                <Input 
+                                    id="test-email-input" 
+                                    type="email" 
+                                    value={testEmail} 
+                                    onChange={e => setTestEmail(e.target.value)} 
+                                    placeholder="Enter email to send test to"
+                                />
+                            </div>
+                            <Button onClick={handleSendTestEmail} disabled={isSendingTestEmail}>
+                                {isSendingTestEmail ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : <><Mail className="mr-2 h-4 w-4" /> Send Test Email</>}
+                            </Button>
+                         </CardContent>
+                    </Card>
                 </div>
                  <div className="space-y-6">
                     <Card>
@@ -405,3 +462,5 @@ export default function SuperAdminPage() {
         </div>
     );
 }
+
+    
