@@ -103,7 +103,7 @@ const QuickViewDialog = ({ application }: { application: WithId<Application & Fo
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                    <DialogTitle>Quick Summary: {application.memberFirstName} {application.memberLastName}</DialogTitle>
+                    <DialogTitle>Summary: {application.memberFirstName} {application.memberLastName}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4 max-h-[70vh] overflow-y-auto px-2">
                     <Section title="Member Information">
@@ -208,7 +208,7 @@ export const AdminApplicationsTable = ({
             <TableHead className="hidden md:table-cell">Submitted By</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="hidden lg:table-cell">Plan & Pathway</TableHead>
-            <TableHead className="hidden sm:table-cell">Date Submitted</TableHead>
+            <TableHead className="hidden sm:table-cell">Create Date/Update</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -222,7 +222,11 @@ export const AdminApplicationsTable = ({
           ) : sortedApplications.length > 0 ? (
             sortedApplications.map(app => {
               const referrerName = app.referrerName || `${app.referrerFirstName || ''} ${app.referrerLastName || ''}`.trim() || 'N/A';
+              const submissionDate = app.submissionDate ? (app.submissionDate as Timestamp).toDate() : null;
+              const lastUpdatedDate = app.lastUpdated ? (app.lastUpdated as Timestamp).toDate() : null;
               
+              const isUpdated = submissionDate && lastUpdatedDate && format(submissionDate, 'MM/dd/yyyy') !== format(lastUpdatedDate, 'MM/dd/yyyy');
+
               return (
               <TableRow key={app.id}>
                 {onSelectionChange && selected && (
@@ -250,12 +254,14 @@ export const AdminApplicationsTable = ({
                     <div className="text-xs text-muted-foreground">{app.pathway}</div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                    {app.lastUpdated ? (
+                    {submissionDate ? (
                       <div>
-                        <div>{format((app.lastUpdated as Timestamp).toDate(), 'MM/dd/yyyy')}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {format((app.lastUpdated as Timestamp).toDate(), 'p')}
-                        </div>
+                        <div>{format(submissionDate, 'MM/dd/yyyy')}</div>
+                        {isUpdated && lastUpdatedDate && (
+                          <div className="text-xs text-muted-foreground">
+                            {format(lastUpdatedDate, 'MM/dd/yyyy')}
+                          </div>
+                        )}
                       </div>
                     ) : 'N/A'}
                 </TableCell>

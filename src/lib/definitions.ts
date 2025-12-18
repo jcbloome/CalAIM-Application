@@ -12,6 +12,7 @@ export type Application = {
   memberMrn: string;
   memberDob?: any;
   status: ApplicationStatus;
+  submissionDate?: Timestamp;
   lastUpdated: string | Timestamp; 
   pathway: 'SNF Transition' | 'SNF Diversion';
   healthPlan: 'Kaiser' | 'Health Net' | 'Other' | 'Kaiser Permanente';

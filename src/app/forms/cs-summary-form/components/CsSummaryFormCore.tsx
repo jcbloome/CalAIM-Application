@@ -139,10 +139,12 @@ function CsSummaryFormComponent() {
   
     const currentData = getValues();
     let docId = internalApplicationId;
+    let isNewDoc = false;
   
     if (!docId) {
       docId = doc(collection(firestore, `users/${targetUserId}/applications`)).id;
       setInternalApplicationId(docId);
+      isNewDoc = true;
       const newUrl = `/forms/cs-summary-form?applicationId=${docId}&step=${currentStep}${appUserId ? `&userId=${appUserId}`: ''}`;
       router.replace(newUrl, { scroll: false });
     }
@@ -153,14 +155,18 @@ function CsSummaryFormComponent() {
       Object.entries(currentData).map(([key, value]) => [key, value === undefined ? null : value])
     );
   
-    const dataToSave = {
+    const dataToSave: Partial<Application> = {
       ...sanitizedData,
       id: docId,
       userId: targetUserId,
-      status: 'In Progress' as const,
+      status: 'In Progress',
       lastUpdated: serverTimestamp(),
       referrerName: `${currentData.referrerFirstName} ${currentData.referrerLastName}`.trim(),
     };
+
+    if (isNewDoc) {
+      dataToSave.submissionDate = serverTimestamp();
+    }
   
     try {
       await setDoc(docRef, dataToSave, { merge: true });
