@@ -120,7 +120,7 @@ export default function AdminDashboardPage() {
             </Button>
         </CardHeader>
         <CardContent>
-           <AdminApplicationsTable applications={recentApplications as WithId<Application & FormValues>[]} isLoading={isLoading} />
+           <AdminApplicationsTable applications={recentApplications} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

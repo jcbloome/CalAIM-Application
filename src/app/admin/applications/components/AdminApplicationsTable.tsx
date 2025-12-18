@@ -208,7 +208,7 @@ export const AdminApplicationsTable = ({
             <TableHead className="hidden md:table-cell">Submitted By</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="hidden lg:table-cell">Plan & Pathway</TableHead>
-            <TableHead className="hidden sm:table-cell">Last Updated</TableHead>
+            <TableHead className="hidden sm:table-cell">Date Submitted</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -220,7 +220,10 @@ export const AdminApplicationsTable = ({
               </TableCell>
             </TableRow>
           ) : sortedApplications.length > 0 ? (
-            sortedApplications.map(app => (
+            sortedApplications.map(app => {
+              const referrerName = app.referrerName || `${app.referrerFirstName || ''} ${app.referrerLastName || ''}`.trim() || 'N/A';
+              
+              return (
               <TableRow key={app.id}>
                 {onSelectionChange && selected && (
                   <TableCell>
@@ -235,7 +238,7 @@ export const AdminApplicationsTable = ({
                   {`${app.memberFirstName} ${app.memberLastName}`}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                   {app.referrerName || 'N/A'}
+                   {referrerName}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className={getBadgeVariant(app.status)}>
@@ -247,7 +250,14 @@ export const AdminApplicationsTable = ({
                     <div className="text-xs text-muted-foreground">{app.pathway}</div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                    {app.lastUpdated ? format((app.lastUpdated as Timestamp).toDate(), 'MM/dd/yyyy p') : 'N/A'}
+                    {app.lastUpdated ? (
+                      <div>
+                        <div>{format((app.lastUpdated as Timestamp).toDate(), 'MM/dd/yyyy')}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {format((app.lastUpdated as Timestamp).toDate(), 'p')}
+                        </div>
+                      </div>
+                    ) : 'N/A'}
                 </TableCell>
                 <TableCell className="text-right space-x-4">
                   <QuickViewDialog application={app} />
@@ -256,7 +266,7 @@ export const AdminApplicationsTable = ({
                   </Link>
                 </TableCell>
               </TableRow>
-            ))
+            )})
           ) : (
             <TableRow>
               <TableCell colSpan={onSelectionChange ? 7 : 6} className="h-24 text-center">
