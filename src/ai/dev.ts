@@ -5,8 +5,8 @@ config();
 import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK only if it hasn't been already.
-// This call will automatically use the GOOGLE_APPLICATION_CREDENTIALS 
-// environment variable if it's set in the .env file.
+// This single initialization is used by all server-side functions.
+// It automatically uses GOOGLE_APPLICATION_CREDENTIALS from the environment.
 if (!admin.apps.length) {
   admin.initializeApp();
 }

@@ -5,6 +5,8 @@ import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
 import * as admin from 'firebase-admin';
 
+// This file shares the server-side admin context. Initialization is handled
+// in the main server entrypoint, `src/ai/dev.ts`.
 if (!admin.apps.length) {
   admin.initializeApp();
 }
