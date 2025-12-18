@@ -3,6 +3,14 @@
 
 import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
+import * as admin from 'firebase-admin';
+import { firebaseConfig } from '@/firebase/config';
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    projectId: firebaseConfig.projectId,
+  });
+}
 
 if (!process.env.RESEND_API_KEY) {
   console.warn("RESEND_API_KEY is not set. Email functionality will be disabled.");
@@ -19,6 +27,28 @@ interface ApplicationStatusPayload {
   status: 'Deleted' | 'Approved' | 'Submitted' | 'Requires Revision' | 'In Progress' | 'Completed & Submitted';
 }
 
+async function getBccRecipients(): Promise<string[]> {
+    try {
+        const firestore = admin.firestore();
+        const settingsDoc = await firestore.collection('system_settings').doc('notifications').get();
+        if (!settingsDoc.exists) return [];
+
+        const recipientUids = settingsDoc.data()?.recipientUids || [];
+        if (recipientUids.length === 0) return [];
+        
+        const userRecords = await admin.auth().getUsers(recipientUids.map((uid: string) => ({ uid })));
+        
+        return userRecords.users
+            .map(user => user.email)
+            .filter((email): email is string => !!email);
+
+    } catch (error) {
+        console.error("Error fetching BCC recipients:", error);
+        return [];
+    }
+}
+
+
 export const sendApplicationStatusEmail = async (payload: ApplicationStatusPayload) => {
     const { to, subject, memberName, staffName, message, status } = payload;
 
@@ -26,10 +56,13 @@ export const sendApplicationStatusEmail = async (payload: ApplicationStatusPaylo
         throw new Error('Resend API key is not configured.');
     }
 
+    const bccList = await getBccRecipients();
+
     try {
         const { data, error } = await resend.emails.send({
             from: 'CalAIM Pathfinder <onboarding@resend.dev>',
             to: [to],
+            bcc: bccList,
             subject: subject,
             react: ApplicationStatusEmail({
                 memberName,

@@ -6,18 +6,19 @@ import { useAdmin } from '@/hooks/use-admin';
 import { useRouter } from 'next/navigation';
 import { sendTestToMake } from '@/ai/flows/send-to-make-flow';
 import { addStaff, updateStaffRole } from '@/ai/flows/manage-staff';
+import { getNotificationRecipients, updateNotificationRecipients } from '@/ai/flows/manage-notifications';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, RefreshCw, AlertCircle, ShieldAlert, UserPlus, Send, Users } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, ShieldAlert, UserPlus, Send, Users, Mail, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { collection, getDocs, doc, onSnapshot, Unsubscribe, DocumentData, query } from 'firebase/firestore';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronDown } from 'lucide-react';
 
 
@@ -96,6 +97,8 @@ export default function SuperAdminPage() {
     const [isSendingWebhook, setIsSendingWebhook] = useState(false);
     const [staffList, setStaffList] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
+    const [notificationRecipients, setNotificationRecipients] = useState<string[]>([]);
+    const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
     // State for new staff form
     const [newStaffFirstName, setNewStaffFirstName] = useState('');
@@ -143,6 +146,8 @@ export default function SuperAdminPage() {
                 });
             });
         });
+
+        getNotificationRecipients().then(result => setNotificationRecipients(result.uids));
         
         return () => unsubUsers();
     }, [firestore]);
@@ -216,6 +221,24 @@ export default function SuperAdminPage() {
         }
     };
 
+    const handleNotificationToggle = (uid: string, checked: boolean) => {
+        setNotificationRecipients(prev => 
+            checked ? [...prev, uid] : prev.filter(id => id !== uid)
+        );
+    };
+
+    const handleSaveNotifications = async () => {
+        setIsSavingNotifications(true);
+        try {
+            await updateNotificationRecipients({ uids: notificationRecipients });
+            toast({ title: "Settings Saved", description: "Notification preferences have been updated.", className: 'bg-green-100 text-green-900 border-green-200' });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Save Failed', description: error.message });
+        } finally {
+            setIsSavingNotifications(false);
+        }
+    }
+
 
     if (isAdminLoading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>;
@@ -276,7 +299,6 @@ export default function SuperAdminPage() {
                             <CardTitle className="text-lg">System Actions</CardTitle>
                          </CardHeader>
                          <CardContent className="space-y-6">
-                            {/* Webhook Test */}
                              <div>
                                 <h4 className="font-medium">Make.com Webhook Test</h4>
                                 <p className="text-sm text-muted-foreground mt-1">Send a sample CS Summary Form to your configured webhook URL.</p>
@@ -304,43 +326,81 @@ export default function SuperAdminPage() {
                         </CardContent>
                     </Card>
                 </div>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Users className="h-6 w-6" /> Current Staff</CardTitle>
-                        <CardDescription>List of users with Admin or Super Admin roles.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoadingStaff ? (
-                            <div className="flex justify-center items-center h-24">
-                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : staffList.length > 0 ? (
-                            <div className="space-y-2">
-                                {staffList.map((staff) => (
-                                    <div key={staff.uid} className="flex justify-between items-center p-3 border rounded-lg">
-                                        <div>
-                                            <p className="font-semibold">{staff.firstName} {staff.lastName}</p>
-                                            <p className="text-sm text-muted-foreground">{staff.email}</p>
+                 <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Users className="h-6 w-6" /> Current Staff</CardTitle>
+                            <CardDescription>List of users with Admin or Super Admin roles.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoadingStaff ? (
+                                <div className="flex justify-center items-center h-24">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : staffList.length > 0 ? (
+                                <div className="space-y-2">
+                                    {staffList.map((staff) => (
+                                        <div key={staff.uid} className="flex justify-between items-center p-3 border rounded-lg">
+                                            <div>
+                                                <p className="font-semibold">{staff.firstName} {staff.lastName}</p>
+                                                <p className="text-sm text-muted-foreground">{staff.email}</p>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <span className={`text-sm font-medium ${staff.role === 'Super Admin' ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                    {staff.role}
+                                                </span>
+                                                <Switch
+                                                    checked={staff.role === 'Super Admin'}
+                                                    onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)}
+                                                    disabled={staff.uid === currentUser?.uid}
+                                                    aria-label={`Toggle Super Admin for ${staff.email}`}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <span className={`text-sm font-medium ${staff.role === 'Super Admin' ? 'text-primary' : 'text-muted-foreground'}`}>
-                                                {staff.role}
-                                            </span>
-                                            <Switch
-                                                checked={staff.role === 'Super Admin'}
-                                                onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)}
-                                                disabled={staff.uid === currentUser?.uid}
-                                                aria-label={`Toggle Super Admin for ${staff.email}`}
-                                            />
-                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground py-8">No staff members found.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> Notification Settings</CardTitle>
+                            <CardDescription>Select which staff members should receive an email when an application status changes.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             {isLoadingStaff ? (
+                                <div className="flex justify-center items-center h-24">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : staffList.length > 0 ? (
+                                <div className="space-y-4">
+                                    <div className="space-y-2 max-h-60 overflow-y-auto p-1">
+                                        {staffList.map(staff => (
+                                            <div key={staff.uid} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted">
+                                                <Checkbox 
+                                                    id={`notif-${staff.uid}`} 
+                                                    checked={notificationRecipients.includes(staff.uid)}
+                                                    onCheckedChange={(checked) => handleNotificationToggle(staff.uid, !!checked)}
+                                                />
+                                                <Label htmlFor={`notif-${staff.uid}`} className="flex flex-col cursor-pointer">
+                                                    <span>{staff.firstName} {staff.lastName}</span>
+                                                    <span className="text-xs text-muted-foreground">{staff.email}</span>
+                                                </Label>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-muted-foreground py-8">No staff members found.</p>
-                        )}
-                    </CardContent>
-                </Card>
+                                    <Button onClick={handleSaveNotifications} disabled={isSavingNotifications} className="w-full">
+                                        {isSavingNotifications ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Notification Settings</>}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground py-8">No staff members found to configure.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                 </div>
             </div>
         </div>
     );

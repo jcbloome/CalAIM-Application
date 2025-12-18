@@ -224,5 +224,16 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
       allow list: if isSuperAdmin();
     }
+
+    /**
+     * @description Global system settings.
+     * @path /system_settings/{settingId}
+     * @allow (read) Authenticated users can read settings.
+     * @allow (write) Only super admins can write settings.
+     */
+    match /system_settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isSuperAdmin();
+    }
   }
 }
