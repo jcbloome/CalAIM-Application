@@ -10,10 +10,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
+import { firebaseConfig } from '@/firebase/config';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
-  admin.initializeApp();
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    projectId: firebaseConfig.projectId,
+  });
 }
 
 // ========== ADD STAFF FLOW ==========
@@ -146,5 +150,3 @@ const updateStaffRoleFlow = ai.defineFlow(
     }
   }
 );
-
-    

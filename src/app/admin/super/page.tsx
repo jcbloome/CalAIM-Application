@@ -254,48 +254,53 @@ export default function SuperAdminPage() {
     
     return (
         <div className="space-y-6">
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle className="text-2xl">Super Admin Tools</CardTitle>
                     <CardDescription>
                         Manage staff, roles, and system integrations from this panel.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
-                    {/* Add Staff Section */}
-                    <div>
-                        <h3 className="text-lg font-semibold flex items-center gap-2"><UserPlus className="h-5 w-5" /> Add New Staff Member</h3>
-                        <form onSubmit={handleAddStaff} className="mt-4 p-4 border rounded-lg bg-muted/30 space-y-4">
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="new-staff-firstname">First Name</Label>
-                                    <Input id="new-staff-firstname" value={newStaffFirstName} onChange={e => setNewStaffFirstName(e.target.value)} />
-                                </div>
-                                 <div>
-                                    <Label htmlFor="new-staff-lastname">Last Name</Label>
-                                    <Input id="new-staff-lastname" value={newStaffLastName} onChange={e => setNewStaffLastName(e.target.value)} />
-                                </div>
-                            </div>
-                            <div>
-                                <Label htmlFor="new-staff-email">Email Address</Label>
-                                <Input id="new-staff-email" type="email" value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} />
-                            </div>
-                            <Button type="submit" disabled={isAddingStaff}>
-                                {isAddingStaff ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Adding...</> : 'Add Staff & Grant Admin Role'}
-                            </Button>
-                        </form>
-                    </div>
+            </Card>
 
-                    <Separator />
-                    
-                    {/* System Actions Section */}
-                    <div>
-                         <h3 className="text-lg font-semibold">System Actions</h3>
-                         <div className="mt-4 p-4 border rounded-lg bg-muted/30 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2"><UserPlus className="h-5 w-5" /> Add New Staff Member</CardTitle>
+                        </CardHeader>
+                         <CardContent>
+                            <form onSubmit={handleAddStaff} className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <Label htmlFor="new-staff-firstname">First Name</Label>
+                                        <Input id="new-staff-firstname" value={newStaffFirstName} onChange={e => setNewStaffFirstName(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="new-staff-lastname">Last Name</Label>
+                                        <Input id="new-staff-lastname" value={newStaffLastName} onChange={e => setNewStaffLastName(e.target.value)} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label htmlFor="new-staff-email">Email Address</Label>
+                                    <Input id="new-staff-email" type="email" value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} />
+                                </div>
+                                <Button type="submit" disabled={isAddingStaff}>
+                                    {isAddingStaff ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Adding...</> : 'Add Staff & Grant Admin Role'}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                         <CardHeader>
+                            <CardTitle className="text-lg">System Actions</CardTitle>
+                         </CardHeader>
+                         <CardContent className="space-y-6">
                             {/* Sync Staff */}
                             <div>
                                 <h4 className="font-medium">Staff Synchronization</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Grant 'Admin' role to all registered Firebase users. This is useful for onboarding new staff who have already created an account.</p>
+                                <p className="text-sm text-muted-foreground mt-1">Grant 'Admin' role to all registered Firebase users.</p>
                                 <Alert variant="warning" className="my-2 text-xs">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertDescription>This will not remove existing admins or affect super admins.</AlertDescription>
@@ -307,7 +312,7 @@ export default function SuperAdminPage() {
                             {/* Webhook Test */}
                              <div>
                                 <h4 className="font-medium">Make.com Webhook Test</h4>
-                                <p className="text-sm text-muted-foreground mt-1">Send a sample CS Summary Form to your configured webhook URL to test notifications for new applications.</p>
+                                <p className="text-sm text-muted-foreground mt-1">Send a sample CS Summary Form to your configured webhook URL.</p>
                                 <Alert variant="warning" className="my-2 text-xs">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertDescription>Ensure your webhook URL is set in the `.env` file.</AlertDescription>
@@ -316,50 +321,47 @@ export default function SuperAdminPage() {
                                     {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <><Send className="mr-2 h-4 w-4" /> Send Test Webhook</>}
                                 </Button>
                             </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Users className="h-6 w-6" /> Current Staff</CardTitle>
-                    <CardDescription>List of users with Admin or Super Admin roles.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoadingStaff ? (
-                         <div className="flex justify-center items-center h-24">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : staffList.length > 0 ? (
-                        <div className="space-y-2">
-                            {staffList.map((staff) => (
-                                <div key={staff.uid} className="flex justify-between items-center p-3 border rounded-lg">
-                                    <div>
-                                        <p className="font-semibold">{staff.firstName} {staff.lastName}</p>
-                                        <p className="text-sm text-muted-foreground">{staff.email}</p>
+                        </CardContent>
+                    </Card>
+                </div>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Users className="h-6 w-6" /> Current Staff</CardTitle>
+                        <CardDescription>List of users with Admin or Super Admin roles.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoadingStaff ? (
+                            <div className="flex justify-center items-center h-24">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : staffList.length > 0 ? (
+                            <div className="space-y-2">
+                                {staffList.map((staff) => (
+                                    <div key={staff.uid} className="flex justify-between items-center p-3 border rounded-lg">
+                                        <div>
+                                            <p className="font-semibold">{staff.firstName} {staff.lastName}</p>
+                                            <p className="text-sm text-muted-foreground">{staff.email}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className={`text-sm font-medium ${staff.role === 'Super Admin' ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                {staff.role}
+                                            </span>
+                                            <Switch
+                                                checked={staff.role === 'Super Admin'}
+                                                onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)}
+                                                disabled={staff.uid === currentUser?.uid}
+                                                aria-label={`Toggle Super Admin for ${staff.email}`}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className={`text-sm font-medium ${staff.role === 'Super Admin' ? 'text-primary' : 'text-muted-foreground'}`}>
-                                            {staff.role}
-                                        </span>
-                                        <Switch
-                                            checked={staff.role === 'Super Admin'}
-                                            onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)}
-                                            disabled={staff.uid === currentUser?.uid}
-                                            aria-label={`Toggle Super Admin for ${staff.email}`}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-center text-muted-foreground py-8">No staff members found.</p>
-                    )}
-                </CardContent>
-            </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-center text-muted-foreground py-8">No staff members found.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
-
-    
