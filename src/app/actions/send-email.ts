@@ -3,13 +3,14 @@
 import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
 import * as admin from 'firebase-admin';
+import serviceAccount from '../../../service-account_key.json';
 
-// This file shares the server-side admin context. Initialization is handled
-// in the main server entrypoint, `src/ai/dev.ts`.
-// This check is a safeguard, but initialization should happen in `src/ai/dev.ts`.
+// This file is a server-side action and needs its own Admin SDK initialization.
+// The check prevents re-initialization if it has already been done elsewhere.
 if (!admin.apps.length) {
-  // In a deployed environment, credentials are automatically discovered.
-  admin.initializeApp();
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  });
 }
 
 if (!process.env.RESEND_API_KEY) {
