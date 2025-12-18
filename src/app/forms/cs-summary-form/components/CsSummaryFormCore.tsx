@@ -159,8 +159,7 @@ function CsSummaryFormComponent() {
       userId: targetUserId,
       status: 'In Progress' as const,
       lastUpdated: serverTimestamp(),
-      // Only set referrerName on initial creation, otherwise keep existing
-      ...( !existingApplicationData?.referrerName && { referrerName: `${currentData.referrerFirstName} ${currentData.referrerLastName}`.trim() } ),
+      referrerName: `${currentData.referrerFirstName} ${currentData.referrerLastName}`.trim(),
     };
   
     try {
