@@ -4,12 +4,9 @@
 import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
 import * as admin from 'firebase-admin';
-import { firebaseConfig } from '@/firebase/config';
 
 if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: firebaseConfig.projectId,
-  });
+  admin.initializeApp();
 }
 
 if (!process.env.RESEND_API_KEY) {
