@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, List } from 'lucide-react';
 import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 
 
@@ -88,6 +88,8 @@ const sampleApplicationData = {
     userId: 'SUPER_ADMIN_TEST_USER'
 };
 
+const formFields = Object.keys(sampleApplicationData);
+
 
 export default function SuperAdminPage() {
     const { isSuperAdmin, isLoading: isAdminLoading, user: currentUser } = useAdmin();
@@ -139,14 +141,14 @@ export default function SuperAdminPage() {
                 onSnapshot(query(superAdminRolesRef), (superAdminSnapshot) => {
                      const superAdminIds = new Set(superAdminSnapshot.docs.map(doc => doc.id));
 
-                     const allStaff = usersData
+                     const allStaff: StaffMember[] = usersData
                         .filter(user => adminIds.has(user.id) || superAdminIds.has(user.id))
                         .map(user => ({
                             uid: user.id,
                             firstName: user.firstName,
                             lastName: user.lastName,
                             email: user.email,
-                            role: superAdminIds.has(user.id) ? 'Super Admin' : 'Admin' as 'Admin' | 'Super Admin',
+                            role: superAdminIds.has(user.id) ? 'Super Admin' : 'Admin',
                         }))
                         .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
@@ -359,6 +361,32 @@ export default function SuperAdminPage() {
                                     {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <><Send className="mr-2 h-4 w-4" /> Send Test Webhook</>}
                                 </Button>
                             </div>
+                             <div className="pt-6 border-t">
+                                 <Collapsible>
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="outline" className="w-full justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <List className="h-4 w-4" />
+                                                <span>View CS Summary Form Fields</span>
+                                            </div>
+                                            <ChevronDown className="h-4 w-4" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <Card className="mt-2">
+                                            <CardHeader>
+                                                <CardTitle className="text-base">CS Summary Form Fields</CardTitle>
+                                                <CardDescription>Use these field names for your Make.com and Caspio integration.</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <ul className="list-disc pl-5 text-sm space-y-1 font-mono bg-muted p-4 rounded-md max-h-60 overflow-y-auto">
+                                                    {formFields.map(field => <li key={field}>{field}</li>)}
+                                                </ul>
+                                            </CardContent>
+                                        </Card>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                             </div>
                         </CardContent>
                     </Card>
 
