@@ -47,9 +47,9 @@ export function Header() {
           <Image 
             src="/calaimlogopdf.png"
             alt="CalAIM Pathfinder Logo"
-            width={180}
-            height={50}
-            className="w-48 h-auto object-contain"
+            width={240}
+            height={67}
+            className="w-64 h-auto object-contain"
             priority
           />
         </Link>
