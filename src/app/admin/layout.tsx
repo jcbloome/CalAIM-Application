@@ -39,7 +39,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 const adminNavLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -86,7 +86,7 @@ function AdminHeader() {
               alt="CalAIM Pathfinder Logo"
               width={240}
               height={67}
-              className="w-64 h-auto object-contain"
+              className="w-48 h-auto object-contain"
               priority
             />
           </Link>
@@ -117,6 +117,11 @@ function AdminHeader() {
                     </NavigationMenuLink>
                   </NavigationMenuItem>
               )}
+               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href='/applications'>
+                    User View
+                  </Link>
+                </NavigationMenuLink>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -153,6 +158,10 @@ function AdminHeader() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Admin Mobile Menu</SheetTitle>
+                    <SheetDescription>Navigation links for the admin dashboard, available on mobile.</SheetDescription>
+                  </SheetHeader>
                   <nav className="flex flex-col gap-4 mt-8">
                     {combinedNavLinks.map((link) => {
                       if (link.super && !isSuperAdmin) return null;
