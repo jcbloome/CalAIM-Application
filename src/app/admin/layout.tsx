@@ -69,9 +69,9 @@ function AdminHeader() {
             <Image
               src="/calaimlogopdf.png"
               alt="CalAIM Pathfinder Logo"
-              width={300}
-              height={84}
-              className="w-72 h-auto object-contain"
+              width={400}
+              height={112}
+              className="w-96 h-auto object-contain"
               priority
             />
           </Link>
