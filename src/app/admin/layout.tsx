@@ -17,8 +17,6 @@ import {
   BarChart3,
   ListChecks,
   Menu,
-  BookOpen,
-  FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,17 +40,10 @@ import {
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 const adminNavLinks = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/applications', label: 'Applications', icon: FolderKanban },
-  { href: '/admin/progress-tracker', label: 'Progress Tracker', icon: ListChecks },
-  { href: '/admin/statistics', label: 'Statistics', icon: BarChart3 },
-];
-
-const userNavLinks = [
-    { href: "/info", label: "Program Information", icon: FileText },
-    { href: "/faq", label: "FAQ & Glossary", icon: BookOpen },
-    { href: "/applications", label: "My Applications", icon: FolderKanban },
-    { href: "/forms/printable-package", label: "Printable Forms", icon: FileText },
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, super: false },
+  { href: '/admin/applications', label: 'Applications', icon: FolderKanban, super: false },
+  { href: '/admin/progress-tracker', label: 'Progress Tracker', icon: ListChecks, super: false },
+  { href: '/admin/statistics', label: 'Statistics', icon: BarChart3, super: false },
 ];
 
 
@@ -73,7 +64,6 @@ function AdminHeader() {
   const combinedNavLinks = [
     ...adminNavLinks,
     ...(isSuperAdmin ? [{ href: '/admin/super', label: 'Super Admin', icon: Shield, super: true }] : []),
-    ...userNavLinks.map(link => ({...link, super: false}))
   ];
 
   return (
@@ -94,7 +84,6 @@ function AdminHeader() {
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               {adminNavLinks.map(link => {
-                if (link.super && !isSuperAdmin) return null;
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
                 return (
                   <NavigationMenuItem key={link.href}>
