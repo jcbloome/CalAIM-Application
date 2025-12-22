@@ -46,7 +46,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
           <Image 
             src="/calaimlogopdf.png"
-            alt="CalAIM Pathfinder Logo"
+            alt="Connect CalAIM Logo"
             width={240}
             height={67}
             className="w-64 h-auto object-contain"

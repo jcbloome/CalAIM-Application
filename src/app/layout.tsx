@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,7 +9,7 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'CalAIM Pathfinder',
+  title: 'Connect CalAIM',
   description: 'A portal for the CalAIM Community Support for Assisted Transitions for Health Net and Kaiser.',
 };
 

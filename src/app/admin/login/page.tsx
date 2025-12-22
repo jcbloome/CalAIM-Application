@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
         <div className="absolute top-0 left-0 p-6">
              <Image 
                 src="/calaimlogopdf.png"
-                alt="CalAIM Pathfinder Logo"
+                alt="Connect CalAIM Logo"
                 width={240}
                 height={67}
                 className="w-64 h-auto object-contain"

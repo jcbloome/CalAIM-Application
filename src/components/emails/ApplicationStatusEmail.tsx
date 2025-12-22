@@ -116,7 +116,7 @@ const ApplicationStatusEmail: React.FC<Readonly<ApplicationStatusEmailProps>> = 
         Go to My Dashboard
       </a>
       <p style={footer}>
-        This is an automated message from CalAIM Pathfinder.
+        This is an automated message from Connect CalAIM.
       </p>
     </div>
   </div>

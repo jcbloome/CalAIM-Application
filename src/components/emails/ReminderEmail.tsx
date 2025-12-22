@@ -105,12 +105,10 @@ const ReminderEmail: React.FC<Readonly<ReminderEmailProps>> = ({
       <p style={footer}>
         You are receiving this email because automated reminders are enabled.
         <br />
-        This is an automated message from CalAIM Pathfinder.
+        This is an automated message from Connect CalAIM.
       </p>
     </div>
   </div>
 );
 
 export default ReminderEmail;
-
-    

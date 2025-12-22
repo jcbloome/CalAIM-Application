@@ -93,7 +93,7 @@ const RevisionRequestEmail: React.FC<Readonly<RevisionRequestEmailProps>> = ({
         Go to My Application
       </a>
       <p style={footer}>
-        This is an automated message from CalAIM Pathfinder.
+        This is an automated message from Connect CalAIM.
       </p>
     </div>
   </div>

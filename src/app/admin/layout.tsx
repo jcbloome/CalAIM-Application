@@ -73,7 +73,7 @@ function AdminHeader() {
           <Link href="/admin">
             <Image
               src="/calaimlogopdf.png"
-              alt="CalAIM Pathfinder Logo"
+              alt="Connect CalAIM Logo"
               width={240}
               height={67}
               className="w-48 h-auto object-contain"
