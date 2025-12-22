@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { sendTestToMake } from '@/ai/flows/send-to-make-flow';
 import { addStaff, updateStaffRole } from '@/ai/flows/manage-staff';
 import { getNotificationRecipients, updateNotificationRecipients } from '@/ai/flows/manage-notifications';
-import { getReminderSettings, updateReminderSettings } from '@/ai/flows/manage-reminders';
+import { sendReminderEmails } from '@/ai/flows/manage-reminders';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, RefreshCw, AlertCircle, ShieldAlert, UserPlus, Send, Users, Mail, Save, BellRing } from 'lucide-react';
@@ -108,9 +108,7 @@ export default function SuperAdminPage() {
     const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
     
     // State for reminder settings
-    const [remindersEnabled, setRemindersEnabled] = useState(false);
-    const [reminderFrequency, setReminderFrequency] = useState<'daily' | 'every_other_day' | ''>('');
-    const [isSavingReminders, setIsSavingReminders] = useState(false);
+    const [isSendingReminders, setIsSendingReminders] = useState(false);
 
 
     // State for new staff form
@@ -167,10 +165,6 @@ export default function SuperAdminPage() {
         });
 
         getNotificationRecipients().then(result => setNotificationRecipients(result.uids));
-        getReminderSettings().then(result => {
-            setRemindersEnabled(result.isEnabled);
-            setReminderFrequency(result.frequency as any);
-        });
         
         return () => unsubUsers();
     }, [firestore]);
@@ -289,20 +283,25 @@ export default function SuperAdminPage() {
         }
     };
     
-    const handleSaveReminders = async () => {
-        setIsSavingReminders(true);
+    const handleSendReminders = async () => {
+        setIsSendingReminders(true);
         try {
-            if (remindersEnabled && !reminderFrequency) {
-                throw new Error('Please select a frequency for the reminders.');
-            }
-            await updateReminderSettings({ isEnabled: remindersEnabled, frequency: reminderFrequency as 'daily' | 'every_other_day' });
-            toast({ title: "Reminder Settings Saved", description: "Automated reminder preferences have been updated.", className: 'bg-green-100 text-green-900 border-green-200' });
+            const result = await sendReminderEmails();
+            toast({
+                title: 'Reminders Sent!',
+                description: `Successfully sent ${result.sentCount} reminder emails.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Save Failed', description: error.message });
+            toast({
+                variant: 'destructive',
+                title: 'Reminder Error',
+                description: `Could not send reminders: ${error.message}`
+            });
         } finally {
-            setIsSavingReminders(false);
+            setIsSendingReminders(false);
         }
-    };
+    }
 
 
     if (isAdminLoading) {
@@ -412,7 +411,7 @@ export default function SuperAdminPage() {
                                             </CardContent>
                                         </Card>
                                     </CollapsibleContent>
-                                </Collapsible>
+                                 </Collapsible>
                              </div>
                         </CardContent>
                     </Card>
@@ -514,46 +513,17 @@ export default function SuperAdminPage() {
                     </Card>
                      <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><BellRing className="h-5 w-5" /> Automated Reminders</CardTitle>
-                            <CardDescription>Configure automated email reminders for users with incomplete applications.</CardDescription>
+                            <CardTitle className="flex items-center gap-2"><BellRing className="h-5 w-5" /> Manual Email Reminders</CardTitle>
+                            <CardDescription>Trigger reminder emails to users with incomplete applications.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                             <div className="flex items-center justify-between space-x-2 p-3 border rounded-lg">
-                                <Label htmlFor="reminders-enabled" className="flex flex-col space-y-1">
-                                    <span>Enable Automated Reminders</span>
-                                    <span className="font-normal leading-snug text-muted-foreground text-xs">
-                                        When enabled, the system will send reminder emails for applications that are In Progress or Require Revision.
-                                    </span>
-                                </Label>
-                                <Switch
-                                    id="reminders-enabled"
-                                    checked={remindersEnabled}
-                                    onCheckedChange={setRemindersEnabled}
-                                />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="reminder-frequency">Reminder Frequency</Label>
-                                <Select 
-                                    value={reminderFrequency}
-                                    onValueChange={(value) => setReminderFrequency(value as any)}
-                                    disabled={!remindersEnabled}
-                                >
-                                    <SelectTrigger id="reminder-frequency">
-                                        <SelectValue placeholder="Select frequency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="daily">Daily</SelectItem>
-                                        <SelectItem value="every_other_day">Every Other Day</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Alert variant="warning" className="text-xs">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>Triggering Mechanism</AlertTitle>
-                                <AlertDescription>This feature requires a scheduled job (e.g., Google Cloud Scheduler) to trigger the reminder email flow periodically.</AlertDescription>
-                            </Alert>
-                             <Button onClick={handleSaveReminders} disabled={isSavingReminders} className="w-full">
-                                {isSavingReminders ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Reminder Settings</>}
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground mb-4">Clicking this button will scan all applications that are "In Progress" or "Requires Revision" and send a reminder email to the referrer for each one that has pending items.</p>
+                            <Button onClick={handleSendReminders} disabled={isSendingReminders} className="w-full">
+                                {isSendingReminders ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending Reminders...</>
+                                ) : (
+                                    'Send In-Progress Reminders'
+                                )}
                             </Button>
                         </CardContent>
                     </Card>
@@ -562,5 +532,3 @@ export default function SuperAdminPage() {
         </div>
     );
 }
-
-    
