@@ -15,7 +15,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("border rounded-lg", className)}
+    className={cn("border rounded-lg shadow-sm", className)}
     {...props}
   />
 ))
@@ -29,7 +29,7 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex w-full items-center justify-between p-4 font-medium transition-all hover:bg-muted [&[data-state=open]>svg]:rotate-180",
+        "flex flex-1 items-center justify-between p-4 font-medium transition-all hover:bg-muted/50 rounded-t-lg data-[state=open]:bg-muted/50 data-[state=open]:rounded-b-none [&[data-state=open]>svg]:rotate-180",
         className
       )}
       {...props}
@@ -57,5 +57,3 @@ const AccordionContent = React.forwardRef<
 AccordionContent.displayName = AccordionPrimitive.Content.displayName
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
-
-    

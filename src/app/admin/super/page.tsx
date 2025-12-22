@@ -151,7 +151,7 @@ export default function SuperAdminPage() {
                             lastName: user.lastName,
                             email: user.email,
                             role: superAdminIds.has(user.id) ? 'Super Admin' : 'Admin',
-                        } as StaffMember))
+                        }))
                         .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
                      setStaffList(allStaff);
@@ -442,5 +442,3 @@ export default function SuperAdminPage() {
         </div>
     );
 }
-
-    
