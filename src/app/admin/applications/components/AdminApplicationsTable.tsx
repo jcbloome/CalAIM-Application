@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -208,7 +207,7 @@ export const AdminApplicationsTable = ({
             <TableHead className="hidden md:table-cell">Submitted By</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="hidden lg:table-cell">Plan & Pathway</TableHead>
-            <TableHead className="hidden sm:table-cell">Create Date/Update</TableHead>
+            <TableHead className="hidden sm:table-cell">Dates</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -224,8 +223,6 @@ export const AdminApplicationsTable = ({
               const referrerName = app.referrerName || `${app.referrerFirstName || ''} ${app.referrerLastName || ''}`.trim() || 'N/A';
               const submissionDate = app.submissionDate ? (app.submissionDate as Timestamp).toDate() : null;
               const lastUpdatedDate = app.lastUpdated ? (app.lastUpdated as Timestamp).toDate() : null;
-              
-              const isUpdated = submissionDate && lastUpdatedDate && format(submissionDate, 'MM/dd/yyyy') !== format(lastUpdatedDate, 'MM/dd/yyyy');
 
               return (
               <TableRow key={app.id}>
@@ -254,16 +251,12 @@ export const AdminApplicationsTable = ({
                     <div className="text-xs text-muted-foreground">{app.pathway}</div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                    {submissionDate ? (
-                      <div>
-                        <div>{format(submissionDate, 'MM/dd/yyyy')}</div>
-                        {isUpdated && lastUpdatedDate && (
-                          <div className="text-xs text-muted-foreground">
-                            {format(lastUpdatedDate, 'MM/dd/yyyy')}
-                          </div>
-                        )}
-                      </div>
-                    ) : 'N/A'}
+                  <div>
+                    {submissionDate ? `Created: ${format(submissionDate, 'MM/dd/yyyy')}`: <span>Created: N/A</span>}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {lastUpdatedDate ? `Updated: ${format(lastUpdatedDate, 'MM/dd/yyyy')}` : <span>Updated: N/A</span>}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right space-x-4">
                   <QuickViewDialog application={app} />
