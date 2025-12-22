@@ -4,7 +4,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAdmin } from '@/hooks/use-admin';
 import { useRouter } from 'next/navigation';
-import { sendTestToMake } from '@/ai/flows/send-to-make-flow';
 import { addStaff, updateStaffRole } from '@/ai/flows/manage-staff';
 import { getNotificationRecipients, updateNotificationRecipients } from '@/ai/flows/manage-notifications';
 import { sendReminderEmails } from '@/ai/flows/manage-reminders';
@@ -31,73 +30,12 @@ interface StaffMember {
     email: string;
 }
 
-const sampleApplicationData = {
-    memberFirstName: 'John',
-    memberLastName: 'Doe',
-    memberDob: '01/15/1955',
-    memberAge: 69,
-    memberMediCalNum: '98765432B',
-    memberMrn: 'Kaiser-MRN-12345',
-    memberLanguage: 'English',
-    memberCounty: 'San Diego',
-    referrerFirstName: 'Jason',
-    referrerLastName: 'Bloome',
-    referrerEmail: 'jason@carehomefinders.com',
-    referrerPhone: '(555) 111-2222',
-    referrerRelationship: 'Consultant',
-    agency: 'Connections',
-    bestContactFirstName: 'Jane',
-    bestContactLastName: 'Doe',
-    bestContactRelationship: 'Spouse',
-    bestContactPhone: '(555) 333-4444',
-    bestContactEmail: 'jane.doe@example.com',
-    bestContactLanguage: 'English',
-    hasCapacity: 'Yes' as const,
-    hasLegalRep: 'No' as const,
-    currentLocation: 'Hospital',
-    currentAddress: '123 Hospital Dr',
-    currentCity: 'Healthcare City',
-    currentState: 'CA',
-    currentZip: '90210',
-    currentCounty: 'Los Angeles',
-    customaryLocationType: 'Home',
-    customaryAddress: '456 Home St',
-    customaryCity: 'Homeville',
-    customaryState: 'CA',
-    customaryZip: '90211',
-    customaryCounty: 'Los Angeles',
-    healthPlan: 'Kaiser' as const,
-    pathway: 'SNF Diversion' as const,
-    meetsPathwayCriteria: true,
-    snfDiversionReason: 'At risk of institutionalization, can be cared for in community.',
-    ispFirstName: 'Sarah',
-    ispLastName: 'Connor',
-    ispRelationship: 'SNF Social Worker',
-    ispPhone: '(555) 888-9999',
-    ispEmail: 's.connor@snf.example.com',
-    ispLocationType: 'SNF',
-    ispAddress: '123 Skilled Nursing Way, Careville, CA, 90211',
-    ispFacilityName: 'General SNF',
-    onALWWaitlist: 'No' as const,
-    hasPrefRCFE: 'Yes' as const,
-    rcfeName: 'Sunshine RCFE',
-    rcfeAddress: '789 Community Ln, Happyville, CA, 90212',
-    rcfeAdminName: 'Admin Name',
-    rcfeAdminPhone: '(555) 777-8888',
-    rcfeAdminEmail: 'admin@sunshinercfe.com',
-    userId: 'SUPER_ADMIN_TEST_USER'
-};
-
-const formFields = Object.keys(sampleApplicationData);
-
-
 export default function SuperAdminPage() {
     const { isSuperAdmin, isLoading: isAdminLoading, user: currentUser } = useAdmin();
     const router = useRouter();
     const { toast } = useToast();
     const firestore = useFirestore();
 
-    const [isSendingWebhook, setIsSendingWebhook] = useState(false);
     const [staffList, setStaffList] = useState<StaffMember[]>([]);
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
     const [notificationRecipients, setNotificationRecipients] = useState<string[]>([]);
@@ -153,7 +91,7 @@ export default function SuperAdminPage() {
                         }))
                         .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
-                     setStaffList(allStaff);
+                     setStaffList(allStaff as StaffMember[]);
                      setIsLoadingStaff(false);
                 });
             });
@@ -164,29 +102,6 @@ export default function SuperAdminPage() {
         return () => unsubUsers();
     }, [firestore]);
     
-    const handleSendWebhook = async () => {
-        setIsSendingWebhook(true);
-        try {
-            const result = await sendTestToMake(sampleApplicationData);
-             if (result.success) {
-                toast({
-                    title: 'Webhook Sent Successfully',
-                    description: result.message,
-                    className: 'bg-green-100 text-green-900 border-green-200',
-                });
-            } else {
-                 throw new Error(result.message);
-            }
-        } catch (error: any) {
-             toast({
-                variant: 'destructive',
-                title: 'Webhook Failed',
-                description: error.message || 'An unknown error occurred.',
-            });
-        } finally {
-            setIsSendingWebhook(false);
-        }
-    };
     
     const handleAddStaff = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -217,8 +132,8 @@ export default function SuperAdminPage() {
     };
     
     const handleRoleToggle = async (uid: string, isSuperAdmin: boolean) => {
-        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: (isSuperAdmin ? 'Super Admin' : 'Admin') as 'Super Admin' | 'Admin'} : s);
-        setStaffList(optimisticStaffList);
+        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' : 'Admin'} : s);
+        setStaffList(optimisticStaffList as StaffMember[]);
 
         try {
             await updateStaffRole({ uid, isSuperAdmin });
@@ -228,7 +143,10 @@ export default function SuperAdminPage() {
             });
         } catch (error: any) {
             // Revert optimistic update
-            setStaffList(staffList);
+             const unsub = onSnapshot(collection(firestore!, 'users'), () => {
+                // This is a bit of a hack to re-fetch and trigger the main useEffect
+                unsub();
+            });
             toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
         }
     };
@@ -324,7 +242,7 @@ export default function SuperAdminPage() {
                 </CardHeader>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-t-4 border-blue-500">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5 text-blue-500" />Staff Management</CardTitle>
@@ -353,32 +271,6 @@ export default function SuperAdminPage() {
                                     </div>
                                 ))}</div>
                             ) : <p className="text-center text-muted-foreground py-8">No staff members found.</p>}
-                         </div>
-                    </CardContent>
-                </Card>
-
-                 <Card className="border-t-4 border-green-500">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5 text-green-500" />System Actions & Webhooks</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div>
-                            <h4 className="font-medium">Make.com Webhook Test</h4>
-                            <p className="text-sm text-muted-foreground mt-1">Send a sample CS Summary Form to your configured webhook URL.</p>
-                            <Button onClick={handleSendWebhook} disabled={isSendingWebhook} variant="secondary" className="mt-2">{isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <><Send className="mr-2 h-4 w-4" /> Send Test Webhook</>}</Button>
-                        </div>
-                        <div className="pt-6 border-t">
-                             <Collapsible>
-                                <CollapsibleTrigger asChild><Button variant="outline" className="w-full justify-between">
-                                    <div className="flex items-center gap-2"><List className="h-4 w-4" /><span>View CS Summary Form Fields</span></div><ChevronDown className="h-4 w-4" />
-                                </Button></CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <Card className="mt-2">
-                                        <CardHeader><CardTitle className="text-base">CS Summary Form Fields</CardTitle><CardDescription>Use these field names for your Make.com and Caspio integration.</CardDescription></CardHeader>
-                                        <CardContent><ul className="list-disc pl-5 text-sm space-y-1 font-mono bg-muted p-4 rounded-md max-h-60 overflow-y-auto">{formFields.map(field => <li key={field}>{field}</li>)}</ul></CardContent>
-                                    </Card>
-                                </CollapsibleContent>
-                             </Collapsible>
                          </div>
                     </CardContent>
                 </Card>
