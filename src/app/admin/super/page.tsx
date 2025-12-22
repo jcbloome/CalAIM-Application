@@ -151,7 +151,7 @@ export default function SuperAdminPage() {
                             email: user.email,
                             role: superAdminIds.has(user.id) ? 'Super Admin' : 'Admin',
                         }))
-                        .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || '')) as StaffMember[];
+                        .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
                      setStaffList(allStaff);
                      setIsLoadingStaff(false);
@@ -217,7 +217,7 @@ export default function SuperAdminPage() {
     };
     
     const handleRoleToggle = async (uid: string, isSuperAdmin: boolean) => {
-        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' : 'Admin'} : s);
+        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: (isSuperAdmin ? 'Super Admin' : 'Admin') as 'Super Admin' | 'Admin'} : s);
         setStaffList(optimisticStaffList);
 
         try {
