@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, ShieldAlert, UserPlus, Send, Users, Mail, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -98,8 +98,6 @@ export default function SuperAdminPage() {
     const [isLoadingStaff, setIsLoadingStaff] = useState(true);
     const [notificationRecipients, setNotificationRecipients] = useState<string[]>([]);
     const [isSavingNotifications, setIsSavingNotifications] = useState(false);
-    const [testEmail, setTestEmail] = useState('');
-    const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
     const [isSendingReminders, setIsSendingReminders] = useState(false);
 
     // State for new staff form
@@ -108,13 +106,6 @@ export default function SuperAdminPage() {
     const [newStaffEmail, setNewStaffEmail] = useState('');
     const [isAddingStaff, setIsAddingStaff] = useState(false);
     const [isSendingWebhook, setIsSendingWebhook] = useState(false);
-
-    useEffect(() => {
-        if (currentUser?.email) {
-            setTestEmail(currentUser.email);
-        }
-    }, [currentUser]);
-
 
     useEffect(() => {
         if (!isAdminLoading && !isSuperAdmin) {
@@ -131,7 +122,7 @@ export default function SuperAdminPage() {
         const superAdminRolesRef = collection(firestore, 'roles_super_admin');
 
         const unsubUsers = onSnapshot(query(usersRef), (usersSnapshot) => {
-            const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as DocumentData }));
             
             onSnapshot(query(adminRolesRef), (adminSnapshot) => {
                 const adminIds = new Set(adminSnapshot.docs.map(doc => doc.id));
@@ -146,11 +137,11 @@ export default function SuperAdminPage() {
                             firstName: user.firstName,
                             lastName: user.lastName,
                             email: user.email,
-                            role: superAdminIds.has(user.id) ? 'Super Admin' : 'Admin',
+                            role: superAdminIds.has(user.id) ? 'Super Admin' as const : 'Admin' as const,
                         }))
                         .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
-                     setStaffList(allStaff as StaffMember[]);
+                     setStaffList(allStaff);
                      setIsLoadingStaff(false);
                 });
             });
@@ -191,7 +182,7 @@ export default function SuperAdminPage() {
     };
     
     const handleRoleToggle = async (uid: string, isSuperAdmin: boolean) => {
-        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' : 'Admin'} : s);
+        const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' as const : 'Admin' as const} : s);
         setStaffList(optimisticStaffList);
 
         try {
@@ -228,32 +219,6 @@ export default function SuperAdminPage() {
         }
     };
 
-    const handleSendTestEmail = async () => {
-        if (!testEmail) {
-            toast({ variant: 'destructive', title: 'Missing Email', description: 'Please enter an email address to send the test to.' });
-            return;
-        }
-        setIsSendingTestEmail(true);
-        try {
-            await sendApplicationStatusEmail({
-                to: testEmail,
-                subject: 'Test Email from CalAIM Pathfinder',
-                memberName: currentUser?.displayName || 'Test User',
-                staffName: 'The CalAIM Team',
-                message: 'This is a test email to confirm that notification settings are working correctly.',
-                status: 'In Progress',
-            });
-            toast({
-                title: 'Test Email Sent!',
-                description: `An email has been sent to ${testEmail}.`,
-                className: 'bg-green-100 text-green-900 border-green-200',
-            });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Email Error', description: `Could not send email: ${error.message}` });
-        } finally {
-            setIsSendingTestEmail(false);
-        }
-    };
     
     const handleSendReminders = async () => {
         setIsSendingReminders(true);
@@ -387,11 +352,7 @@ export default function SuperAdminPage() {
                                 </div>
                             ) : <p className="text-center text-muted-foreground py-8">No staff members found to configure.</p>}
                          </div>
-                        <div className="space-y-4 pt-6 border-t">
-                            <h4 className="font-semibold">Test Email Notifications</h4>
-                            <div><Label htmlFor="test-email-input">Recipient Email</Label><Input id="test-email-input" type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)} placeholder="Enter email to send test to" /></div>
-                            <Button onClick={handleSendTestEmail} disabled={isSendingTestEmail} variant="secondary">{isSendingTestEmail ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Test Email'}</Button>
-                        </div>
+                        
                          <div className="space-y-4 pt-6 border-t">
                             <h4 className="font-semibold">Manual Email Reminders</h4>
                             <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
