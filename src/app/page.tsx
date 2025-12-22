@@ -40,7 +40,7 @@ export default function Home() {
           <CardContent className="flex flex-col items-center p-6 pt-0 sm:pb-10">
              <Button asChild size="lg" className="text-lg py-7 px-8">
                 <Link href={user ? "/applications" : "/info"}>
-                  {user ? "View My Applications" : "Let's Go!"}
+                  {user ? "Continue" : "Let's Go!"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
