@@ -37,6 +37,11 @@ const allSections = [
         content: ["There are 14 Community Supports (CS), and this application portal is for one of them, called Assisted Living Transitions. This CS gives eligible members the choice to reside in an assisted living setting—such as a Residential Care Facility for the Elderly (RCFE) or an Adult Residential Facility (ARF)—as a safe alternative to a skilled nursing facility (SNF), promoting greater independence and community integration.", "The CS is either for SNF Diversion (e.g. for members coming from a community-based setting (e.g., from home or hospital) at risk of premature institutionalization or SNF Transitions (e.g., for members residing in SNFs) eligible to reside in assisted living settings."]
     },
     {
+        icon: HeartHandshake,
+        title: "The Role of Connections Care Home Consultants",
+        content: ["For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
+    },
+    {
         icon: Building,
         title: "Managed Care Plans We Work With",
         content: ["You must be a member of one of these plans to utilize us for the CS for Assisted Transitions."],
@@ -46,9 +51,15 @@ const allSections = [
         ]
     },
     {
-        icon: HeartHandshake,
-        title: "The Role of Connections Care Home Consultants",
-        content: ["For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
+        icon: Shuffle,
+        title: "Switching to Health Net or Kaiser",
+        content: ["To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.", "You can change your health plan by contacting California Health Care Options at 1-800-430-4263 or visiting their website. Generally, changes made by the end of the month are effective on the first day of the following month."],
+        link: "https://www.healthcareoptions.dhcs.ca.gov/en/enroll"
+    },
+    {
+        icon: HelpCircle,
+        title: "What if I am assigned to Molina?",
+        content: ["When applying for Medi-Cal in Los Angeles County, many people are automatically assigned to the Molina health plan. Since we are not contracted with Molina for this specific program, you will need to switch to either Health Net or Kaiser to work with us. You can do this by contacting Health Care Options at the number provided above."]
     },
     {
         icon: Home,
@@ -70,11 +81,6 @@ const allSections = [
         content: ["Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway."]
     },
     {
-        icon: Shuffle,
-        title: "Switching to Health Net or Kaiser",
-        content: ["To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.", "You can change your health plan by contacting California Health Care Options at 1-800-430-4263. Generally, changes made by the end of the month are effective on the first day of the following month."]
-    },
-    {
         icon: DollarSign,
         title: "Share of Cost (SOC)",
         content: ["A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay. This happens when your income is above the limit for free Medi-Cal but you still qualify for the program.", "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC."]
@@ -92,10 +98,11 @@ const allSections = [
     }
 ];
 
+
 const sectionsByPage = [
     [allSections[0], allSections[1], allSections[2]], // Page 1
-    [allSections[3], allSections[4], allSections[5]], // Page 2
-    [allSections[6], allSections[7], allSections[8], allSections[9], allSections[10]], // Page 3
+    [allSections[3], allSections[4], allSections[5], allSections[6]], // Page 2
+    [allSections[7], allSections[8], allSections[9], allSections[10], allSections[11]], // Page 3
 ];
 
 
@@ -152,6 +159,13 @@ export default function ProgramInfoPage() {
                                   {section.list.map((item, lIndex) => <li key={lIndex}>{item}</li>)}
                               </ul>
                           )}
+                           {section.link && (
+                              <Button asChild variant="link" className="px-0 -mt-2">
+                                <a href={section.link} target="_blank" rel="noopener noreferrer">
+                                  Go to Health Care Options <ArrowRight className="ml-2 h-4 w-4" />
+                                </a>
+                              </Button>
+                           )}
                            {section.isAction && (
                             <Button asChild className="mt-4">
                                <Link href={user ? "/applications" : "/login"}>
@@ -180,3 +194,5 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
+
+    
