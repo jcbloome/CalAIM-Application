@@ -116,15 +116,15 @@ export default function ProgramInfoPage() {
                     </p>
                 </div>
             ) : (
-                 <div className="mb-4 text-center">
+                 <div className="mb-4">
                     <h1 className="text-2xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
                 </div>
             )}
-             <div className="hidden md:flex justify-center -mt-2 mb-6">
-                <GlossaryDialog />
+             <div className="hidden md:flex justify-start mb-6">
+                <GlossaryDialog className="shadow-sm" />
             </div>
 
-            <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-1 md:gap-6">
+            <div className="space-y-4 md:space-y-6">
               {sectionsByPage[currentPage].map((section) => (
                   <Card key={section.title} className="bg-background/80 flex flex-col">
                       <CardHeader>
