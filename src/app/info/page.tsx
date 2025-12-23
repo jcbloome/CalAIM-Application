@@ -90,7 +90,7 @@ export default function ProgramInfoPage() {
 
   const handlePrev = () => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage(prev => prev - 1);
     }
   };
   
