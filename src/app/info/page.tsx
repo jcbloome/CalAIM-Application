@@ -27,20 +27,20 @@ const allSections = [
         title: "The Role of Connections Care Home Consultants",
         content: ["For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
     },
+     {
+        title: "Types of Assisted Living (RCFEs/ARFs)",
+        content: ["Assisted Living facilities (RCFEs or ARFs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:"],
+        list: [
+            "Small, Home-Like Settings: These are typically 4-6 bed homes that provide a high staff-to-resident ratio. This environment offers more personalized attention and a quieter, more intimate living experience.",
+            "Large, Community Settings: These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support."
+        ]
+    },
     {
         title: "Managed Care Plans We Work With",
         content: ["You must be a member of one of these plans to utilize us for the CS for Assisted Transitions."],
         list: [
             "Health Net: Serving members in Sacramento and Los Ángeles counties.",
             "Kaiser Permanente: Serving members in various counties throughout California."
-        ]
-    },
-    {
-        title: "Types of Assisted Living (RCFEs/ARFs)",
-        content: ["Assisted Living facilities (RCFEs or ARFs) come in various sizes, each offering a different environment. Connections can help you find a setting that best suits your needs:"],
-        list: [
-            "Small, Home-Like Settings: These are typically 4-6 bed homes that provide a high staff-to-resident ratio. This environment offers more personalized attention and a quieter, more intimate living experience.",
-            "Large, Community Settings: These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support."
         ]
     },
     {
@@ -77,8 +77,8 @@ const allSections = [
 
 
 const sectionsByPage = [
-    [allSections[0], allSections[1], allSections[2], allSections[4]], // Page 1
-    [allSections[3], allSections[5], allSections[6]], // Page 2
+    [allSections[0], allSections[1], allSections[2], allSections[3]], // Page 1
+    [allSections[4], allSections[5], allSections[6]], // Page 2
     [allSections[7], allSections[8], allSections[9], allSections[10], allSections[11]], // Page 3
 ];
 
@@ -90,12 +90,14 @@ export default function ProgramInfoPage() {
   const handleNext = () => {
     if (currentPage < sectionsByPage.length - 1) {
       setCurrentPage(prev => prev + 1);
+      window.scrollTo(0, 0);
     }
   };
 
   const handlePrev = () => {
     if (currentPage > 0) {
       setCurrentPage(prev => prev - 1);
+      window.scrollTo(0, 0);
     }
   };
   
@@ -106,13 +108,22 @@ export default function ProgramInfoPage() {
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
           <div className="bg-card rounded-lg border shadow-sm p-4 sm:p-8 print:hidden">
-            <div className="mb-8 p-6 rounded-lg bg-primary text-primary-foreground">
-                <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
-                <p className="mt-2 text-md text-primary-foreground/90">
-                    An overview of the CalAIM program and our services. Please review before starting an application.
-                </p>
-                 <GlossaryDialog className="p-0 h-auto text-primary-foreground/80 hover:text-primary-foreground" />
-            </div>
+
+            {currentPage === 0 && (
+                <div className="mb-8 p-6 rounded-lg bg-primary text-primary-foreground">
+                    <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
+                    <p className="mt-2 text-md text-primary-foreground/90">
+                        An overview of the CalAIM program and our services. Please review before starting an application.
+                    </p>
+                    <GlossaryDialog className="p-0 h-auto text-primary-foreground/80 hover:text-primary-foreground" />
+                </div>
+            )}
+             
+            {currentPage > 0 && (
+                 <div className="mb-8 text-center">
+                    <h1 className="text-2xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
+                </div>
+            )}
 
             <div className="space-y-4">
               {sectionsByPage[currentPage].map((section) => (
