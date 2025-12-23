@@ -12,6 +12,9 @@ import {
     ArrowLeft,
     ArrowRight,
     FileCheck2,
+    BookText,
+    Network,
+    Shuffle,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
@@ -52,12 +55,28 @@ const allSections = [
             "Large, Community Settings: These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support."
         ]
     },
+    {
+        icon: BookText,
+        title: "What is an Individual Service Plan (ISP)?",
+        content: ["An Individual Service Plan (ISP) is a comprehensive assessment conducted by the Managed Care Plan's (MCP) clinical team to determine the member's care needs and to approve them for the program. The ISP assessment is a critical step for getting the MCP's authorization."]
+    },
+    {
+        icon: Network,
+        title: "Medicare vs. Medi-Cal",
+        content: ["Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway."]
+    },
+    {
+        icon: Shuffle,
+        title: "Switching to Health Net or Kaiser",
+        content: ["To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.", "You can change your health plan by contacting California Health Care Options at 1-800-430-4263. Generally, changes made by the end of the month are effective on the first day of the following month."]
+    }
 ];
 
 const sectionsByPage = [
     [allSections[0], allSections[1]],
     [allSections[2], allSections[3]],
-    [allSections[4]]
+    [allSections[4], allSections[5]],
+    [allSections[6], allSections[7]],
 ];
 
 export default function ProgramInfoPage() {
