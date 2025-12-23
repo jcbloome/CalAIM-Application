@@ -100,12 +100,12 @@ export default function ProgramInfoPage() {
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
           <div className="bg-card rounded-lg border shadow-sm p-4 sm:p-8 print:hidden">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
-                <p className="mt-2 text-md text-muted-foreground">
+            <div className="mb-8 p-6 rounded-lg bg-primary text-primary-foreground">
+                <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
+                <p className="mt-2 text-md text-primary-foreground/90">
                     An overview of the CalAIM program and our services. Please review before starting an application.
                 </p>
-                 <GlossaryDialog className="p-0 h-auto" />
+                 <GlossaryDialog className="p-0 h-auto text-primary-foreground/80 hover:text-primary-foreground" />
             </div>
 
             <div className="space-y-4">
