@@ -26,9 +26,7 @@ const allSections = [
         icon: Info,
         title: "What is CalAIM?",
         content: [
-            "CalAIM consists of 14 Community Supports (CS) and Enhanced Care Management (ECM) offered by Managed Care Plans (MCPs) in different counties. Not every MCP offers the same CS and ECM in each county.",
-            "Community Supports (CS): These are non-traditional services designed to address social drivers of health, such as housing support, medically-tailored meals, and assistance transitioning from institutions (like a nursing home) to the community. They serve as cost-effective alternatives to traditional medical services.",
-            "Enhanced Care Management (ECM): A comprehensive care management service for members with complex health and social needs. An ECM provider acts as a single point of contact to coordinate all aspects of a member's care, including physical health, behavioral health, and social services."
+            "CalAIM (California Advancing and Innovating Medi-Cal) is a long-term initiative by the state of California to transform the Medi-Cal program. Its goals are to improve health outcomes, reduce health disparities, and create a more integrated and seamless healthcare system. This portal focuses on one specific part of CalAIM: the Community Supports service for assisted living transitions."
         ]
     },
     {
@@ -130,15 +128,21 @@ export default function ProgramInfoPage() {
         <div className="w-full max-w-4xl mx-auto">
           {/* Main container for online view */}
           <div className="bg-card rounded-lg border shadow-sm p-4 sm:p-8 print:hidden">
+            
             <div className="mb-4">
-              <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
-              {currentPage === 0 && (
-                <p className="mt-2 text-md text-muted-foreground">
-                  An overview of the CalAIM program and our services. Please review before starting an application.
-                </p>
+              {currentPage === 0 ? (
+                 <div className="p-6 rounded-lg bg-blue-600 text-white mb-6">
+                    <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
+                    <p className="mt-2 text-lg text-blue-100">
+                      An overview of the CalAIM program and our services. Please review before starting an application.
+                    </p>
+                 </div>
+              ) : (
+                <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
               )}
             </div>
-            <div className="hidden md:block mb-4">
+            
+            <div className="mb-4 hidden md:block">
                 <GlossaryDialog />
             </div>
 
@@ -146,6 +150,7 @@ export default function ProgramInfoPage() {
               {sectionsByPage[currentPage].map((section) => (
                   <Card key={section.title} className="bg-background/80 flex flex-col">
                       <CardHeader className="flex-row items-center gap-4 space-y-0">
+                          <section.icon className="h-6 w-6 text-primary" />
                           <CardTitle className="text-lg text-gray-900">{section.title}</CardTitle>
                       </CardHeader>
                       <CardContent className="prose prose-sm max-w-none text-gray-700 flex-grow flex flex-col">
@@ -196,5 +201,3 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
-
-    
