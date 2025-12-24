@@ -12,6 +12,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { GlossaryDialog } from '@/components/GlossaryDialog';
 
 const infoSections = [
   {
@@ -28,7 +29,7 @@ const infoSections = [
     title: 'Switching to Health Net or Kaiser',
     content: [
       'To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.',
-      <>You can change your health plan by contacting <a href="https://www.healthcareoptions.dhcs.ca.gov/en/enroll" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">California Health Care Options</a> at 1-800-430-4263.</>,
+      <>You can change your health plan by contacting <a href="https://www.healthcareoptions.dhcs.ca.gov/en/enroll" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">California Health Care Options</a> at 1-800-430-4263 or visiting their website: https://www.healthcareoptions.dhcs.ca.gov/en/enroll.</>,
       'Generally, changes made by the end of the month are effective on the first day of the following month.',
     ],
   },
@@ -50,6 +51,9 @@ export default function InfoDetailsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Program Information
           </h1>
+           <div className="mt-4">
+            <GlossaryDialog />
+          </div>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
@@ -74,8 +78,8 @@ export default function InfoDetailsPage() {
                 </CardContent>
             </Card>
           ))}
-           <div className="mt-4 w-full border-t pt-4">
-                <div className="text-left mb-2">
+           <div className="mt-8 w-full border-t pt-4">
+                 <div className="text-left mb-2">
                     <span className="text-sm text-muted-foreground">Page 2 of 3</span>
                 </div>
                 <div className="flex justify-between">

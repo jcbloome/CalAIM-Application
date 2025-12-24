@@ -12,6 +12,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { GlossaryDialog } from '@/components/GlossaryDialog';
 
 const infoSections = [
   {
@@ -62,6 +63,9 @@ export default function InfoPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Program Information
           </h1>
+          <div className="mt-4">
+            <GlossaryDialog />
+          </div>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
@@ -86,7 +90,7 @@ export default function InfoPage() {
                 </CardContent>
             </Card>
           ))}
-            <div className="mt-4 w-full border-t pt-4">
+            <div className="mt-8 w-full border-t pt-4">
                 <div className="text-left mb-2">
                     <span className="text-sm text-muted-foreground">Page 1 of 3</span>
                 </div>
