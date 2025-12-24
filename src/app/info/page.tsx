@@ -113,7 +113,7 @@ export default function InfoPage() {
 
         <div className="max-w-4xl mx-auto space-y-6">
           {infoSections.map((section, index) => (
-            <Card key={index} className="shadow-md">
+            <Card key={index} className="shadow-sm">
               <CardHeader>
                 <CardTitle>{section.title}</CardTitle>
               </CardHeader>
