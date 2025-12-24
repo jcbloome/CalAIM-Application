@@ -124,23 +124,19 @@ export default function PrintablePackagePage() {
                             <CardDescription>Print specific forms as needed or view informational sheets.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-2">
+                          <ul>
                             {individualForms.map((form) => {
                                 return (
                                   <li key={form.title}>
-                                    <Link href={form.href} target="_blank" rel="noopener noreferrer" className="flex items-center p-2 -m-2 rounded-lg hover:bg-muted transition-colors">
-                                      <span className="text-sm font-medium text-foreground hover:text-primary">
+                                    <Link href={form.href} target="_blank" rel="noopener noreferrer" className="inline-block py-1 text-sm font-medium text-foreground hover:text-primary hover:underline underline-offset-4 transition-colors">
                                         {form.title}
-                                      </span>
                                     </Link>
                                   </li>
                                 )
                             })}
-                            <li className="pt-2 border-t">
-                               <Link href="/forms/printable-package/full-package" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 -m-2 rounded-lg hover:bg-muted transition-colors font-bold">
-                                  <span className="text-sm text-primary hover:underline">
+                            <li className="pt-2 border-t mt-2">
+                               <Link href="/forms/printable-package/full-package" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:underline underline-offset-4">
                                     Print Full Application Package
-                                  </span>
                                 </Link>
                             </li>
                           </ul>
