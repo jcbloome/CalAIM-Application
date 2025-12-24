@@ -83,7 +83,7 @@ export default function InfoEligibilityPage() {
                 </Button>
                  <Button asChild>
                     <Link href="/applications">
-                        Go to My Applications <ArrowRight className="ml-2 h-4 w-4" />
+                        Next <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
             </div>
