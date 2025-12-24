@@ -53,7 +53,7 @@ export default function InfoEligibilityPage() {
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6">
         <div className="text-center mb-10">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Program Information (3 of 3)
+            Program Information
           </h1>
           <p className="mt-2 text-md sm:text-lg text-muted-foreground max-w-3xl mx-auto">
             Financial obligations and other key program details.
@@ -75,12 +75,13 @@ export default function InfoEligibilityPage() {
                 </CardContent>
             </Card>
           ))}
-           <div className="flex justify-between pt-4">
+           <div className="flex justify-between items-center pt-4">
                 <Button asChild variant="outline">
                     <Link href="/info/details">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                     </Link>
                 </Button>
+                <span className="text-sm text-muted-foreground">Page 3 of 3</span>
                  <Button asChild>
                     <Link href="/applications">
                         Next <ArrowRight className="ml-2 h-4 w-4" />

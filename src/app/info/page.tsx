@@ -4,7 +4,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -61,7 +60,7 @@ export default function InfoPage() {
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6">
         <div className="text-center mb-10">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Program Information (1 of 3)
+            Program Information
           </h1>
           <p className="mt-2 text-md sm:text-lg text-muted-foreground max-w-3xl mx-auto">
             Understanding the CalAIM Community Supports program for Assisted Living Transitions.
@@ -90,7 +89,8 @@ export default function InfoPage() {
                 </CardContent>
             </Card>
           ))}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-between items-center pt-4">
+                <span className="text-sm text-muted-foreground">Page 1 of 3</span>
                 <Button asChild>
                     <Link href="/info/details">
                         Next <ArrowRight className="ml-2 h-4 w-4" />
