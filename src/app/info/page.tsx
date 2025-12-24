@@ -50,6 +50,16 @@ const infoSections = [
         "Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway.",
     ],
   },
+  {
+    title: 'Managed Care Plans We Work With',
+    content: [
+      'Connections currently is only contracted with Kaiser and Health Net for the CS for Assisted Living Transitions. You must switch to one of these plans if you would like to work with Connections.',
+    ],
+    list: [
+      'Health Net: Serving members in Sacramento and Los Ángeles counties.',
+      'Kaiser Permanente: Serving members in various counties throughout California.',
+    ],
+  },
 ];
 
 
@@ -90,7 +100,13 @@ export default function InfoPage() {
             </Card>
           ))}
             <div className="flex flex-col sm:flex-row justify-between items-center pt-4 mt-4 border-t gap-4">
-                <span className="text-sm text-muted-foreground">Page 1 of 3</span>
+                <div className="sm:hidden w-full text-center">
+                    <span className="text-sm text-muted-foreground">Page 1 of 3</span>
+                </div>
+                <div className="hidden sm:block"></div>
+                <div className="hidden sm:block">
+                     <span className="text-sm text-muted-foreground">Page 1 of 3</span>
+                </div>
                 <Button asChild>
                     <Link href="/info/details">
                         Next <ArrowRight className="ml-2 h-4 w-4" />
