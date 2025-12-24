@@ -55,15 +55,15 @@ const uploadableDocumentTypes = [
 export default function PrintablePackagePage() {
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<FileList | null>(null);
 
     const handleUpload = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) {
+        if (!files || files.length === 0) {
             toast({
                 variant: 'destructive',
-                title: 'No file selected',
-                description: 'Please select a document to upload.',
+                title: 'No files selected',
+                description: 'Please select one or more documents to upload.',
             });
             return;
         }
@@ -72,15 +72,16 @@ export default function PrintablePackagePage() {
         // Simulate upload
         setTimeout(() => {
             setIsUploading(false);
+            const fileNames = Array.from(files).map(f => f.name).join(', ');
             toast({
                 title: 'Upload Successful',
-                description: `Successfully uploaded ${file.name}.`,
+                description: `Successfully uploaded ${fileNames}.`,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
             // Reset form
             const form = e.target as HTMLFormElement;
             form.reset();
-            setFile(null);
+            setFiles(null);
         }, 2000);
     };
 
@@ -161,16 +162,16 @@ export default function PrintablePackagePage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="uploader-first-name">Your First Name</Label>
-                                    <Input id="uploader-first-name" placeholder="John" required />
+                                    <Input id="uploader-first-name" required />
                                 </div>
                                 <div>
                                     <Label htmlFor="uploader-last-name">Your Last Name</Label>
-                                    <Input id="uploader-last-name" placeholder="Doe" required />
+                                    <Input id="uploader-last-name" required />
                                 </div>
                             </div>
                             <div>
                                 <Label htmlFor="member-name">Member's Full Name</Label>
-                                <Input id="member-name" placeholder="Jane Smith" required />
+                                <Input id="member-name" required />
                             </div>
                              <div>
                                 <Label htmlFor="document-type">Name of Document</Label>
@@ -188,8 +189,8 @@ export default function PrintablePackagePage() {
                                 </Select>
                             </div>
                             <div>
-                                <Label htmlFor="file-upload">Document File</Label>
-                                <Input id="file-upload" type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                                <Label htmlFor="file-upload">Document File(s)</Label>
+                                <Input id="file-upload" type="file" required onChange={(e) => setFiles(e.target.files)} multiple />
                             </div>
                             <Button type="submit" className="w-full" disabled={isUploading}>
                                 {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Uploading...</> : <><UploadCloud className="mr-2 h-4 w-4" /> Upload Document</>}
