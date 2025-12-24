@@ -11,7 +11,7 @@ import { Header } from '@/components/Header';
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const infoSections = [
    {
@@ -34,12 +34,6 @@ const infoSections = [
     title: 'What is an Individual Service Plan (ISP)?',
     content: [
         "An Individual Service Plan (ISP) is a comprehensive assessment conducted by the Managed Care Plan's (MCP) clinical team to determine the member's care needs and to approve them for the program. The ISP assessment is a critical step for getting the MCP's authorization. The ISP is either done virtually (Health Net) or in-person (Kaiser) by a Connections' MSW/RN to administer a tool to determine level of care (the amount the MCP will pay for the 'assisted living' portion). For Health Net, the tiered level is determined by Connections. For Kaiser, the tiered level is determined by Kaiser.",
-    ],
-  },
-  {
-    title: 'Medicare vs. Medi-Cal',
-    content: [
-        "Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway.",
     ],
   },
 ];
@@ -74,10 +68,15 @@ export default function InfoEligibilityPage() {
                 </CardContent>
             </Card>
           ))}
-           <div className="flex justify-start pt-4">
+           <div className="flex justify-between pt-4">
                 <Button asChild variant="outline">
                     <Link href="/info/details">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+                    </Link>
+                </Button>
+                 <Button asChild>
+                    <Link href="/applications">
+                        Go to My Applications <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
             </div>

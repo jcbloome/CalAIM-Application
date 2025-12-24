@@ -45,6 +45,12 @@ const infoSections = [
       'Large, Community Settings: These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support.',
     ],
   },
+  {
+    title: 'Medicare vs. Medi-Cal',
+    content: [
+        "Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway.",
+    ],
+  },
 ];
 
 
