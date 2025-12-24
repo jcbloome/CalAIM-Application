@@ -28,9 +28,8 @@ const infoSections = [
     title: 'Switching to Health Net or Kaiser',
     content: [
       'To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.',
-      'You can change your health plan by contacting California Health Care Options at 1-800-430-4263 or visiting their website. Generally, changes made by the end of the month are effective on the first day of the following month.',
+      <>You can change your health plan by contacting <a href="https://www.healthcareoptions.dhcs.ca.gov/en/enroll" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">California Health Care Options</a> at 1-800-430-4263. Generally, changes made by the end of the month are effective on the first day of the following month.</>,
     ],
-    link: 'https://www.healthcareoptions.dhcs.ca.gov/en/enroll',
   },
    {
     title: 'What if I am assigned to Molina?',
@@ -50,9 +49,6 @@ export default function InfoDetailsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Program Information
           </h1>
-          <p className="mt-2 text-md sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Details on Health Plan requirements for program eligibility.
-          </p>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
@@ -73,11 +69,6 @@ export default function InfoDetailsPage() {
                         <li key={i}>{item}</li>
                         ))}
                     </ul>
-                    )}
-                    {section.link && (
-                    <a href={section.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        Visit Website
-                    </a>
                     )}
                 </CardContent>
             </Card>

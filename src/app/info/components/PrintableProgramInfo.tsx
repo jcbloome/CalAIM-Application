@@ -46,6 +46,9 @@ export function PrintableProgramInfo() {
                 <li><strong>Large, Community Settings:</strong> These are often 100+ bed facilities that feature amenities like group dining rooms, a wide variety of planned activities, and social opportunities. Staff is available as needed to provide care and support.</li>
             </ul>
 
+            <SectionTitle>Medicare vs. Medi-Cal</SectionTitle>
+            <p>Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway.</p>
+
             <SectionTitle>Managed Care Plans We Work With</SectionTitle>
             <p>You must be a member of one of these plans to utilize us for the CS for Assisted Transitions.</p>
             <ul className="list-disc pl-5">
@@ -55,7 +58,7 @@ export function PrintableProgramInfo() {
             
             <SectionTitle>Switching to Health Net or Kaiser</SectionTitle>
             <p>To enroll in this CalAIM program through Connections, you must be a member of Health Net or Kaiser. If you are in another Medi-Cal managed care plan, you will need to switch.</p>
-            <p>You can change your health plan by contacting California Health Care Options at 1-800-430-4263 or visiting their website at: <a href="https://www.healthcareoptions.dhcs.ca.gov/en/enroll" target="_blank" rel="noopener noreferrer">https://www.healthcareoptions.dhcs.ca.gov/en/enroll</a>. Generally, changes made by the end of the month are effective on the first day of the following month.</p>
+            <p>You can change your health plan by contacting <a href="https://www.healthcareoptions.dhcs.ca.gov/en/enroll" target="_blank" rel="noopener noreferrer">California Health Care Options</a> at 1-800-430-4263 or visiting their website: https://www.healthcareoptions.dhcs.ca.gov/en/enroll. Generally, changes made by the end of the month are effective on the first day of the following month.</p>
             
             <SectionTitle>What if I am assigned to Molina?</SectionTitle>
             <p>When applying for Medi-Cal in Los Angeles County, many people are automatically assigned to the Molina health plan. Since we are not contracted with Molina for this specific program, you will need to switch to either Health Net or Kaiser to work with us. You can do this by contacting Health Care Options at the number provided above.</p>
@@ -72,8 +75,6 @@ export function PrintableProgramInfo() {
             <SectionTitle>What is an Individual Service Plan (ISP)?</SectionTitle>
             <p>An Individual Service Plan (ISP) is a comprehensive assessment conducted by the Managed Care Plan's (MCP) clinical team to determine the member's care needs and to approve them for the program. The ISP assessment is a critical step for getting the MCP's authorization. The ISP is either done virtually (Health Net) or in-person (Kaiser) by a Connections' MSW/RN to administer a tool to determine level of care (the amount the MCP will pay for the 'assisted living' portion). For Health Net, the tiered level is determined by Connections. For Kaiser, the tiered level is determined by Kaiser.</p>
             
-            <SectionTitle>Medicare vs. Medi-Cal</SectionTitle>
-            <p>Medicare is a federal health insurance program mainly for people 65 or older. Medi-Cal is California's Medicaid program for low-income individuals. The CalAIM program is a Medi-Cal benefit. While they are different, Medicare-covered days in a facility can count toward the 60-day stay requirement for the SNF Transition pathway.</p>
         </article>
     );
 }
