@@ -26,7 +26,11 @@ const allSections = [
         icon: Info,
         title: "What is CalAIM?",
         content: [
-            "CalAIM (California Advancing and Innovating Medi-Cal) is a long-term initiative by the state of California to transform the Medi-Cal program. Its goals are to improve health outcomes, reduce health disparities, and create a more integrated and seamless healthcare system. This portal focuses on one specific part of CalAIM: the Community Supports service for assisted living transitions."
+            "CalAIM consists of 14 Community Supports (CS) and Enhanced Care Management (ECM) offered by managed care plans (MCPs) in different counties. Not every MCP offers the same CS and ECM in each county."
+        ],
+        list: [
+            "Community Supports (CS): These are services designed to address the social drivers of health. For example, if a member is homeless and it impacts their health, CS can provide housing navigation and deposit assistance.",
+            "Enhanced Care Management (ECM): A collaborative approach to provide intensive and comprehensive care management services to members with complex health and social needs."
         ]
     },
     {
@@ -96,54 +100,28 @@ const allSections = [
     }
 ];
 
-const sectionsByPage = [
-    [allSections[0], allSections[1], allSections[2], allSections[3]], // Page 1
-    [allSections[4], allSections[5], allSections[6]], // Page 2
-    [allSections[7], allSections[8], allSections[9], allSections[10], allSections[11]], // Page 3
-];
-
-
 export default function ProgramInfoPage() {
-  const [currentPage, setCurrentPage] = useState(0);
   const { user } = useUser();
 
-  const handleNext = () => {
-    if (currentPage < sectionsByPage.length - 1) {
-      setCurrentPage(prev => prev + 1);
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
-      window.scrollTo(0, 0);
-    }
-  };
-  
   return (
     <div className="flex flex-col min-h-screen bg-slate-50/50 print:bg-white">
       <Header />
       <main className="flex-grow flex items-center justify-center py-8 px-4 sm:px-6">
         <div className="w-full max-w-4xl mx-auto space-y-8">
             <div className="mb-4">
-                {currentPage === 0 ? (
-                    <div className="p-6 rounded-lg bg-blue-600 text-white mb-6">
-                        <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
-                        <p className="mt-2 text-lg text-blue-100">
-                        An overview of the CalAIM program and our services. Please review before starting an application.
-                        </p>
-                    </div>
-                ) : (
-                    <h1 className="text-3xl font-bold tracking-tight">Program Information ({currentPage + 1}/{sectionsByPage.length})</h1>
-                )}
+                <div className="p-6 rounded-lg bg-blue-600 text-white mb-6">
+                    <h1 className="text-3xl font-bold tracking-tight">Program Information</h1>
+                    <p className="mt-2 text-lg text-blue-100">
+                    An overview of the CalAIM program and our services. Please review before starting an application.
+                    </p>
+                </div>
                 <div className="hidden md:block">
                   <GlossaryDialog />
                 </div>
             </div>
 
             <div className="space-y-6">
-              {sectionsByPage[currentPage].map((section) => (
+              {allSections.map((section) => (
                   <Card key={section.title} className="bg-card/80">
                       <CardHeader className="flex-row items-center gap-4 space-y-0">
                           <section.icon className="h-6 w-6 text-primary" />
@@ -178,19 +156,10 @@ export default function ProgramInfoPage() {
                   </Card>
               ))}
             </div>
-             
-            <div className="mt-8 pt-5 border-t flex justify-between items-center">
-              <Button variant="outline" onClick={handlePrev} disabled={currentPage === 0}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-              </Button>
-              {currentPage < sectionsByPage.length - 1 && (
-                 <Button onClick={handleNext}>
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
-            </div>
         </div>
       </main>
     </div>
   );
 }
+
+    
