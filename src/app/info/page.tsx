@@ -26,7 +26,7 @@ const allSections = [
         icon: Info,
         title: "What is CalAIM?",
         content: [
-            "CalAIM consists of 14 Community Supports (CS) and Enhanced Care Management (ECM) offered by managed care plans (MCPs) in different counties. Not every MCP offers the same CS and ECM in each county."
+            "CalAIM consists of 24 Community Supports (CS) and Enhanced Care Management (ECM) offered by managed care plans (MCPs) in different counties. Not every MCP offers the same CS and ECM in each county."
         ],
         list: [
             "Community Supports (CS): These are services designed to address the social drivers of health. For example, if a member is homeless and it impacts their health, CS can provide housing navigation and deposit assistance.",
