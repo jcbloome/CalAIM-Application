@@ -41,7 +41,7 @@ const allSections = [
     {
         icon: HeartHandshake,
         title: "The Role of Connections Care Home Consultants",
-        content: ["For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS. Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
+        content: ["For 35 years Connections has helped private paid families find care homes. We are excited to now be partnered with MCPs as a CS Provider that assists with understanding the program, finding participating facilities, coordinating paperwork and assessments, and liaising with your Managed Care Plan to request authorization for the CS.", "Once a member is placed, we also send a MSW to visit the member at the RCFE/ARF for monthly quality control checks and provide ongoing care coordination."]
     },
     {
         icon: Home,
@@ -75,7 +75,7 @@ const allSections = [
     {
         icon: DollarSign,
         title: "Share of Cost (SOC)",
-        content: ["A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay. This happens when your income is above the limit for free Medi-Cal but you still qualify for the program.", "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC."]
+        content: ["A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay.", "This happens when your income is above the limit for free Medi-Cal but you still qualify for the program.", "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC."]
     },
     {
         icon: Home,
@@ -162,5 +162,3 @@ export default function ProgramInfoPage() {
     </div>
   );
 }
-
-    
