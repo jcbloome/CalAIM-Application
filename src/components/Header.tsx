@@ -49,7 +49,7 @@ export function Header() {
             alt="Connect CalAIM Logo"
             width={240}
             height={67}
-            className="h-auto object-contain"
+            className="w-48 h-auto object-contain"
             priority
           />
         </Link>
