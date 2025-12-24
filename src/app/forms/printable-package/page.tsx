@@ -1,20 +1,15 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Printer, FileText, Info, FileQuestion, UploadCloud, FileSymlink, Package, AlertCircle } from 'lucide-react';
-
-const bundledForms = [
-  {
-    title: 'Full Application Package',
-    description: 'A single PDF containing all necessary forms and program information. Recommended for most users.',
-    href: '/forms/printable-package/full-package',
-  },
-];
+import { Printer, FileText, Info, FileQuestion, UploadCloud, FileSymlink, Package, AlertCircle, Send, Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const individualForms = [
   {
@@ -45,6 +40,37 @@ const individualForms = [
 ];
 
 export default function PrintablePackagePage() {
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+
+    const handleUpload = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!file) {
+            toast({
+                variant: 'destructive',
+                title: 'No file selected',
+                description: 'Please select a document to upload.',
+            });
+            return;
+        }
+
+        setIsUploading(true);
+        // Simulate upload
+        setTimeout(() => {
+            setIsUploading(false);
+            toast({
+                title: 'Upload Successful',
+                description: `Successfully uploaded ${file.name}.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+            // Reset form
+            const form = e.target as HTMLFormElement;
+            form.reset();
+            setFile(null);
+        }, 2000);
+    };
+
   return (
     <>
       <Header />
@@ -52,95 +78,100 @@ export default function PrintablePackagePage() {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold tracking-tight">Printable Forms & Resources</h1>
           <p className="mt-2 text-lg text-muted-foreground max-w-3xl mx-auto">
-            Access printable versions of application forms and informational documents. You can also upload completed forms here.
+            Access printable versions of application forms, informational documents, or upload completed documents here.
           </p>
         </div>
+        
+        <div className="space-y-8">
+            <Card className="bg-blue-50 border-blue-200">
+                <CardHeader className="flex-row items-center gap-4">
+                        <AlertCircle className="h-8 w-8 text-blue-700" />
+                    <CardTitle className="text-blue-900">Online Application is Preferred</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <CardDescription className="text-blue-800 mb-4">
+                        For the fastest and most secure experience, we strongly recommend completing the application through our online portal. This ensures your data is saved as you go and allows for real-time status updates.
+                    </CardDescription>
+                    <Button asChild className="w-full sm:w-auto" variant="secondary">
+                        <Link href="/applications">Go to My Applications</Link>
+                    </Button>
+                </CardContent>
+            </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-                <Card className="border-l-4 border-primary">
-                    <CardHeader>
-                        <CardTitle>Bundled Packages</CardTitle>
-                        <CardDescription>Print a full set of documents at once.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {bundledForms.map((form) => (
-                        <Card key={form.title} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4">
-                            <div className="flex-1 mb-4 sm:mb-0">
-                                <div className="flex items-center gap-3">
-                                     <div className="p-2 bg-muted rounded-md hidden sm:block">
-                                        <Package className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold">{form.title}</h3>
-                                        <p className="text-sm text-muted-foreground">{form.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                             <Button asChild className="w-full sm:w-auto">
-                                <Link href={form.href} target="_blank" rel="noopener noreferrer">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-8">
+                     <Card className="border-l-4 border-primary">
+                        <CardHeader>
+                            <CardTitle>Bundled Application Package</CardTitle>
+                            <CardDescription>A single PDF containing all necessary forms and program information. Recommended for most users.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild className="w-full">
+                                <Link href="/forms/printable-package/full-package" target="_blank" rel="noopener noreferrer">
                                 <Printer className="mr-2 h-4 w-4" />
-                                Print Package
+                                Print Full Package
                                 </Link>
                             </Button>
-                        </Card>
-                        ))}
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
 
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Individual Forms</CardTitle>
-                        <CardDescription>Print specific forms as needed.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {individualForms.map((form) => {
-                            const Icon = form.icon;
-                            return (
-                                <Link key={form.title} href={form.href} target="_blank" rel="noopener noreferrer" className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                                     <div className="flex items-center gap-4">
-                                        <Icon className="h-5 w-5 text-muted-foreground" />
-                                        <span className="font-medium text-sm">{form.title}</span>
-                                    </div>
-                                </Link>
-                            )
-                        })}
-                    </CardContent>
-                </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Individual Forms</CardTitle>
+                            <CardDescription>Print specific forms as needed.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {individualForms.map((form) => {
+                                const Icon = form.icon;
+                                return (
+                                    <Link key={form.title} href={form.href} target="_blank" rel="noopener noreferrer" className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <Icon className="h-5 w-5 text-muted-foreground" />
+                                            <span className="font-medium text-sm">{form.title}</span>
+                                        </div>
+                                    </Link>
+                                )
+                            })}
+                        </CardContent>
+                    </Card>
+                </div>
 
-            </div>
-
-             <div className="lg:col-span-1 space-y-6">
-                <Card className="bg-blue-50 border-blue-200">
-                    <CardHeader className="flex-row items-center gap-4">
-                         <AlertCircle className="h-8 w-8 text-blue-700" />
-                        <CardTitle className="text-blue-900">Online Application is Preferred</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <CardDescription className="text-blue-800">
-                           For the fastest and most secure experience, we strongly recommend completing the application through our online portal. This ensures your data is saved as you go and allows for real-time status updates.
-                        </CardDescription>
-                         <Button asChild className="w-full mt-4" variant="secondary">
-                            <Link href="/applications">Go to My Applications</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Secure Upload Portal</CardTitle>
-                        <CardDescription>If you've completed a printable form, you must upload it to an application.</CardDescription>
+                        <CardDescription>If you've completed a printable form, you can upload it here. Please note this does not link it to a specific application automatically.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">Go to an existing application's pathway page to upload your signed and completed documents.</p>
-                         <Button asChild className="w-full">
-                            <Link href="/applications">
-                                <UploadCloud className="mr-2 h-4 w-4" />
-                                Select Application to Upload
-                            </Link>
-                        </Button>
+                        <form onSubmit={handleUpload} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="uploader-first-name">Your First Name</Label>
+                                    <Input id="uploader-first-name" placeholder="John" required />
+                                </div>
+                                <div>
+                                    <Label htmlFor="uploader-last-name">Your Last Name</Label>
+                                    <Input id="uploader-last-name" placeholder="Doe" required />
+                                </div>
+                            </div>
+                            <div>
+                                <Label htmlFor="member-name">Member's Full Name</Label>
+                                <Input id="member-name" placeholder="Jane Smith" required />
+                            </div>
+                             <div>
+                                <Label htmlFor="document-name">Name of Document</Label>
+                                <Input id="document-name" placeholder="e.g., Signed HIPAA Waiver" required />
+                            </div>
+                            <div>
+                                <Label htmlFor="file-upload">Document File</Label>
+                                <Input id="file-upload" type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={isUploading}>
+                                {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Uploading...</> : <><UploadCloud className="mr-2 h-4 w-4" /> Upload Document</>}
+                            </Button>
+                        </form>
                     </CardContent>
                 </Card>
-             </div>
+            </div>
 
         </div>
 
