@@ -97,62 +97,61 @@ export default function PrintablePackagePage() {
         </div>
         
         <div className="space-y-8">
-            <Card className="border-primary border-2">
-                <CardHeader className="flex-row items-center gap-4">
-                        <AlertCircle className="h-8 w-8 text-primary" />
-                    <CardTitle className="text-primary">Important Note on Online Applications</CardTitle>
+            <Card className="border-primary border-2 shadow-lg">
+                <CardHeader className="flex-row items-start gap-4">
+                        <AlertCircle className="h-8 w-8 text-primary mt-1" />
+                    <div>
+                        <CardTitle className="text-primary">Important Note on Online Applications</CardTitle>
+                        <CardDescription className="text-foreground/80 mt-2">
+                           For the fastest and most secure experience, we strongly recommend completing the application through our online portal. Even if the CS Summary Form is uploaded, the information must be inputted online for quicker processing and application tracking.
+                           <br/><br/>
+                           1. Either print individual forms or select 2. The entire printable package.
+                        </CardDescription>
+                    </div>
                 </CardHeader>
-                <CardContent>
-                    <CardDescription className="text-foreground/80 mb-4">
-                        For the fastest and most secure experience, we strongly recommend completing the application through our online portal. Even if the CS Summary Form is uploaded, the information must be inputted online for quicker processing and application tracking. This ensures your data is saved as you go and allows for real-time status updates.
-                    </CardDescription>
-                    <Button asChild className="w-full sm:w-auto" variant="secondary">
+                <CardContent className="flex items-center justify-start gap-4">
+                     <Button asChild className="w-full sm:w-auto" variant="default">
                         <Link href="/applications">Go to My Applications</Link>
                     </Button>
                 </CardContent>
             </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div className="space-y-8">
-                     <Card className="border-l-4 border-primary">
-                        <CardHeader>
-                            <CardTitle>Bundled Application Package</CardTitle>
-                            <CardDescription>A single PDF containing all necessary forms and program information. Recommended for most users.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button asChild className="w-full">
-                                <Link href="/forms/printable-package/full-package" target="_blank" rel="noopener noreferrer">
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print Full Package
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
-
                      <Card>
                         <CardHeader>
-                            <CardTitle>Individual Forms</CardTitle>
-                            <CardDescription>Print specific forms as needed.</CardDescription>
+                            <CardTitle>Individual Forms & Resources</CardTitle>
+                            <CardDescription>Print specific forms as needed or view informational sheets.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <ul className="space-y-3">
+                          <ul className="space-y-4">
                             {individualForms.map((form) => {
                                 const Icon = form.icon;
                                 return (
                                   <li key={form.title}>
-                                    <Link href={form.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm font-medium text-primary hover:underline underline-offset-4">
-                                      <Icon className="h-4 w-4 text-muted-foreground" />
-                                      {form.title}
+                                    <Link href={form.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 -m-3 rounded-lg hover:bg-muted transition-colors">
+                                      <Icon className="h-5 w-5 text-primary" />
+                                      <span className="text-sm font-medium text-foreground hover:text-primary">
+                                        {form.title}
+                                      </span>
                                     </Link>
                                   </li>
                                 )
                             })}
+                            <li className="pt-4 border-t">
+                                 <Link href="/forms/printable-package/full-package" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 -m-3 rounded-lg hover:bg-muted transition-colors font-bold">
+                                      <Package className="h-5 w-5 text-primary" />
+                                      <span className="text-sm text-primary hover:underline">
+                                        Print Full Application Package
+                                      </span>
+                                    </Link>
+                            </li>
                           </ul>
                         </CardContent>
                     </Card>
                 </div>
 
-                <Card>
+                <Card className="sticky top-28">
                     <CardHeader>
                         <CardTitle>Secure Upload Portal</CardTitle>
                         <CardDescription>If you've completed a printable form, you can upload it here. Please note this does not link it to a specific application automatically.</CardDescription>
