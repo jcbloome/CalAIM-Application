@@ -8,11 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import imageData from '@/lib/placeholder-images.json';
 import { Header } from '@/components/Header';
-import { useUser } from '@/firebase';
 
 export default function Home() {
   const mascot = imageData.placeholderImages.find(p => p.id === 'fox-mascot');
-  const { user } = useUser();
 
   return (
     <>
@@ -39,8 +37,8 @@ export default function Home() {
           </CardHeader>
           <CardContent className="flex flex-col items-center p-6 pt-0 sm:pb-10">
              <Button asChild size="lg" className="text-lg py-7 px-8">
-                <Link href={user ? "/applications" : "/info"}>
-                  {user ? "Continue" : "Let's Go!"}
+                <Link href="/info">
+                  Let's Go!
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
