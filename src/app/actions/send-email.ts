@@ -5,14 +5,11 @@ import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
 import ReminderEmail from '@/components/emails/ReminderEmail';
 import * as admin from 'firebase-admin';
-import serviceAccount from '../../../service-account_key.json';
 
 // This file is a server-side action and needs its own Admin SDK initialization.
 // The check prevents re-initialization if it has already been done elsewhere.
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  });
+  admin.initializeApp();
 }
 
 if (!process.env.RESEND_API_KEY) {

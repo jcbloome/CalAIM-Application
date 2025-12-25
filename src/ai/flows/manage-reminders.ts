@@ -7,13 +7,10 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import serviceAccount from '../../../service-account_key.json';
 import { sendReminderEmail } from '@/app/actions/send-email';
 
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  });
+  admin.initializeApp();
 }
 
 // ========== SEND REMINDER EMAILS FLOW ==========
