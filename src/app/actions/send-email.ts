@@ -124,5 +124,3 @@ export const sendReminderEmail = async (payload: ReminderPayload) => {
         throw error;
     }
 };
-
-    
