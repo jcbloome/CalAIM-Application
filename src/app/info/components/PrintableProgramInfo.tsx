@@ -24,7 +24,7 @@ export function PrintableProgramInfo() {
                 <p className="mt-2 text-md text-gray-500">The Connect CalAIM application portal for the California Advancing and Innovating Medi-Cal (CalAIM) Community Support for Assisted Transitions (SNF Diversion/Transition) for Health Net and Kaiser.</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10 p-6 bg-gray-50 rounded-lg not-prose border-2 border-primary">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-10 p-6 bg-gray-50 rounded-lg not-prose border-2 border-primary">
                 {acronyms.map((acronym) => (
                     <Acronym key={acronym.term} term={acronym.term} definition={acronym.definition} />
                 ))}

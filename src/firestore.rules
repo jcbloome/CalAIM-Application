@@ -155,7 +155,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isOwnerOrAdmin(userId);
       allow create, update: if isOwner(userId) || isSuperAdmin();
-      allow list: if isSuperAdmin(); // Allow listing of users for super admins
+      allow list: if isAdmin() || isSuperAdmin(); // Allow listing of users for admins and super admins
       allow delete: if isOwnerOrAdmin(userId);
 
       /**
@@ -208,7 +208,7 @@ service cloud.firestore {
     match /roles_admin/{userId} {
       allow get: if isSignedIn();
       allow write: if isSuperAdmin();
-      allow list: if isSuperAdmin();
+      allow list: if isAdmin() || isSuperAdmin();
       allow delete: if isSuperAdmin();
     }
 
