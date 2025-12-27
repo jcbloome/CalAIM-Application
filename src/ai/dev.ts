@@ -1,10 +1,8 @@
-
 'use server';
 import { config } from 'dotenv';
 config();
 
 import * as admin from 'firebase-admin';
-import { onLog } from 'firebase-functions/logger';
 
 // In a secure server-side environment like App Hosting,
 // the Admin SDK can automatically detect credentials.
