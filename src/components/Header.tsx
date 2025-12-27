@@ -29,6 +29,7 @@ const navLinks = [
 
 export function Header() {
   const { user, isUserLoading } = useUser();
+  const { isAdmin, isSuperAdmin } = useAdmin();
   const auth = useAuth();
   const router = useRouter();
   const [isSheetOpen, setSheetOpen] = useState(false);
@@ -64,6 +65,14 @@ export function Header() {
             <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
           ) : user ? (
             <div className='flex items-center gap-2'>
+             {(isAdmin || isSuperAdmin) && (
+                <Button variant="outline" asChild>
+                    <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                    </Link>
+                </Button>
+             )}
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="rounded-full">
@@ -112,6 +121,11 @@ export function Header() {
                                     {link.label}
                                 </Link>
                             ))}
+                            {(isAdmin || isSuperAdmin) && (
+                                 <Link href="/admin" className="text-lg font-medium text-foreground hover:text-primary" onClick={() => setSheetOpen(false)}>
+                                    Admin Dashboard
+                                </Link>
+                            )}
                         </nav>
                         <div className="mt-auto border-t pt-6">
                              {isUserLoading ? (

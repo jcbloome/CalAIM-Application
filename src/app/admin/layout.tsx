@@ -106,11 +106,11 @@ function AdminHeader() {
                     </NavigationMenuLink>
                   </NavigationMenuItem>
               )}
-               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                  <Link href='/applications'>
-                    User View
-                  </Link>
-                </NavigationMenuLink>
+               <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                      <Link href="/applications">User View</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -163,6 +163,12 @@ function AdminHeader() {
                         </SheetClose>
                       );
                     })}
+                     <SheetClose asChild>
+                      <Link href="/applications" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
+                          <UserIcon className="h-4 w-4" />
+                          User View
+                        </Link>
+                    </SheetClose>
                   </nav>
                 </SheetContent>
               </Sheet>
