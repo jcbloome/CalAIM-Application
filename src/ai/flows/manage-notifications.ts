@@ -9,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
+import { getUser } from '../tools/get-user';
 
 // ========== GET RECIPIENTS FLOW ==========
 
@@ -27,8 +28,12 @@ const getNotificationRecipientsFlow = ai.defineFlow(
   {
     name: 'getNotificationRecipientsFlow',
     outputSchema: GetRecipientsOutputSchema,
+    tools: [getUser]
   },
   async () => {
+    // Ensure the user is authenticated before proceeding.
+    await getUser();
+
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
     
@@ -71,8 +76,12 @@ const updateNotificationRecipientsFlow = ai.defineFlow(
     name: 'updateNotificationRecipientsFlow',
     inputSchema: UpdateRecipientsInputSchema,
     outputSchema: UpdateRecipientsOutputSchema,
+    tools: [getUser]
   },
   async ({ uids }) => {
+    // Ensure the user is authenticated before proceeding.
+    await getUser();
+
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
 

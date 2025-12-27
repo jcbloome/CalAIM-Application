@@ -128,6 +128,8 @@ const makeWebhookFlow = ai.defineFlow(
     outputSchema: WebhookOutputSchema,
   },
   async (data) => {
+    // Note: No explicit auth check here as this is an inbound webhook.
+    // Security relies on the obscurity of the webhook URL and validation of the payload.
     const firestore = admin.firestore();
     console.log('[makeWebhookFlow] Received data for processing.');
 

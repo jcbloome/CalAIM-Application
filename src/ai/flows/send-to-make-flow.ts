@@ -6,6 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { getUser } from '../tools/get-user';
 
 // This schema should be kept in sync with the sample data object in the Super Admin page
 // and the general structure of the CS Summary Form.
@@ -89,8 +90,12 @@ const sendToMakeFlow = ai.defineFlow(
     name: 'sendToMakeFlow',
     inputSchema: TestWebhookInputSchema,
     outputSchema: WebhookResponseSchema,
+    tools: [getUser],
   },
   async (data) => {
+    // Ensure the user is authenticated before proceeding.
+    await getUser();
+
     console.log('[sendToMakeFlow] Received data for webhook.');
 
     const webhookUrl = process.env.MAKE_WEBHOOK_URL;

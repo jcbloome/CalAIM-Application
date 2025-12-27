@@ -8,6 +8,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
 import { sendReminderEmail } from '@/app/actions/send-email';
+import { getUser } from '../tools/get-user';
 
 // ========== SEND REMINDER EMAILS FLOW ==========
 
@@ -26,8 +27,11 @@ const sendReminderEmailsFlow = ai.defineFlow(
     {
         name: 'sendReminderEmailsFlow',
         outputSchema: SendRemindersOutputSchema,
+        tools: [getUser]
     },
     async () => {
+        // Ensure the user is authenticated before proceeding.
+        await getUser();
         const firestore = admin.firestore();
 
         try {

@@ -9,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
+import { getUser } from '../tools/get-user';
 
 // ========== ADD STAFF FLOW ==========
 
@@ -36,8 +37,12 @@ const addStaffFlow = ai.defineFlow(
     name: 'addStaffFlow',
     inputSchema: AddStaffInputSchema,
     outputSchema: AddStaffOutputSchema,
+    tools: [getUser],
   },
   async ({ email, firstName, lastName }) => {
+    // Ensure the user is authenticated before proceeding.
+    await getUser();
+
     const auth = admin.auth();
     const firestore = admin.firestore();
 
@@ -122,8 +127,12 @@ const updateStaffRoleFlow = ai.defineFlow(
     name: 'updateStaffRoleFlow',
     inputSchema: UpdateStaffRoleInputSchema,
     outputSchema: UpdateStaffRoleOutputSchema,
+    tools: [getUser]
   },
   async ({ uid, isSuperAdmin }) => {
+    // Ensure the user is authenticated before proceeding.
+    await getUser();
+
     const firestore = admin.firestore();
     const superAdminRoleRef = firestore.collection('roles_super_admin').doc(uid);
 
