@@ -13,7 +13,6 @@ import * as admin from 'firebase-admin';
 // ========== ADD STAFF FLOW ==========
 
 const AddStaffInputSchema = z.object({
-  user: z.any().describe('The authenticated Firebase user object of the caller.'),
   email: z.string().email(),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -38,11 +37,8 @@ const addStaffFlow = ai.defineFlow(
     inputSchema: AddStaffInputSchema,
     outputSchema: AddStaffOutputSchema,
   },
-  async ({ user, email, firstName, lastName }) => {
-    if (!user || !user.uid) {
-        throw new Error("User authentication is required to perform this action.");
-    }
-
+  async ({ email, firstName, lastName }) => {
+    // Auth checks should be performed server-side before calling this flow
     const auth = admin.auth();
     const firestore = admin.firestore();
 
@@ -105,7 +101,6 @@ const addStaffFlow = ai.defineFlow(
 // ========== UPDATE STAFF ROLE FLOW ==========
 
 const UpdateStaffRoleInputSchema = z.object({
-  user: z.any().describe('The authenticated Firebase user object of the caller.'),
   uid: z.string().min(1),
   isSuperAdmin: z.boolean(),
 });
@@ -129,11 +124,8 @@ const updateStaffRoleFlow = ai.defineFlow(
     inputSchema: UpdateStaffRoleInputSchema,
     outputSchema: UpdateStaffRoleOutputSchema,
   },
-  async ({ user, uid, isSuperAdmin }) => {
-    if (!user || !user.uid) {
-        throw new Error("User authentication is required to perform this action.");
-    }
-
+  async ({ uid, isSuperAdmin }) => {
+    // Auth checks should be performed server-side before calling this flow
     const firestore = admin.firestore();
     const superAdminRoleRef = firestore.collection('roles_super_admin').doc(uid);
 

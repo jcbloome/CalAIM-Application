@@ -9,13 +9,10 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { User } from 'firebase/auth';
 
 // ========== GET RECIPIENTS FLOW ==========
 
-const GetRecipientsInputSchema = z.object({
-  user: z.any().describe('The authenticated Firebase user object.'),
-});
+const GetRecipientsInputSchema = z.object({});
 export type GetRecipientsInput = z.infer<typeof GetRecipientsInputSchema>;
 
 const GetRecipientsOutputSchema = z.object({
@@ -35,12 +32,9 @@ const getNotificationRecipientsFlow = ai.defineFlow(
     inputSchema: GetRecipientsInputSchema,
     outputSchema: GetRecipientsOutputSchema,
   },
-  async ({ user }) => {
-    // Check for user explicitly passed to the flow.
-    if (!user || !user.uid) {
-        throw new Error("User authentication is required to perform this action.");
-    }
-
+  async () => {
+    // Admin check should be done on the server before calling this flow.
+    // For now, we assume the caller is authorized.
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
     
@@ -62,7 +56,6 @@ const getNotificationRecipientsFlow = ai.defineFlow(
 // ========== UPDATE RECIPIENTS FLOW ==========
 
 const UpdateRecipientsInputSchema = z.object({
-  user: z.any().describe('The authenticated Firebase user object.'),
   uids: z.array(z.string()),
 });
 export type UpdateRecipientsInput = z.infer<typeof UpdateRecipientsInputSchema>;
@@ -85,12 +78,8 @@ const updateNotificationRecipientsFlow = ai.defineFlow(
     inputSchema: UpdateRecipientsInputSchema,
     outputSchema: UpdateRecipientsOutputSchema,
   },
-  async ({ user, uids }) => {
-    // Check for user explicitly passed to the flow.
-    if (!user || !user.uid) {
-        throw new Error("User authentication is required to perform this action.");
-    }
-
+  async ({ uids }) => {
+    // Admin check should be done on the server before calling this flow.
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
 

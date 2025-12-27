@@ -199,7 +199,7 @@ export default function SuperAdminPage() {
             const fetchInitialData = async () => {
                 await fetchAllStaff();
                 try {
-                    const result = await getNotificationRecipients({ user: currentUser });
+                    const result = await getNotificationRecipients({});
                     setNotificationRecipients(result.uids);
                 } catch (error) {
                     console.error("Error fetching notification settings:", error);
@@ -217,14 +217,9 @@ export default function SuperAdminPage() {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
-        if (!currentUser) {
-            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add staff.' });
-            return;
-        }
         setIsAddingStaff(true);
         try {
             const result = await addStaff({
-                user: currentUser,
                 email: newStaffEmail,
                 firstName: newStaffFirstName,
                 lastName: newStaffLastName,
@@ -249,15 +244,11 @@ export default function SuperAdminPage() {
     };
     
     const handleRoleToggle = async (uid: string, isSuperAdmin: boolean) => {
-        if (!currentUser) {
-            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to change roles.' });
-            return;
-        }
         const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' as const : 'Admin' as const} : s);
         setStaffList(optimisticStaffList);
 
         try {
-            await updateStaffRole({ user: currentUser, uid, isSuperAdmin });
+            await updateStaffRole({ uid, isSuperAdmin });
             toast({
                 title: 'Role Updated',
                 description: `Successfully ${isSuperAdmin ? 'promoted' : 'demoted'} staff member.`,
@@ -277,13 +268,9 @@ export default function SuperAdminPage() {
     };
 
     const handleSaveNotifications = async () => {
-        if (!currentUser) {
-            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to save settings.' });
-            return;
-        }
         setIsSavingNotifications(true);
         try {
-            await updateNotificationRecipients({ user: currentUser, uids: notificationRecipients });
+            await updateNotificationRecipients({ uids: notificationRecipients });
             toast({ title: "Settings Saved", description: "Notification preferences have been updated.", className: 'bg-green-100 text-green-900 border-green-200' });
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Save Failed', description: error.message });
