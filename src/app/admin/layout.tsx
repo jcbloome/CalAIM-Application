@@ -81,6 +81,9 @@ function AdminHeader() {
             />
           </Link>
 
+        </div>
+
+        <div className="flex items-center gap-4">
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               {adminNavLinks.map(link => {
@@ -108,9 +111,7 @@ function AdminHeader() {
               )}
             </NavigationMenuList>
           </NavigationMenu>
-        </div>
 
-        <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="rounded-full hidden lg:inline-flex">
@@ -121,7 +122,7 @@ function AdminHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{user?.displayName || user?.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => router.push('/profile')}>
+              <DropdownMenuItem onSelect={() => router.push('/admin/profile')}>
                 <UserIcon className="mr-2 h-4 w-4" />
                 <span>My Profile</span>
               </DropdownMenuItem>
@@ -165,7 +166,7 @@ function AdminHeader() {
                         <div className="flex flex-col gap-4">
                             <p className="text-sm text-muted-foreground text-center truncate">{user.displayName || user.email}</p>
                             <SheetClose asChild>
-                                <Button onClick={() => router.push('/profile')} variant="outline" className="w-full">
+                                <Button onClick={() => router.push('/admin/profile')} variant="outline" className="w-full">
                                 <UserIcon className="mr-2 h-4 w-4" />
                                 My Profile
                                 </Button>
@@ -199,7 +200,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { isAdmin, isSuperAdmin, isLoading, user } = useAdmin();
   const router = useRouter();
   const pathname = usePathname();
-  const auth = useAuth();
 
   useEffect(() => {
     // If auth is still loading, wait.
@@ -207,20 +207,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       return;
     }
     
-    // On the admin login page, if a user is already logged in, sign them out.
-    // This forces a clean login and prevents session conflicts.
-    if (user && pathname === '/admin/login') {
-        auth?.signOut();
-        return;
-    }
-
     // If auth is done, there's no user, and we are not on the login page, redirect to login.
     if (!user && pathname !== '/admin/login') {
       router.push('/admin/login');
       return;
     }
 
-  }, [isLoading, user, pathname, router, auth]);
+  }, [isLoading, user, pathname, router]);
 
   // Allow login page to render without the main layout or any auth checks.
   if (pathname === '/admin/login') {
