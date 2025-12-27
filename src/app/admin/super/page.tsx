@@ -114,15 +114,23 @@ export default function SuperAdminPage() {
     const [isAddingStaff, setIsAddingStaff] = useState(false);
     const [isSendingWebhook, setIsSendingWebhook] = useState(false);
 
+    console.log('[SuperAdminPage] Rendering. Admin loading state:', isAdminLoading, 'Is Super Admin:', isSuperAdmin);
+
+
     useEffect(() => {
         if (!isAdminLoading && !isSuperAdmin) {
+            console.log('[SuperAdminPage] Effect: Not a super admin, redirecting.');
             router.push('/admin');
         }
     }, [isSuperAdmin, isAdminLoading, router]);
 
     
     const fetchAllStaff = async () => {
-        if (!firestore) return;
+        if (!firestore) {
+            console.log('[fetchAllStaff] Firestore not available.');
+            return;
+        }
+        console.log('[fetchAllStaff] Starting to fetch staff data.');
         setIsLoadingStaff(true);
         try {
             // Fetch all documents from the relevant collections in parallel
@@ -131,6 +139,9 @@ export default function SuperAdminPage() {
                 getDocs(collection(firestore, 'roles_admin')),
                 getDocs(collection(firestore, 'roles_super_admin'))
             ]);
+
+            console.log(`[fetchAllStaff] Fetched ${usersSnap.size} users, ${adminRolesSnap.size} admins, ${superAdminRolesSnap.size} super admins.`);
+
 
             // Create maps for quick lookups
             const users = new Map(usersSnap.docs.map(doc => [doc.id, doc.data() as Omit<UserData, 'id'>]));
@@ -158,28 +169,34 @@ export default function SuperAdminPage() {
             // Sort the final list
             staff.sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
             setStaffList(staff);
+            console.log('[fetchAllStaff] Successfully processed and set staff list:', staff);
 
         } catch (error) {
-            console.error("Error fetching staff list:", error);
+            console.error("[fetchAllStaff] Error fetching staff list:", error);
             toast({ variant: "destructive", title: "Error", description: "Could not load staff members." });
         } finally {
             setIsLoadingStaff(false);
+            console.log('[fetchAllStaff] Finished fetching staff data.');
         }
     };
 
     useEffect(() => {
         if (firestore && currentUser && isSuperAdmin) {
+            console.log('[SuperAdminPage] Effect: Firestore, user, and super admin status confirmed. Fetching initial data.');
             const fetchInitialData = async () => {
                 await fetchAllStaff();
                 try {
                     const result = await getNotificationRecipients({ user: currentUser });
                     setNotificationRecipients(result.uids);
+                     console.log('[SuperAdminPage] Fetched notification recipients:', result.uids);
                 } catch (error) {
                     console.error("Error fetching notification settings:", error);
                     toast({ variant: "destructive", title: "Error", description: "Could not load notification settings." });
                 }
             };
             fetchInitialData();
+        } else {
+             console.log('[SuperAdminPage] Effect: Skipping initial data fetch. Conditions not met.', { hasFirestore: !!firestore, hasUser: !!currentUser, isSuperAdmin });
         }
     }, [firestore, currentUser, isSuperAdmin, toast]);
     
@@ -424,3 +441,5 @@ export default function SuperAdminPage() {
         </div>
     );
 }
+
+    
