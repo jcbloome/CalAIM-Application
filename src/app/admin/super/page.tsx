@@ -120,6 +120,7 @@ export default function SuperAdminPage() {
         }
     }, [isSuperAdmin, isAdminLoading, router]);
 
+    /*
     useEffect(() => {
       if (!firestore) return;
       setIsLoadingStaff(true);
@@ -174,6 +175,7 @@ export default function SuperAdminPage() {
         unsubSuperAdmins();
       };
     }, [firestore, currentUser]);
+    */
     
     
     const handleAddStaff = async (e: React.FormEvent) => {
@@ -414,5 +416,3 @@ export default function SuperAdminPage() {
         </div>
     );
 }
-
-    
