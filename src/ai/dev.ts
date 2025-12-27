@@ -1,3 +1,4 @@
+
 'use server';
 
 // This file is the single entry point for initializing the Firebase Admin SDK.
@@ -5,8 +6,6 @@
 // authenticated instance, preventing initialization conflicts.
 
 import * as admin from 'firebase-admin';
-
-console.log('[dev.ts] Initializing Firebase Admin SDK...');
 
 if (!admin.apps.length) {
   try {
@@ -34,4 +33,3 @@ import '@/ai/flows/manage-notifications.ts';
 import '@/ai/flows/make-webhook.ts';
 import '@/ai/flows/manage-reminders.ts';
 import '@/ai/flows/send-to-make-flow.ts';
-import '@/ai/tools/get-user';

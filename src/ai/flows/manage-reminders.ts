@@ -8,9 +8,14 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
 import { sendReminderEmail } from '@/app/actions/send-email';
-import { getUser } from '../tools/get-user';
 
 // ========== SEND REMINDER EMAILS FLOW ==========
+
+const SendRemindersInputSchema = z.object({
+    user: z.any().describe('The authenticated Firebase user object.'),
+});
+export type SendRemindersInput = z.infer<typeof SendRemindersInputSchema>;
+
 
 const SendRemindersOutputSchema = z.object({
     success: z.boolean(),
@@ -19,20 +24,20 @@ const SendRemindersOutputSchema = z.object({
 });
 export type SendRemindersOutput = z.infer<typeof SendRemindersOutputSchema>;
 
-export async function sendReminderEmails(): Promise<SendRemindersOutput> {
-    return sendReminderEmailsFlow();
+export async function sendReminderEmails(input: SendRemindersInput): Promise<SendRemindersOutput> {
+    return sendReminderEmailsFlow(input);
 }
 
 const sendReminderEmailsFlow = ai.defineFlow(
     {
         name: 'sendReminderEmailsFlow',
+        inputSchema: SendRemindersInputSchema,
         outputSchema: SendRemindersOutputSchema,
-        tools: [getUser],
-        withFlowContext: true,
     },
-    async () => {
-        // Ensure the user is authenticated before proceeding.
-        await getUser();
+    async ({ user }) => {
+        if (!user || !user.uid) {
+            throw new Error("User authentication is required to perform this action.");
+        }
         const firestore = admin.firestore();
 
         try {

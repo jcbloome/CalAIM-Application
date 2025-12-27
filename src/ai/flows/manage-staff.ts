@@ -9,11 +9,11 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { getUser } from '../tools/get-user';
 
 // ========== ADD STAFF FLOW ==========
 
 const AddStaffInputSchema = z.object({
+  user: z.any().describe('The authenticated Firebase user object of the caller.'),
   email: z.string().email(),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
@@ -37,12 +37,11 @@ const addStaffFlow = ai.defineFlow(
     name: 'addStaffFlow',
     inputSchema: AddStaffInputSchema,
     outputSchema: AddStaffOutputSchema,
-    tools: [getUser],
-    withFlowContext: true,
   },
-  async ({ email, firstName, lastName }) => {
-    // Ensure the user is authenticated before proceeding.
-    await getUser();
+  async ({ user, email, firstName, lastName }) => {
+    if (!user || !user.uid) {
+        throw new Error("User authentication is required to perform this action.");
+    }
 
     const auth = admin.auth();
     const firestore = admin.firestore();
@@ -106,6 +105,7 @@ const addStaffFlow = ai.defineFlow(
 // ========== UPDATE STAFF ROLE FLOW ==========
 
 const UpdateStaffRoleInputSchema = z.object({
+  user: z.any().describe('The authenticated Firebase user object of the caller.'),
   uid: z.string().min(1),
   isSuperAdmin: z.boolean(),
 });
@@ -128,12 +128,11 @@ const updateStaffRoleFlow = ai.defineFlow(
     name: 'updateStaffRoleFlow',
     inputSchema: UpdateStaffRoleInputSchema,
     outputSchema: UpdateStaffRoleOutputSchema,
-    tools: [getUser],
-    withFlowContext: true,
   },
-  async ({ uid, isSuperAdmin }) => {
-    // Ensure the user is authenticated before proceeding.
-    await getUser();
+  async ({ user, uid, isSuperAdmin }) => {
+    if (!user || !user.uid) {
+        throw new Error("User authentication is required to perform this action.");
+    }
 
     const firestore = admin.firestore();
     const superAdminRoleRef = firestore.collection('roles_super_admin').doc(uid);

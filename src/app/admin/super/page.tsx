@@ -154,10 +154,12 @@ export default function SuperAdminPage() {
             });
         });
 
-        getNotificationRecipients().then(result => setNotificationRecipients(result.uids));
+        if (currentUser) {
+            getNotificationRecipients({ user: currentUser }).then(result => setNotificationRecipients(result.uids));
+        }
         
         return () => unsubUsers();
-    }, [firestore]);
+    }, [firestore, currentUser]);
     
     
     const handleAddStaff = async (e: React.FormEvent) => {
@@ -166,12 +168,17 @@ export default function SuperAdminPage() {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to add staff.' });
+            return;
+        }
         setIsAddingStaff(true);
         try {
             const result = await addStaff({
+                user: currentUser,
+                email: newStaffEmail,
                 firstName: newStaffFirstName,
                 lastName: newStaffLastName,
-                email: newStaffEmail
             });
             toast({
                 title: "Staff Added",
@@ -189,11 +196,15 @@ export default function SuperAdminPage() {
     };
     
     const handleRoleToggle = async (uid: string, isSuperAdmin: boolean) => {
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to change roles.' });
+            return;
+        }
         const optimisticStaffList = staffList.map(s => s.uid === uid ? {...s, role: isSuperAdmin ? 'Super Admin' as const : 'Admin' as const} : s);
         setStaffList(optimisticStaffList);
 
         try {
-            await updateStaffRole({ uid, isSuperAdmin });
+            await updateStaffRole({ user: currentUser, uid, isSuperAdmin });
             toast({
                 title: 'Role Updated',
                 description: `Successfully ${isSuperAdmin ? 'promoted' : 'demoted'} staff member.`,
@@ -215,9 +226,13 @@ export default function SuperAdminPage() {
     };
 
     const handleSaveNotifications = async () => {
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to save settings.' });
+            return;
+        }
         setIsSavingNotifications(true);
         try {
-            await updateNotificationRecipients({ uids: notificationRecipients });
+            await updateNotificationRecipients({ user: currentUser, uids: notificationRecipients });
             toast({ title: "Settings Saved", description: "Notification preferences have been updated.", className: 'bg-green-100 text-green-900 border-green-200' });
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Save Failed', description: error.message });
@@ -228,9 +243,13 @@ export default function SuperAdminPage() {
 
     
     const handleSendReminders = async () => {
+        if (!currentUser) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to send reminders.' });
+            return;
+        }
         setIsSendingReminders(true);
         try {
-            const result = await sendReminderEmails();
+            const result = await sendReminderEmails({ user: currentUser });
             toast({
                 title: 'Reminders Sent!',
                 description: `Successfully sent ${result.sentCount} reminder emails.`,
@@ -254,7 +273,7 @@ export default function SuperAdminPage() {
         }
         setIsSendingWebhook(true);
         try {
-            const result = await sendTestToMake({ ...sampleApplicationData, userId: currentUser.uid });
+            const result = await sendTestToMake({ user: currentUser, data: { ...sampleApplicationData, userId: currentUser.uid } });
             toast({
                 title: "Webhook Test Sent",
                 description: result.message,
@@ -381,5 +400,3 @@ export default function SuperAdminPage() {
         </div>
     );
 }
-
-    

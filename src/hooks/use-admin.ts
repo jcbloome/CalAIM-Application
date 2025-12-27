@@ -23,12 +23,10 @@ export function useAdmin(): AdminStatus & { user: User | null } {
 
   const checkRoles = useCallback(async (userToCheck: User) => {
     if (!firestore) {
-      console.log('useAdmin: Firestore not available, cannot check roles.');
       setAdminStatus({ isAdmin: false, isSuperAdmin: false, isLoading: false });
       return;
     }
     
-    console.log(`useAdmin: Checking roles for user ${userToCheck.uid}`);
     setAdminStatus(prev => ({ ...prev, isLoading: true }));
 
     try {
@@ -43,8 +41,6 @@ export function useAdmin(): AdminStatus & { user: User | null } {
       const hasAdminRole = adminSnap.exists();
       const hasSuperAdminRole = superAdminSnap.exists();
       
-      console.log(`useAdmin: Admin role: ${hasAdminRole}, Super Admin role: ${hasSuperAdminRole}`);
-
       setAdminStatus({
         isAdmin: hasAdminRole || hasSuperAdminRole, // Super admin is also an admin
         isSuperAdmin: hasSuperAdminRole,

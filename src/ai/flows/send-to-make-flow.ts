@@ -6,11 +6,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { getUser } from '../tools/get-user';
 
-// This schema should be kept in sync with the sample data object in the Super Admin page
-// and the general structure of the CS Summary Form.
-const TestWebhookInputSchema = z.object({
+const TestWebhookDataSchema = z.object({
   memberFirstName: z.string(),
   memberLastName: z.string(),
   memberDob: z.string(),
@@ -67,7 +64,12 @@ const TestWebhookInputSchema = z.object({
   userId: z.string(),
 });
 
-export type TestWebhookInput = z.infer<typeof TestWebhookInputSchema>;
+const TestWebhookInputSchema = z.object({
+  user: z.any().describe('The authenticated Firebase user object.'),
+  data: TestWebhookDataSchema,
+});
+
+export type TestWebhookInput = z.infer<typeof TestWebhookDataSchema>;
 
 const WebhookResponseSchema = z.object({
   success: z.boolean(),
@@ -79,7 +81,7 @@ export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 /**
  * Public function to be called from the client.
  */
-export async function sendTestToMake(input: TestWebhookInput): Promise<WebhookResponse> {
+export async function sendTestToMake(input: z.infer<typeof TestWebhookInputSchema>): Promise<WebhookResponse> {
   console.log(`[sendTestToMake] Starting flow.`);
   return sendToMakeFlow(input);
 }
@@ -90,12 +92,11 @@ const sendToMakeFlow = ai.defineFlow(
     name: 'sendToMakeFlow',
     inputSchema: TestWebhookInputSchema,
     outputSchema: WebhookResponseSchema,
-    tools: [getUser],
-    withFlowContext: true,
   },
-  async (data) => {
-    // Ensure the user is authenticated before proceeding.
-    await getUser();
+  async ({ user, data }) => {
+    if (!user || !user.uid) {
+      throw new Error("User authentication is required to perform this action.");
+    }
 
     console.log('[sendToMakeFlow] Received data for webhook.');
 

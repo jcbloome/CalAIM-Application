@@ -9,9 +9,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { getUser } from '../tools/get-user';
+import { User } from 'firebase/auth';
 
 // ========== GET RECIPIENTS FLOW ==========
+
+const GetRecipientsInputSchema = z.object({
+  user: z.any().describe('The authenticated Firebase user object.'),
+});
+export type GetRecipientsInput = z.infer<typeof GetRecipientsInputSchema>;
 
 const GetRecipientsOutputSchema = z.object({
   uids: z.array(z.string()),
@@ -19,21 +24,22 @@ const GetRecipientsOutputSchema = z.object({
 export type GetRecipientsOutput = z.infer<typeof GetRecipientsOutputSchema>;
 
 
-export async function getNotificationRecipients(): Promise<GetRecipientsOutput> {
-  return getNotificationRecipientsFlow();
+export async function getNotificationRecipients(input: GetRecipientsInput): Promise<GetRecipientsOutput> {
+  return getNotificationRecipientsFlow(input);
 }
 
 
 const getNotificationRecipientsFlow = ai.defineFlow(
   {
     name: 'getNotificationRecipientsFlow',
+    inputSchema: GetRecipientsInputSchema,
     outputSchema: GetRecipientsOutputSchema,
-    tools: [getUser],
-    withFlowContext: true,
   },
-  async () => {
-    // Ensure the user is authenticated before proceeding.
-    await getUser();
+  async ({ user }) => {
+    // Check for user explicitly passed to the flow.
+    if (!user || !user.uid) {
+        throw new Error("User authentication is required to perform this action.");
+    }
 
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
@@ -56,6 +62,7 @@ const getNotificationRecipientsFlow = ai.defineFlow(
 // ========== UPDATE RECIPIENTS FLOW ==========
 
 const UpdateRecipientsInputSchema = z.object({
+  user: z.any().describe('The authenticated Firebase user object.'),
   uids: z.array(z.string()),
 });
 export type UpdateRecipientsInput = z.infer<typeof UpdateRecipientsInputSchema>;
@@ -77,12 +84,12 @@ const updateNotificationRecipientsFlow = ai.defineFlow(
     name: 'updateNotificationRecipientsFlow',
     inputSchema: UpdateRecipientsInputSchema,
     outputSchema: UpdateRecipientsOutputSchema,
-    tools: [getUser],
-    withFlowContext: true,
   },
-  async ({ uids }) => {
-    // Ensure the user is authenticated before proceeding.
-    await getUser();
+  async ({ user, uids }) => {
+    // Check for user explicitly passed to the flow.
+    if (!user || !user.uid) {
+        throw new Error("User authentication is required to perform this action.");
+    }
 
     const firestore = admin.firestore();
     const settingsRef = firestore.collection('system_settings').doc('notifications');
