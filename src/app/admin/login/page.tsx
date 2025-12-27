@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminLoginPage() {
   const auth = useAuth();
@@ -57,6 +58,8 @@ export default function AdminLoginPage() {
       let errorMessage = 'Invalid email or password. Please try again.';
       if (authError.code === 'auth/user-not-found' || authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else {
+        errorMessage = `An unexpected error occurred: ${authError.code} - ${authError.message}`;
       }
       setError(errorMessage);
       toast({
@@ -71,7 +74,7 @@ export default function AdminLoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md space-y-4">
              <div className="flex justify-center mb-6">
                  <Image 
                     src="/calaimlogopdf.png"
@@ -123,13 +126,23 @@ export default function AdminLoginPage() {
                     <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
                   </Button>
                 </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Signing In...</> : 'Sign In'}
                 </Button>
               </form>
             </CardContent>
           </Card>
+
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+                <AlertTitle>Live Error Log</AlertTitle>
+                <AlertDescription className="font-mono text-xs break-all">
+                    {error}
+                </AlertDescription>
+            </Alert>
+          )}
+
       </div>
     </main>
   );
