@@ -196,14 +196,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       return;
     }
 
-    // If a user is logged in, but they are not an admin/superadmin, show access denied.
-    // The component below will handle the visual part of this.
-    // This check is important to prevent non-admins from seeing admin content briefly.
-
   }, [isLoading, user, pathname, router]);
 
-  // While loading, show a full-page loader to prevent content flash on any admin page except login.
-  if (isLoading && pathname !== '/admin/login') {
+  // Allow login page to render without the main layout or any auth checks.
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  // While loading, show a full-page loader to prevent content flash on any admin page.
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -212,41 +213,37 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // Allow login page to render without the main layout or any auth checks.
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
-
-  // If loading is done, a user exists, but they lack admin roles, show Access Denied.
-  if (!isLoading && user && !isAdmin && !isSuperAdmin) {
-    return (
-      <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-center gap-2">
-              <Lock className="h-6 w-6 text-destructive" />
-              Access Denied
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>You do not have permission to view this page. Please log in with a staff account.</p>
-            <Button onClick={() => router.push('/admin/login')} className="mt-4">Return to Login</Button>
-          </CardContent>
-        </Card>
-      </main>
-    );
-  }
-
-  // If all checks pass (loading done, user exists, user is admin), render the admin layout.
-  if (!isLoading && user && (isAdmin || isSuperAdmin)) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <AdminHeader />
-        <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
-          {children}
+  // After loading, if a user is logged in, check their roles.
+  if (user) {
+    if (isAdmin || isSuperAdmin) {
+      // If user is an admin, render the full admin layout.
+      return (
+        <div className="flex flex-col min-h-screen">
+          <AdminHeader />
+          <main className="flex-grow p-4 sm:p-6 md:p-8 bg-slate-50/50">
+            {children}
+          </main>
+        </div>
+      );
+    } else {
+      // If user is NOT an admin, show Access Denied.
+      return (
+        <main className="flex-grow flex items-center justify-center p-4 bg-slate-100 min-h-screen">
+          <Card className="w-full max-w-md text-center">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Lock className="h-6 w-6 text-destructive" />
+                Access Denied
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>You do not have permission to view this page. Please log in with a staff account.</p>
+              <Button onClick={() => router.push('/admin/login')} className="mt-4">Return to Login</Button>
+            </CardContent>
+          </Card>
         </main>
-      </div>
-    );
+      );
+    }
   }
 
   // Fallback case, typically shown briefly during redirects.
