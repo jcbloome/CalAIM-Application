@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, ShieldAlert, UserPlus, Send, Users, Mail, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, getDocs } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -120,62 +120,68 @@ export default function SuperAdminPage() {
         }
     }, [isSuperAdmin, isAdminLoading, router]);
 
-    /*
+    
     useEffect(() => {
-      if (!firestore) return;
-      setIsLoadingStaff(true);
+        if (!firestore || !currentUser) return;
 
-      const usersRef = collection(firestore, 'users');
-      const adminRolesRef = collection(firestore, 'roles_admin');
-      const superAdminRolesRef = collection(firestore, 'roles_super_admin');
+        const fetchAllStaff = async () => {
+            setIsLoadingStaff(true);
+            try {
+                // Fetch all documents from the relevant collections in parallel
+                const [usersSnap, adminRolesSnap, superAdminRolesSnap] = await Promise.all([
+                    getDocs(collection(firestore, 'users')),
+                    getDocs(collection(firestore, 'roles_admin')),
+                    getDocs(collection(firestore, 'roles_super_admin'))
+                ]);
 
-      let users: UserData[] = [];
-      let adminIds = new Set<string>();
-      let superAdminIds = new Set<string>();
+                // Create maps for quick lookups
+                const users = new Map(usersSnap.docs.map(doc => [doc.id, doc.data() as Omit<UserData, 'id'>]));
+                const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
+                const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
 
-      const combineAndSetStaff = () => {
-        const allStaff: StaffMember[] = users
-          .filter(user => adminIds.has(user.id) || superAdminIds.has(user.id))
-          .map(user => ({
-            uid: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            role: superAdminIds.has(user.id) ? 'Super Admin' as const : 'Admin' as const,
-          }))
-          .sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
+                // Combine the data into a single staff list
+                const allStaffIds = new Set([...adminIds, ...superAdminIds]);
+                const staff: StaffMember[] = [];
 
-        setStaffList(allStaff);
-        setIsLoadingStaff(false);
-      };
-      
-      const unsubUsers = onSnapshot(query(usersRef), (snap) => {
-        users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as Omit<UserData, 'id'> }));
-        combineAndSetStaff();
-      });
+                allStaffIds.forEach(uid => {
+                    const userData = users.get(uid);
+                    if (userData) {
+                        staff.push({
+                            uid,
+                            firstName: userData.firstName,
+                            lastName: userData.lastName,
+                            email: userData.email,
+                            role: superAdminIds.has(uid) ? 'Super Admin' : 'Admin',
+                        });
+                    }
+                });
+                
+                // Sort the final list
+                staff.sort((a, b) => (a.lastName || '').localeCompare(b.lastName || ''));
 
-      const unsubAdmins = onSnapshot(query(adminRolesRef), (snap) => {
-        adminIds = new Set(snap.docs.map(doc => doc.id));
-        combineAndSetStaff();
-      });
+                setStaffList(staff);
 
-      const unsubSuperAdmins = onSnapshot(query(superAdminRolesRef), (snap) => {
-        superAdminIds = new Set(snap.docs.map(doc => doc.id));
-        combineAndSetStaff();
-      });
+            } catch (error) {
+                console.error("Error fetching staff list:", error);
+                toast({ variant: "destructive", title: "Error", description: "Could not load staff members." });
+            } finally {
+                setIsLoadingStaff(false);
+            }
+        };
 
-      if (currentUser) {
-          getNotificationRecipients({ user: currentUser }).then(result => setNotificationRecipients(result.uids));
-      }
+        const fetchNotificationSettings = async () => {
+             try {
+                const result = await getNotificationRecipients({ user: currentUser });
+                setNotificationRecipients(result.uids);
+            } catch (error) {
+                console.error("Error fetching notification settings:", error);
+            }
+        };
 
-      // Cleanup function to unsubscribe from all listeners on component unmount
-      return () => {
-        unsubUsers();
-        unsubAdmins();
-        unsubSuperAdmins();
-      };
-    }, [firestore, currentUser]);
-    */
+        fetchAllStaff();
+        fetchNotificationSettings();
+
+    }, [firestore, currentUser, toast]);
     
     
     const handleAddStaff = async (e: React.FormEvent) => {
@@ -201,6 +207,31 @@ export default function SuperAdminPage() {
                 description: result.message,
                 className: 'bg-green-100 text-green-900 border-green-200',
             });
+            // Refetch staff list after adding
+            if (firestore) {
+               const usersSnap = await getDocs(collection(firestore, 'users'));
+               const users = new Map(usersSnap.docs.map(doc => [doc.id, doc.data() as Omit<UserData, 'id'>]));
+               const adminRolesSnap = await getDocs(collection(firestore, 'roles_admin'));
+               const adminIds = new Set(adminRolesSnap.docs.map(doc => doc.id));
+               const superAdminRolesSnap = await getDocs(collection(firestore, 'roles_super_admin'));
+               const superAdminIds = new Set(superAdminRolesSnap.docs.map(doc => doc.id));
+               const allStaffIds = new Set([...adminIds, ...superAdminIds]);
+               const newStaffList: StaffMember[] = [];
+                allStaffIds.forEach(uid => {
+                    const userData = users.get(uid);
+                    if (userData) {
+                        newStaffList.push({
+                            uid,
+                            firstName: userData.firstName,
+                            lastName: userData.lastName,
+                            email: userData.email,
+                            role: superAdminIds.has(uid) ? 'Super Admin' : 'Admin',
+                        });
+                    }
+                });
+                setStaffList(newStaffList.sort((a,b) => a.lastName.localeCompare(b.lastName)));
+            }
+
             setNewStaffFirstName('');
             setNewStaffLastName('');
             setNewStaffEmail('');
@@ -226,11 +257,9 @@ export default function SuperAdminPage() {
                 description: `Successfully ${isSuperAdmin ? 'promoted' : 'demoted'} staff member.`,
             });
         } catch (error: any) {
-            // Revert optimistic update
-             const unsub = onSnapshot(collection(firestore!, 'users'), () => {
-                // This is a bit of a hack to re-fetch and trigger the main useEffect
-                unsub();
-            });
+             // Revert optimistic update
+            const revertedStaffList = staffList.map(s => s.uid === uid ? {...s, role: !isSuperAdmin ? 'Super Admin' as const : 'Admin' as const} : s);
+            setStaffList(revertedStaffList);
             toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
         }
     };
