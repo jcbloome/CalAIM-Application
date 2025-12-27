@@ -81,13 +81,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(
-      ellipse 80% 80% at 50% -20%,
-      hsl(220 70% 85% / 0.7),
-      transparent
-    );
-    background-repeat: no-repeat;
-    overflow-x: hidden;
   }
 }
 

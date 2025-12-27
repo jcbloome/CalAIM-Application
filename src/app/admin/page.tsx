@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="border-t-4 border-blue-500">
+        <Card className="border-l-4 border-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Applications
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
             <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-yellow-500">
+        <Card className="border-l-4 border-yellow-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Pending Revisions
@@ -99,7 +99,7 @@ export default function AdminDashboardPage() {
             <div className="text-2xl font-bold">{stats.revisions}</div>
           </CardContent>
         </Card>
-        <Card className="border-t-4 border-green-500">
+        <Card className="border-l-4 border-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Approvals</CardTitle>
             <FileCheck2 className="h-4 w-4 text-muted-foreground" />

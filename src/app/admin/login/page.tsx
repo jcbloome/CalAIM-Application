@@ -71,64 +71,66 @@ export default function AdminLoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <div className="absolute top-0 left-0 p-6">
-             <Image 
-                src="/calaimlogopdf.png"
-                alt="Connect CalAIM Logo"
-                width={240}
-                height={67}
-                className="w-64 h-auto object-contain"
-                priority
-            />
-        </div>
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="items-center text-center p-6">
-          <CardTitle className="text-3xl font-bold">
-            Admin Portal
-          </CardTitle>
-          <CardDescription className="text-base">
-            Please sign in to access the administrator dashboard.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
+        <div className="w-full max-w-md">
+             <div className="flex justify-center mb-6">
+                 <Image 
+                    src="/calaimlogopdf.png"
+                    alt="Connect CalAIM Logo"
+                    width={240}
+                    height={67}
+                    className="w-64 h-auto object-contain"
+                    priority
+                />
             </div>
-            <div className="space-y-2 relative">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-7 h-7 w-7"
-                onClick={() => setShowPassword(prev => !prev)}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
-              </Button>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Signing In...</> : 'Sign In'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          <Card className="shadow-2xl">
+            <CardHeader className="items-center text-center p-6">
+              <CardTitle className="text-3xl font-bold">
+                Admin Portal
+              </CardTitle>
+              <CardDescription className="text-base">
+                Please sign in to access the administrator dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2 relative">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-7 h-7 w-7"
+                    onClick={() => setShowPassword(prev => !prev)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                  </Button>
+                </div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Signing In...</> : 'Sign In'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+      </div>
     </main>
   );
 }
