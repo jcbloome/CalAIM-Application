@@ -11,8 +11,7 @@ import { z } from 'zod';
 
 /**
  * INTERNAL FLOW: Handles the actual logic.
- * By keeping this separate from the exported function, 
- * we prevent the UI from accidentally calling a recursive loop.
+ * This is the Genkit flow object that will perform the fetch.
  */
 const sendToMakeInternal = ai.defineFlow(
   {
@@ -40,7 +39,7 @@ const sendToMakeInternal = ai.defineFlow(
 
     console.log('[sendToMakeInternal] Sending data to Make.com webhook...');
     try {
-      // 2. Perform the actual fetch (No self-calls here!)
+      // 2. Perform the actual fetch
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,13 +64,13 @@ const sendToMakeInternal = ai.defineFlow(
 
 /**
  * EXPORTED FUNCTION: This is what your UI button calls.
- * It triggers the flow once and returns the result.
+ * It directly invokes the Genkit flow object.
  */
 export async function triggerMakeWebhook(userId: string, sampleData: any) {
   console.log('[triggerMakeWebhook] Initiating webhook send.');
   try {
-    // We call the internal flow once. No recursion is possible here.
-    return await run(sendToMakeInternal, { userId, data: sampleData });
+    // Directly call the flow object. This is the simplest and most reliable way.
+    return await sendToMakeInternal({ userId, data: sampleData });
   } catch (error: any) {
     console.error("[triggerMakeWebhook] Critical system error:", error.message);
     return { success: false, message: "Critical System Error: " + error.message };
