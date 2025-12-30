@@ -29,7 +29,7 @@ import {
 
 // CLIENT-SIDE LOGIC - Replaces the need for server-side AI flows for UI data.
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { sendTestToMake, type SendToMakeInput } from '@/ai/flows/send-to-make-flow';
+import { sendTestToMake } from '@/ai/flows/send-to-make-flow';
 import { sendReminderEmails } from '@/ai/flows/manage-reminders';
 
 
@@ -336,6 +336,7 @@ export default function SuperAdminPage() {
         setIsSendingWebhook(true);
         setWebhookLog(null);
         try {
+            // Note: sendTestToMake now directly calls the Genkit flow object.
             const result = await sendTestToMake({ user: currentUser, data: { ...sampleApplicationData, userId: currentUser.uid } });
             toast({ title: "Webhook Test Sent", description: result.message, className: 'bg-green-100 text-green-900 border-green-200' });
         } catch (error: any) {
@@ -378,15 +379,14 @@ export default function SuperAdminPage() {
                 </CardHeader>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 border-t-4 border-blue-500">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5 text-blue-500" />Staff Management</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                         <div className="space-y-4">
-                            <h4 className="font-semibold flex items-center gap-2"><UserPlus className="h-5 w-5" /> Add New Staff</h4>
-                            <form onSubmit={handleAddStaff} className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="space-y-6">
+                     <Card className="border-t-4 border-blue-500">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-lg"><UserPlus className="h-5 w-5 text-blue-500" />Add New Staff</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <form onSubmit={handleAddStaff} className="space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div><Label htmlFor="new-staff-firstname">First Name</Label><Input id="new-staff-firstname" value={newStaffFirstName} onChange={e => formatAndSetFirstName(e.target.value)} /></div>
                                     <div><Label htmlFor="new-staff-lastname">Last Name</Label><Input id="new-staff-lastname" value={newStaffLastName} onChange={e => formatAndSetLastName(e.target.value)} /></div>
@@ -394,56 +394,13 @@ export default function SuperAdminPage() {
                                 <div><Label htmlFor="new-staff-email">Email Address</Label><Input id="new-staff-email" type="email" value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} /></div>
                                 <Button type="submit" disabled={isAddingStaff} className="w-full">{isAddingStaff ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Adding...</> : 'Add Staff & Grant Admin Role'}</Button>
                             </form>
-                        </div>
-
-                         <div className="space-y-4">
-                            <h4 className="font-semibold">Current Staff Roles</h4>
-                             {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-                            : staffList.length > 0 ? (
-                                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">{staffList.map((staff) => (
-                                    <div key={staff.uid} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 border rounded-lg bg-background">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm">{staff.firstName} {staff.lastName}</p>
-                                            <p className="text-xs text-muted-foreground break-all">{staff.email}</p>
-                                        </div>
-                                        <div className="flex items-center gap-4 shrink-0">
-                                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${staff.role === 'Super Admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>{staff.role}</span>
-                                            <Switch checked={staff.role === 'Super Admin'} onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)} disabled={staff.uid === currentUser?.uid} aria-label={`Toggle Super Admin for ${staff.email}`} />
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" disabled={staff.uid === currentUser?.uid}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Delete Staff Member?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This will revoke all admin permissions for {staff.email}. This action does not delete their auth account but prevents them from accessing admin areas. Are you sure?
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDeleteStaff(staff.uid)} className="bg-destructive hover:bg-destructive/90">
-                                                            Yes, Revoke Access
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </div>
-                                ))}</div>
-                            ) : <p className="text-center text-muted-foreground py-8">No staff members found.</p>}
-                         </div>
-                    </CardContent>
-                </Card>
-                
-                <div className="space-y-6">
-                    <Card className="border-t-4 border-green-500">
+                        </CardContent>
+                     </Card>
+                     <Card className="border-t-4 border-green-500">
                          <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5 text-green-500" />System Actions</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent>
                             <div className="space-y-4">
                                 <h4 className="font-semibold">Make.com Webhook Test</h4>
                                 <p className="text-sm text-muted-foreground">This action sends a pre-defined sample application to the Make.com webhook URL specified in your environment variables.</p>
@@ -461,35 +418,80 @@ export default function SuperAdminPage() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <Card className="border-t-4 border-orange-500">
-                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5 text-orange-500" />Notifications &amp; Reminders</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                             <div className="space-y-4">
-                                <h4 className="font-semibold">Notification Recipient Settings</h4>
-                                <p className="text-sm text-muted-foreground">Select staff to be BCC'd on emails when an application status changes.</p>
-                                 {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-                                : staffList.length > 0 ? (
-                                    <div className="space-y-4">
-                                        <div className="space-y-2 max-h-60 overflow-y-auto p-1 border rounded-md">{staffList.map(staff => (
-                                            <div key={staff.uid} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted"><Checkbox id={`notif-${staff.uid}`} checked={notificationRecipients.includes(staff.uid)} onCheckedChange={(checked) => handleNotificationToggle(staff.uid, !!checked)} /><Label htmlFor={`notif-${staff.uid}`} className="flex flex-col cursor-pointer"><span>{staff.firstName} {staff.lastName}</span><span className="text-xs text-muted-foreground">{staff.email}</span></Label></div>
-                                        ))}</div>
-                                        <Button onClick={handleSaveNotifications} disabled={isSavingNotifications} className="w-full">{isSavingNotifications ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Notification Settings</>}</Button>
-                                    </div>
-                                ) : <p className="text-center text-muted-foreground py-8">No staff members to configure.</p>}
-                             </div>
-                            
-                             <div className="space-y-4 pt-6 border-t">
-                                <h4 className="font-semibold">Manual Email Reminders</h4>
-                                <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
-                                <Button onClick={handleSendReminders} disabled={isSendingReminders} className="w-full">{isSendingReminders ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : 'Send In-Progress Reminders'}</Button>
-                             </div>
-                        </CardContent>
-                    </Card>
                 </div>
+                
+                <Card className="border-t-4 border-orange-500">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5 text-orange-500" />Notifications &amp; Reminders</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                         <div className="space-y-4">
+                            <h4 className="font-semibold">Notification Recipient Settings</h4>
+                            <p className="text-sm text-muted-foreground">Select staff to be BCC'd on emails when an application status changes.</p>
+                             {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                            : staffList.length > 0 ? (
+                                <div className="space-y-4">
+                                    <div className="space-y-2 max-h-60 overflow-y-auto p-1 border rounded-md">{staffList.map(staff => (
+                                        <div key={staff.uid} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted"><Checkbox id={`notif-${staff.uid}`} checked={notificationRecipients.includes(staff.uid)} onCheckedChange={(checked) => handleNotificationToggle(staff.uid, !!checked)} /><Label htmlFor={`notif-${staff.uid}`} className="flex flex-col cursor-pointer"><span>{staff.firstName} {staff.lastName}</span><span className="text-xs text-muted-foreground">{staff.email}</span></Label></div>
+                                    ))}</div>
+                                    <Button onClick={handleSaveNotifications} disabled={isSavingNotifications} className="w-full">{isSavingNotifications ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Notification Settings</>}</Button>
+                                </div>
+                            ) : <p className="text-center text-muted-foreground py-8">No staff members to configure.</p>}
+                         </div>
+                        
+                         <div className="space-y-4 pt-6 border-t">
+                            <h4 className="font-semibold">Manual Email Reminders</h4>
+                            <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
+                            <Button onClick={handleSendReminders} disabled={isSendingReminders} className="w-full">{isSendingReminders ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : 'Send In-Progress Reminders'}</Button>
+                         </div>
+                    </CardContent>
+                </Card>
             </div>
+             <Card className="border-t-4 border-purple-500">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5 text-purple-500" />Current Staff Roles</CardTitle>
+                </CardHeader>
+                 <CardContent>
+                     {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                    : staffList.length > 0 ? (
+                        <div className="space-y-2">{staffList.map((staff) => (
+                            <div key={staff.uid} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 border rounded-lg bg-background">
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm">{staff.firstName} {staff.lastName}</p>
+                                    <p className="text-xs text-muted-foreground break-words">{staff.email}</p>
+                                </div>
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${staff.role === 'Super Admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>{staff.role}</span>
+                                    <Switch checked={staff.role === 'Super Admin'} onCheckedChange={(checked) => handleRoleToggle(staff.uid, checked)} disabled={staff.uid === currentUser?.uid} aria-label={`Toggle Super Admin for ${staff.email}`} />
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" disabled={staff.uid === currentUser?.uid}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Delete Staff Member?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will revoke all admin permissions for {staff.email}. This action does not delete their auth account but prevents them from accessing admin areas. Are you sure?
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDeleteStaff(staff.uid)} className="bg-destructive hover:bg-destructive/90">
+                                                    Yes, Revoke Access
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
+                        ))}</div>
+                    ) : <p className="text-center text-muted-foreground py-8">No staff members found.</p>}
+                 </CardContent>
+            </Card>
         </div>
     );
 }
+
+    
