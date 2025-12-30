@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // CLIENT-SIDE LOGIC - Replaces the need for server-side AI flows for UI data.
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -55,9 +56,7 @@ const sampleApplicationData = {
   memberDob: "01/15/1965",
   memberAge: 59,
   memberMediCalNum: "987654321A",
-  confirmMemberMediCalNum: "987654321A",
   memberMrn: "MRN123456",
-  confirmMemberMrn: "MRN123456",
   memberLanguage: "English",
   memberCounty: "Los Angeles",
 
@@ -101,7 +100,6 @@ const sampleApplicationData = {
   currentState: "CA",
   currentZip: "90001",
   currentCounty: "Los Angeles",
-  copyAddress: false,
   customaryLocationType: "Home",
   customaryAddress: "456 Oak Ave",
   customaryCity: "Pasadena",
@@ -127,8 +125,6 @@ const sampleApplicationData = {
   ispAddress: "123 Main St, Los Angeles, CA 90001",
   ispFacilityName: "Community Hospital",
   onALWWaitlist: "No",
-  monthlyIncome: "2500",
-  ackRoomAndBoard: true,
   hasPrefRCFE: "Yes",
   rcfeName: "Sunshine Meadows",
   rcfeAddress: "789 Flower Lane, Burbank, CA 91505",
@@ -438,9 +434,32 @@ export default function SuperAdminPage() {
                             <div className="space-y-4">
                                 <h4 className="font-semibold">Make.com Webhook Test</h4>
                                 <p className="text-sm text-muted-foreground">This action sends a pre-defined sample application to the Make.com webhook URL specified in your environment variables.</p>
-                                <Button onClick={handleSendWebhookTest} disabled={isSendingWebhook} className="w-full">
-                                    {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Test Data to Make.com'}
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button className="w-full" disabled={isSendingWebhook}>
+                                            {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Test Data to Make.com'}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="max-w-2xl">
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Confirm Webhook Test Data</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            You are about to send the following sample data to your configured Make.com webhook.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <ScrollArea className="max-h-[50vh] p-4 border rounded-md bg-muted/50">
+                                            <pre className="text-xs whitespace-pre-wrap font-mono">
+                                                {JSON.stringify(sampleApplicationData, null, 2)}
+                                            </pre>
+                                        </ScrollArea>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleSendWebhookTest}>
+                                            Send Test
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                                 {webhookLog && (
                                     <Alert variant="destructive" className="mt-4">
                                         <AlertTitle>Live Error Log</AlertTitle>
@@ -524,3 +543,5 @@ export default function SuperAdminPage() {
         </div>
     );
 }
+
+    
