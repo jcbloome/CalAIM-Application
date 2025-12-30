@@ -18,7 +18,7 @@ const infoSections = [
    {
     title: 'Room & Board Payments',
     content: [
-        "The MCP member is responsible for paying the RCFE the 'room and board' and the MCP is responsible for paying the RCFE the 'assisted living' portion. Some areas in California are quite expensive and impractical for CalAIM. Also, many RCFEs might choose not to work with CalAIM.",
+        "The MCP member is responsible for paying the RCFE the 'room and board' portion and the MCP is responsible for paying the RCFE the 'assisted living' portion. Some areas in California are quite expensive and impractical for CalAIM. Also, many RCFEs might choose not to work with CalAIM.",
         "For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for 'room and board'. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for 'room and board' for a private room or to open up RCFEs in more expensive areas.",
         "Members who cannot pay any room and board portion usually are not eligible for the CS since program requirements mandate a 'room and board' payment from the member (or their family).",
     ],
@@ -29,6 +29,7 @@ const infoSections = [
         "A Share of Cost (SOC) is like a monthly deductible for Medi-Cal. It's the amount of money you may have to pay each month towards medical-related services or supplies before your Medi-Cal coverage begins to pay.",
         "This happens when your income is above the limit for free Medi-Cal but you still qualify for the program.",
         "Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC.",
+        <>Read more about eliminating share of cost at the California Advocates for Nursing Home Reform (CANHR): <a href="https://canhr.org/understanding-the-share-of-cost-for-medi-cal/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">https://canhr.org/understanding-the-share-of-cost-for-medi-cal/</a>.</>
     ],
   },
   {
