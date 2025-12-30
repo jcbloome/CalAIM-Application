@@ -98,6 +98,15 @@ function WaiversFormComponent() {
             });
             return;
         }
+        
+        if (signerType === 'representative' && !signerRelationship) {
+             toast({
+                variant: 'destructive',
+                title: 'Incomplete Form',
+                description: 'Please specify the relationship to the member when signing as a representative.',
+            });
+            return;
+        }
 
         if (!applicationId || !applicationDocRef) {
             toast({ variant: 'destructive', title: 'Error', description: 'Application ID is missing.' });
@@ -312,7 +321,7 @@ function WaiversFormComponent() {
                                     </RadioGroup>
                                     
                                     <div className="space-y-2">
-                                        <Label htmlFor="signer-relationship">What is your relationship to the member?</Label>
+                                        <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member?</Label>
                                         <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator" disabled={isReadOnly} />
                                     </div>
 

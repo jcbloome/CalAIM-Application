@@ -92,7 +92,7 @@ export function PrintableWaiversContent() {
                     <Field label="Signature (Full Name)" />
                     <Field label="Date" />
                 </div>
-                <Field label="Relationship to member (e.g. son, daughter, etc.)" />
+                <Field label="If authorized representative, what is relationship to member?" />
               </div>
 
             </div>
