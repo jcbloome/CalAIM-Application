@@ -1,11 +1,12 @@
 
 'use server';
 /**
- * @fileOverview A simple server action for sending reminder emails.
+ * @fileOverview A server action for sending reminder emails.
  * This function receives a list of applications from the client and sends emails.
  */
 import { sendReminderEmail } from '@/app/actions/send-email';
 import type { Application } from '@/lib/definitions';
+import * as admin from 'firebase-admin';
 
 interface SendRemindersOutput {
     success: boolean;
@@ -20,18 +21,48 @@ interface SendRemindersOutput {
 export async function sendReminderEmails(applications: Application[]): Promise<SendRemindersOutput> {
     let sentCount = 0;
     try {
+        const firestore = admin.firestore();
+
         for (const app of applications) {
             // Find pending forms or uploads
             const incompleteItems = app.forms
                 ?.filter((form: any) => form.status === 'Pending')
-                .map((form: any) => form.formName); // Corrected from form.name to form.formName
+                .map((form: any) => form.name); // Corrected from form.name to form.name
+            
+            // Fetch user data to get email and name, as it's more reliable than referrerEmail
+            let userEmail: string | undefined;
+            let userName: string = 'there';
+
+            if (app.userId) {
+                try {
+                    const userDoc = await firestore.collection('users').doc(app.userId).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        userEmail = userData?.email;
+                        userName = userData?.displayName || userData?.firstName || 'there';
+                    } else {
+                        // Fallback to auth user if firestore doc is missing
+                        const authUser = await admin.auth().getUser(app.userId);
+                        userEmail = authUser.email;
+                        userName = authUser.displayName || 'there';
+                    }
+                } catch (userFetchError) {
+                    console.error(`[sendReminderEmails] Could not fetch user data for userId ${app.userId}:`, userFetchError);
+                    // As a last resort, try the referrerEmail field on the app itself
+                    userEmail = app.referrerEmail;
+                    userName = app.referrerName || 'there';
+                }
+            } else if(app.referrerEmail) {
+                 userEmail = app.referrerEmail;
+                 userName = app.referrerName || 'there';
+            }
             
             // Only send if there are incomplete items and an email to send to
-            if (incompleteItems && incompleteItems.length > 0 && app.referrerEmail) {
+            if (incompleteItems && incompleteItems.length > 0 && userEmail) {
                 await sendReminderEmail({
-                    to: app.referrerEmail,
+                    to: userEmail,
                     subject: `Reminder: Action needed for CalAIM application for ${app.memberFirstName} ${app.memberLastName}`,
-                    referrerName: app.referrerName || 'there',
+                    referrerName: userName,
                     memberName: `${app.memberFirstName} ${app.memberLastName}`,
                     applicationId: app.id,
                     incompleteItems,
