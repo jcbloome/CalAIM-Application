@@ -86,7 +86,6 @@ function WaiversFormComponent() {
 
     const isFormComplete = () => {
         if (!signerType || !signerName || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
-        if (signerType === 'representative' && !signerRelationship) return false;
         return true;
     };
 
@@ -115,7 +114,7 @@ function WaiversFormComponent() {
             choice: focChoice,
             signerType,
             signerName,
-            signerRelationship: signerType === 'representative' ? signerRelationship : null,
+            signerRelationship: signerRelationship || null,
             ackHipaa: ackHipaa,
             ackLiability: ackLiability,
             ackFoc: ackFoc,
@@ -312,12 +311,10 @@ function WaiversFormComponent() {
                                         </div>
                                     </RadioGroup>
                                     
-                                    {signerType === 'representative' && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="signer-relationship">What is your relationship to the member? <span className="text-destructive">*</span></Label>
-                                            <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator" disabled={isReadOnly} required />
-                                        </div>
-                                    )}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="signer-relationship">What is your relationship to the member?</Label>
+                                        <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator" disabled={isReadOnly} />
+                                    </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="signer-name">Type Full Name to Sign</Label>
