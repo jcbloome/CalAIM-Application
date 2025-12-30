@@ -134,7 +134,7 @@ export default function WaiverFormPage() {
 
             <section>
                 <h2 className="text-lg font-bold text-slate-900 mb-2 border-b pb-1">
-                Room & Board Obligation
+                Room & Board Payments
                 </h2>
                 <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
                     <p>
@@ -180,5 +180,3 @@ export default function WaiverFormPage() {
     </div>
   );
 }
-
-    

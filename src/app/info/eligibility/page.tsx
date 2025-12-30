@@ -18,7 +18,7 @@ const infoSections = [
    {
     title: 'Room & Board Payments',
     content: [
-        "The MCP member is responsible for paying the RCFE the 'room and board' and the MCP is responsible for paying the RCFE the 'assisted living' portion. Ideally, both portions arrive at market rate for a RCFE although some areas in California are quite expensive and without extra 'room and board' contribution by the family market rate is not achievable. Also, many RCFEs might choose not to work with CalAIM.",
+        "The MCP member is responsible for paying the RCFE the 'room and board' and the MCP is responsible for paying the RCFE the 'assisted living' portion. Some areas in California are quite expensive and impractical for CalAIM. Also, many RCFEs might choose not to work with CalAIM.",
         "For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for 'room and board'. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for 'room and board' for a private room or to open up RCFEs in more expensive areas.",
         "Members who cannot pay any room and board portion usually are not eligible for the CS since program requirements mandate a 'room and board' payment from the member (or their family).",
     ],
@@ -51,7 +51,7 @@ export default function InfoEligibilityPage() {
   return (
     <>
       <Header />
-      <main className="flex-grow bg-slate-50/50">
+      <main className="flex-grow">
         <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 space-y-6">
             <div className="mb-10">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
