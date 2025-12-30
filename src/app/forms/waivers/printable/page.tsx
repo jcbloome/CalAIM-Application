@@ -79,7 +79,7 @@ export default function WaiverFormPage() {
                 <p><strong>Information to be disclosed:</strong> All medical records necessary for Community Supports (CS) application.</p>
                 <p><strong>Purpose:</strong> To determine eligibility and arrange services for CS for Assisted Living Transitions.</p>
                 <p><strong>Expiration:</strong> This authorization expires one year from the date of signature.</p>
-                <p><strong>My Rights:</strong> I understand that I may refuse to sign this authorization. My healthcare treatment is not dependent on my signing this form. I may revoke this authorization at any time by writing to the disclosing party, but it will not affect any actions taken before the revocation was received. A copy of this authorization is as valid as the original. I understand that information disclosed may be subject to re-disclosure by the recipient and may no longer be protected by federal privacy regulations (HIPAA).</p>
+                <p><strong>My Rights:</strong> Under my rights member must sign document to move forward with the CS but can revoke this authorization at any time.</p>
                 </div>
                 <CheckboxField label="I have read and understood the HIPAA Authorization section." />
             </section>
@@ -162,5 +162,7 @@ export default function WaiverFormPage() {
     </div>
   );
 }
+
+    
 
     

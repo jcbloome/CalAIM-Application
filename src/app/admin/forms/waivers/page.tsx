@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, Suspense, useEffect } from 'react';
@@ -137,7 +138,7 @@ function WaiversFormComponent() {
                         <p><strong>Information to be disclosed:</strong> All medical records necessary for Community Supports (CS) application.</p>
                         <p><strong>Purpose:</strong> To determine eligibility and arrange services for CS for Assisted Living Transitions.</p>
                         <p><strong>Expiration:</strong> This authorization expires one year from the date of signature.</p>
-                        <p><strong>My Rights:</strong> I understand that I may refuse to sign this authorization. My healthcare treatment is not dependent on my signing this form. I may revoke this authorization at any time by writing to the disclosing party, but it will not affect any actions taken before the revocation was received. A copy of this authorization is as valid as the original. I understand that information disclosed may be subject to re-disclosure by the recipient and may no longer be protected by federal privacy regulations (HIPAA).</p>
+                        <p><strong>My Rights:</strong> Under my rights member must sign document to move forward with the CS but can revoke this authorization at any time.</p>
                         <Alert variant="warning" className="mt-4">
                             <AlertCircle className="h-4 w-4" />
                             <AlertTitle>Acknowledgment</AlertTitle>
@@ -153,9 +154,9 @@ function WaiversFormComponent() {
                     </Section>
 
                     <Section title="Liability Waiver & Hold Harmless Agreement" icon={FileText}>
-                        <p><strong>Intention.</strong> The purpose of this agreement ('Agreement') is to forever release and discharge Connections Care Home Consultants, LLC (the 'Company') and all its agents, officers, and employees (collectively referred to as 'Releasees') from all liability for injury or damages that may arise out of the resident/client's ('Resident') participation in the Community Supports program ('Program'). Resident understands that this Agreement covers liability, claims, and actions caused in whole or in part by any acts or failures to act of the Releasees, including, but not limited to, negligence, fault, or breach of contract.</p>
+                        <p><strong>Intention.</strong> The purpose of this agreement ('Agreement') is to forever release and discharge Connections Care Home Consultants, LLC (the 'Company') and all its agents, officers, and employees (collectively referred to as 'Releasees') from all liability for injury or damages that may arise out of the resident/client's ('Resident') participation in the Community Supports program ('Program'). Resident understands that this Agreement covers liability, claims, and actions caused in whole or in part by any acts or failures to act of the Releasees, including, but not to, negligence, fault, or breach of contract.</p>
                         <p><strong>Assumption of Risk.</strong> Resident understands that their participation in the Program may involve a risk of injury or even death from various causes. Resident assumes all possible risks, both known and unknown, of participating in the Program and agrees to release, defend, indemnify, and hold harmless the Releasees from any injury, loss, liability, damage, or cost they may incur due to their participation in the Program.</p>
-                        <p><strong>No Insurance.</strong> Resident understands that the Company does not assume any responsibility for or obligation to provide financial assistance or other assistance, including but not limited to medical, health, or disability insurance, in the event of injury or illness. Resident understands that they are not covered by any medical, health, accident, or life insurance provided by the Company and is responsible for providing their own insurance.</p>
+                        <p><strong>No Insurance.</strong> Resident understands that the Company does not assume any responsibility for or obligation to provide financial assistance or other assistance, including but not to medical, health, or disability insurance, in the event of injury or illness. Resident understands that they are not covered by any medical, health, accident, or life insurance provided by the Company and is responsible for providing their own insurance.</p>
                         <p><strong>Acknowledgment.</strong> Resident acknowledges that they have read this Agreement in its entirety and understands its content. Resident is aware that this is a release of liability and a contract of indemnity, and they sign it of their own free will.</p>
                          <Alert variant="warning" className="mt-4">
                             <AlertCircle className="h-4 w-4" />
@@ -220,12 +221,10 @@ function WaiversFormComponent() {
                                 </div>
                             </RadioGroup>
                             
-                            {signerType === 'representative' && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="signer-relationship">Relationship to Member</Label>
-                                    <Input id="signer-relationship" value={signerRelationship} disabled />
-                                </div>
-                            )}
+                            <div className="space-y-2">
+                                <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member (if not A/R please put N/A)?</Label>
+                                <Input id="signer-relationship" value={signerRelationship} disabled />
+                            </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="signer-name">Signature</Label>
@@ -257,3 +256,5 @@ export default function AdminWaiversPage() {
         </Suspense>
     );
 }
+
+    
