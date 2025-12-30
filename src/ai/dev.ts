@@ -8,7 +8,7 @@
  */
 
 // DO NOT MOVE THIS IMPORT. It must be the first line to initialize Firebase Admin.
-import './firebase';
+import '@/app/api/cron/reminders/route';
 
 // Import all flows and tools after Firebase has been initialized.
 import '@/ai/flows/ai-prioritize-form-fields.ts';
