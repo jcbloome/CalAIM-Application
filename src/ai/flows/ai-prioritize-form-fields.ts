@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { gemini15Pro } from '@genkit-ai/google-genai';
 
 const PrioritizeFormFieldsInputSchema = z.object({
   formData: z.record(z.any()).describe('The form data to analyze.'),
@@ -32,7 +31,7 @@ export async function prioritizeFormFields(input: PrioritizeFormFieldsInput): Pr
 
 const prioritizeFormFieldsPrompt = ai.definePrompt({
   name: 'prioritizeFormFieldsPrompt',
-  model: gemini15Pro,
+  model: 'gemini-1.5-pro-latest',
   input: {schema: PrioritizeFormFieldsInputSchema},
   output: {schema: PrioritizeFormFieldsOutputSchema},
   prompt: `You are an AI assistant designed to help users fill out forms correctly and efficiently.
