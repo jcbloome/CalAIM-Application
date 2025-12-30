@@ -7,6 +7,7 @@
 import { sendReminderEmail } from '@/app/actions/send-email';
 import type { Application, FormStatus } from '@/lib/definitions';
 import * as admin from 'firebase-admin';
+import 'firebase-admin/auth'; // <--- CRITICAL FIX: Import the auth module
 
 interface SendRemindersOutput {
     success: boolean;
@@ -27,7 +28,7 @@ export async function sendReminderEmails(applications: Application[]): Promise<S
             // Find pending forms or uploads
             const incompleteItems = app.forms
                 ?.filter((item: FormStatus) => item.status === 'Pending')
-                .map((item: FormStatus) => item.name); // Corrected from form.name to item.name
+                .map((item: FormStatus) => item.name);
             
             // Fetch user data to get email and name
             let userEmail: string | undefined;

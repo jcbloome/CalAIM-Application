@@ -5,8 +5,7 @@ import * as admin from 'firebase-admin';
 import { Application } from '@/lib/definitions';
 import { FormValues } from '@/app/forms/cs-summary-form/schema';
 
-// Ensure Firebase Admin is initialized.
-// This check prevents re-initialization errors in environments where it might already be initialized.
+// Ensure Firebase Admin is initialized, but only once.
 if (!admin.apps.length) {
   try {
     admin.initializeApp();
@@ -59,3 +58,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+
