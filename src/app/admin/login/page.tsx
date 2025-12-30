@@ -16,6 +16,8 @@ import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminLoginPage() {
+  console.log(`[${new Date().toISOString()}] AdminLoginPage: Component rendering.`);
+  
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -28,20 +30,25 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log(`[${new Date().toISOString()}] AdminLoginPage useEffect: Running. isUserLoading: ${isUserLoading}, user exists: ${!!user}`);
     // If the user is already logged in and we are not on the login page, redirect them.
     // This handles the case where an admin is already authenticated.
     if (!isUserLoading && user) {
+      console.log(`[${new Date().toISOString()}] AdminLoginPage useEffect: User is already logged in. Redirecting to /admin.`);
       router.push('/admin');
     }
+     console.log(`[${new Date().toISOString()}] AdminLoginPage useEffect: Finished.`);
   }, [user, isUserLoading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(`[${new Date().toISOString()}] handleSignIn: Starting sign-in process.`);
     setIsLoading(true);
     setError(null);
 
     if (!auth) {
       const errorMsg = "Firebase services are not available. Please try again later.";
+      console.error(`[${new Date().toISOString()}] handleSignIn: Auth service not available.`);
       setError(errorMsg);
       toast({
         variant: 'destructive',
@@ -54,8 +61,11 @@ export default function AdminLoginPage() {
 
     try {
       // Use session persistence to isolate the admin session
+      console.log(`[${new Date().toISOString()}] handleSignIn: Setting persistence.`);
       await setPersistence(auth, browserSessionPersistence);
+      console.log(`[${new Date().toISOString()}] handleSignIn: Calling signInWithEmailAndPassword.`);
       await signInWithEmailAndPassword(auth, email, password);
+      console.log(`[${new Date().toISOString()}] handleSignIn: Sign-in successful.`);
       toast({
         title: 'Successfully signed in!',
         description: 'Redirecting to your dashboard...',
@@ -70,12 +80,15 @@ export default function AdminLoginPage() {
       } else {
         errorMessage = `An unexpected error occurred: ${authError.message}`;
       }
+      console.error(`[${new Date().toISOString()}] handleSignIn: Error - ${errorMessage}`);
       setError(errorMessage);
     } finally {
+      console.log(`[${new Date().toISOString()}] handleSignIn: Finished sign-in attempt.`);
       setIsLoading(false);
     }
   };
 
+  console.log(`[${new Date().toISOString()}] AdminLoginPage: Returning JSX.`);
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
         <div className="w-full max-w-md space-y-4">
