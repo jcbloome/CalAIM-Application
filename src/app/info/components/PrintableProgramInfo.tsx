@@ -68,7 +68,7 @@ export function PrintableProgramInfo() {
             <p>Members participating in the CalAIM Community Supports program are not permitted to have a SOC. It must be eliminated before the application can be approved. A common way to do this is by purchasing supplemental health, dental, or vision insurance, which can lower your 'countable' income and remove the SOC.</p>
             
             <SectionTitle>Room & Board Obligation</SectionTitle>
-            <p>The MCP member is responsible for paying the RCFE the 'room and board' portion and the MCP is responsible for paying the RCFE the 'assisted living' portion.</p>
+            <p>The MCP member is responsible for paying the RCFE the 'room and board' portion and the MCP is responsible for paying the RCFE the 'assisted living' portion. Ideally, both portions arrive at market rate for a RCFE although some areas in California are quite expensive and without extra "room and board" contribution by the family market rate is not achievable. Also, many RCFEs might choose not to work with CalAIM.</p>
             <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for 'room and board'. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for 'room and board' for a private room or to open up RCFEs in more expensive areas.</p>
             <p>Members who cannot pay any room and board portion usually are not eligible for the CS since program requirements mandate a 'room and board' payment from the member (or their family).</p>
             

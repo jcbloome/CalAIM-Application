@@ -147,7 +147,7 @@ export default function Step4() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="prose prose-sm max-w-none text-gray-700 space-y-3 p-4 border rounded-lg bg-muted/30">
-            <p>The MCP member is responsible for paying the RCFE the “room and board” and the MCP is responsible for paying the RCFE the “assisted living” portion.</p>
+            <p>The MCP member is responsible for paying the RCFE the “room and board” and the MCP is responsible for paying the RCFE the “assisted living” portion. Ideally, both portions arrive at market rate for a RCFE although some areas in California are quite expensive and without extra "room and board" contribution by the family market rate is not achievable. Also, many RCFEs might choose not to work with CalAIM.</p>
             <p>For members eligible for SSI/SSP and the 2026 Non-Medical Out of Home Care payment (NMOHC), SSI/SSP is bumped up to $1,626.07. The member usually retains $182 for personal needs expenses and the RCFE receives the $1,444.07 balance as payment for “room and board”. Also, members eligible for the NMOHC will pay at least $1,447.00 to the RCFE. Members who receive more than this amount can pay more for "room and board" for a private room or to open up RCFEs in more expensive areas.</p>
             <p>For example, Mr. Johnson is eligible for NMOHC and receives $500/month. The NMOHC will bump up the payment to the RCFE to $1,444.07 for “room and board” and he will retain $182 for personal needs expenses.</p>
             <p>Members not eligible for the NMOHC will still have a “room and board” obligation but the amount could be flexible depending on the RCFE and the assessed tiered level.</p>
