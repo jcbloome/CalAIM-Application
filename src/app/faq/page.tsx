@@ -64,13 +64,7 @@ export default function FaqPage() {
         <div className="max-w-3xl mx-auto">
             <div className="space-y-4">
                  <Accordion type="single" collapsible className="w-full">
-                    {faqs.map((faq, index) => (
-                    <AccordionItem value={`item-${index}`} key={index}>
-                        <AccordionTrigger>{faq.question}</AccordionTrigger>
-                        <AccordionContent>{faq.answer}</AccordionContent>
-                    </AccordionItem>
-                    ))}
-                     <AccordionItem value="glossary">
+                    <AccordionItem value="glossary">
                         <AccordionTrigger>Acronym Glossary</AccordionTrigger>
                         <AccordionContent>
                             <dl className="p-4">
@@ -86,6 +80,12 @@ export default function FaqPage() {
                             </dl>
                         </AccordionContent>
                     </AccordionItem>
+                    {faqs.map((faq, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                        <AccordionTrigger>{faq.question}</AccordionTrigger>
+                        <AccordionContent>{faq.answer}</AccordionContent>
+                    </AccordionItem>
+                    ))}
                 </Accordion>
             </div>
         </div>
