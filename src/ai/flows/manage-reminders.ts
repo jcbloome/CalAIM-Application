@@ -4,6 +4,7 @@
  * @fileOverview A simple server action for sending reminder emails.
  * This file replaces the more complex Genkit flow to avoid recursion issues.
  */
+import '@/ai/firebase'; // CRITICAL: Ensures Firebase Admin is initialized.
 import * as admin from 'firebase-admin';
 import { sendReminderEmail } from '@/app/actions/send-email';
 
@@ -56,5 +57,3 @@ export async function sendReminderEmails(): Promise<SendRemindersOutput> {
         return { success: false, sentCount: 0, message: `Failed to send reminders: ${error.message}` };
     }
 }
-
-    
