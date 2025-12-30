@@ -34,6 +34,7 @@ import { triggerMakeWebhook } from '@/ai/flows/send-to-make-flow';
 import { sendReminderEmails } from '@/ai/flows/manage-reminders';
 import type { Application } from '@/lib/definitions';
 import type { FormValues } from '@/app/forms/cs-summary-form/schema';
+import { sendApplicationStatusEmail } from '@/app/actions/send-email';
 
 
 interface StaffMember {
@@ -152,6 +153,10 @@ export default function SuperAdminPage() {
     const [isAddingStaff, setIsAddingStaff] = useState(false);
     const [isSendingWebhook, setIsSendingWebhook] = useState(false);
     const [webhookLog, setWebhookLog] = useState<string | null>(null);
+
+    // New state for test email
+    const [testEmail, setTestEmail] = useState('');
+    const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
 
     // New: Fetch all applications on the client
     const applicationsQuery = useMemo(() => {
@@ -347,7 +352,8 @@ export default function SuperAdminPage() {
         setIsSendingReminders(true);
         
         const appsToRemind = allApplications?.filter(app => 
-            (app.status === 'In Progress' || app.status === 'Requires Revision')
+            (app.status === 'In Progress' || app.status === 'Requires Revision') &&
+            app.forms?.some(form => form.status === 'Pending')
         );
 
         if (!appsToRemind || appsToRemind.length === 0) {
@@ -356,10 +362,11 @@ export default function SuperAdminPage() {
             return;
         }
 
+        // The data fetched from Firestore contains complex objects (Timestamps)
+        // We need to convert them to plain objects before sending to a server action.
+        const plainApps = JSON.parse(JSON.stringify(appsToRemind));
+
         try {
-            // Convert Firestore Timestamps to strings before sending to the server action.
-            const plainApps = JSON.parse(JSON.stringify(appsToRemind));
-            
             const result = await sendReminderEmails(plainApps);
             if (result.success) {
                 toast({ title: 'Reminders Sent!', description: `Successfully sent ${result.sentCount} reminder emails.`, className: 'bg-green-100 text-green-900 border-green-200' });
@@ -391,6 +398,33 @@ export default function SuperAdminPage() {
             toast({ variant: 'destructive', title: 'Webhook Error', description: "See log on page for details." });
         } finally {
             setIsSendingWebhook(false);
+        }
+    };
+
+     const handleSendTestEmail = async () => {
+        if (!testEmail) {
+            toast({ variant: 'destructive', title: 'No Email', description: 'Please enter an email address to send a test to.' });
+            return;
+        }
+        setIsSendingTestEmail(true);
+        try {
+            await sendApplicationStatusEmail({
+                to: testEmail,
+                subject: "Resend Integration Test | CalAIM Pathfinder",
+                memberName: "Test User",
+                staffName: "The Admin Team",
+                message: "This is a test email to confirm that the Resend email service is configured correctly.",
+                status: 'In Progress',
+            });
+            toast({
+                title: 'Test Email Sent!',
+                description: `An email has been sent to ${testEmail}. Please check your inbox.`,
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: 'Email Send Failed', description: `Could not send test email: ${error.message}` });
+        } finally {
+            setIsSendingTestEmail(false);
         }
     };
 
@@ -440,6 +474,28 @@ export default function SuperAdminPage() {
                                 <div><Label htmlFor="new-staff-email">Email Address</Label><Input id="new-staff-email" type="email" value={newStaffEmail} onChange={e => setNewStaffEmail(e.target.value)} /></div>
                                 <Button type="submit" disabled={isAddingStaff} className="w-full">{isAddingStaff ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Adding...</> : 'Add Staff & Grant Admin Role'}</Button>
                             </form>
+                        </CardContent>
+                    </Card>
+                    
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5" />Test Email Integration</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Send a test email to any address to verify your Resend API key is working.</p>
+                            <div className="space-y-2">
+                                <Label htmlFor="test-email">Recipient Email</Label>
+                                <Input
+                                    id="test-email"
+                                    type="email"
+                                    placeholder="your.email@example.com"
+                                    value={testEmail}
+                                    onChange={(e) => setTestEmail(e.target.value)}
+                                />
+                            </div>
+                            <Button onClick={handleSendTestEmail} disabled={isSendingTestEmail} className="w-full">
+                                {isSendingTestEmail ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <><Send className="mr-2 h-4 w-4" /> Send Test Email</>}
+                            </Button>
                         </CardContent>
                     </Card>
 
