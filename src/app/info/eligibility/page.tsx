@@ -52,16 +52,16 @@ export default function InfoEligibilityPage() {
     <>
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6">
-        <div className="mb-10">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Program Information Page 3
-          </h1>
-          <div className="mt-4">
-            <GlossaryDialog />
-          </div>
-        </div>
-
         <div className="max-w-4xl mx-auto space-y-6">
+            <div className="mb-10">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                Program Information Page 3
+              </h1>
+              <div className="mt-4">
+                <GlossaryDialog />
+              </div>
+            </div>
+
           {infoSections.map((section, index) => (
             <Card key={index} className="shadow-sm">
               <CardHeader>

@@ -47,50 +47,50 @@ export default function InfoDetailsPage() {
     <>
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8 sm:px-6">
-        <div className="mb-10">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Program Information Page 2
-          </h1>
-           <div className="mt-4">
-            <GlossaryDialog />
-          </div>
-        </div>
-
         <div className="max-w-4xl mx-auto space-y-6">
-          {infoSections.map((section, index) => (
-            <Card key={index} className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl sm:text-2xl">{section.title}</CardTitle>
-              </CardHeader>
-                <CardContent className="prose prose-sm max-w-none text-gray-700">
-                    {section.content.map((paragraph, pIndex) => (
-                    <p key={pIndex} className="mb-4 last:mb-0">
-                        {paragraph}
-                    </p>
-                    ))}
-                    {section.list && (
-                    <ul className="list-disc pl-5 space-y-2 mt-4">
-                        {section.list.map((item, i) => (
-                        <li key={i}>{item}</li>
-                        ))}
-                    </ul>
-                    )}
-                </CardContent>
-            </Card>
-          ))}
-           <div className="mt-8 w-full border-t pt-4">
-                 <div className="text-left mb-2">
-                    <span className="text-sm text-muted-foreground">Page 2 of 3</span>
-                </div>
-                <div className="flex justify-between">
-                    <Link href="/info" className="text-sm font-medium text-primary hover:underline">
-                        <ArrowLeft className="mr-1 h-4 w-4 inline" /> Previous
-                    </Link>
-                    <Link href="/info/eligibility" className="text-sm font-medium text-primary hover:underline">
-                        Next <ArrowRight className="ml-1 h-4 w-4 inline" />
-                    </Link>
-                </div>
+            <div className="mb-10">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                Program Information Page 2
+              </h1>
+              <div className="mt-4">
+                <GlossaryDialog />
+              </div>
             </div>
+
+            {infoSections.map((section, index) => (
+                <Card key={index} className="shadow-sm">
+                <CardHeader>
+                    <CardTitle className="text-xl sm:text-2xl">{section.title}</CardTitle>
+                </CardHeader>
+                    <CardContent className="prose prose-sm max-w-none text-gray-700">
+                        {section.content.map((paragraph, pIndex) => (
+                        <p key={pIndex} className="mb-4 last:mb-0">
+                            {paragraph}
+                        </p>
+                        ))}
+                        {section.list && (
+                        <ul className="list-disc pl-5 space-y-2 mt-4">
+                            {section.list.map((item, i) => (
+                            <li key={i}>{item}</li>
+                            ))}
+                        </ul>
+                        )}
+                    </CardContent>
+                </Card>
+            ))}
+            <div className="mt-8 w-full border-t pt-4">
+                    <div className="text-left mb-2">
+                        <span className="text-sm text-muted-foreground">Page 2 of 3</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <Link href="/info" className="text-sm font-medium text-primary hover:underline">
+                            <ArrowLeft className="mr-1 h-4 w-4 inline" /> Previous
+                        </Link>
+                        <Link href="/info/eligibility" className="text-sm font-medium text-primary hover:underline">
+                            Next <ArrowRight className="ml-1 h-4 w-4 inline" />
+                        </Link>
+                    </div>
+                </div>
         </div>
       </main>
     </>
