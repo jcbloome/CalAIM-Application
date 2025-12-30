@@ -85,7 +85,7 @@ function WaiversFormComponent() {
     }, [application]);
 
     const isFormComplete = () => {
-        if (!signerType || !signerName || !signerRelationship || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
+        if (!signerType || !signerName.trim() || !signerRelationship.trim() || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
         return true;
     };
 
@@ -246,7 +246,7 @@ function WaiversFormComponent() {
                                 <p>If I accept these services, I will receive assistance from Connections Care Home Consultants to move into a community-based setting like an assisted living facility. They will help me find a place, coordinate paperwork, and ensure I am settled in. This will be authorized and paid for by my Managed Care Plan.</p>
                                 <p>If I decline these services, I am choosing to remain where I am, and I will not receive the transition support services offered by this program at this time.</p>
                                 <div className="p-4 border rounded-md space-y-3 mt-4 bg-background">
-                                    <h3 className="font-medium text-base">My Choice</h3>
+                                    <h3 className="font-medium text-base">My Choice <span className="text-destructive">*</span></h3>
                                      <RadioGroup onValueChange={(value) => setFocChoice(value as 'accept' | 'decline')} value={focChoice} disabled={isReadOnly}>
                                         <div className="flex items-center space-x-2">
                                             <RadioGroupItem value="accept" id="accept" />
@@ -298,7 +298,7 @@ function WaiversFormComponent() {
                                 <h3 className="text-base font-semibold text-gray-800">Electronic Signature</h3>
                                 <div className="space-y-4 mt-4">
                                     <RadioGroup onValueChange={(v) => setSignerType(v as any)} value={signerType ?? ''} disabled={isReadOnly}>
-                                        <Label>I am the:</Label>
+                                        <Label>I am the: <span className="text-destructive">*</span></Label>
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center space-x-2">
                                                 <RadioGroupItem value="member" id="signer-member" />
@@ -312,13 +312,13 @@ function WaiversFormComponent() {
                                     </RadioGroup>
                                     
                                     <div className="space-y-2">
-                                        <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member (if not A/R please put N/A)?</Label>
-                                        <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator, or N/A" disabled={isReadOnly} />
+                                        <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member (if not A/R please put N/A)? <span className="text-destructive">*</span></Label>
+                                        <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator, or N/A" disabled={isReadOnly} required />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="signer-name">Type Full Name to Sign</Label>
-                                        <Input id="signer-name" value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Your full legal name" disabled={isReadOnly} />
+                                        <Label htmlFor="signer-name">Type Full Name to Sign <span className="text-destructive">*</span></Label>
+                                        <Input id="signer-name" value={signerName} onChange={e => setSignerName(e.target.value)} placeholder="Your full legal name" disabled={isReadOnly} required />
                                     </div>
                                      <div>
                                         <Label>Date Signed</Label>
@@ -372,5 +372,7 @@ export default function WaiversPage() {
         </Suspense>
     );
 }
+
+    
 
     
