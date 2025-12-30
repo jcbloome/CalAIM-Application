@@ -390,14 +390,6 @@ function PathwayPageContent() {
                 )}
             </Card>
 
-            <Alert variant="default" className="bg-sky-50 border-sky-200 text-sky-800">
-                <Info className="h-4 w-4 !text-sky-800" />
-                <AlertTitle>Upload Tip</AlertTitle>
-                <AlertDescription>
-                    You can check the boxes for "I included this in a bundle" for forms that you plan to upload together. This helps track completion.
-                </AlertDescription>
-            </Alert>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {pathwayRequirements.map((req) => {
                     const formInfo = formStatusMap.get(req.title);
