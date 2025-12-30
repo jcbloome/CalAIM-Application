@@ -24,10 +24,19 @@ const SendRemindersOutputSchema = z.object({
 });
 export type SendRemindersOutput = z.infer<typeof SendRemindersOutputSchema>;
 
+/**
+ * EXPORTED FUNCTION: This is the public wrapper called by the UI.
+ * It's only job is to invoke the internal Genkit flow.
+ */
 export async function sendReminderEmails(input: SendRemindersInput): Promise<SendRemindersOutput> {
     return sendReminderEmailsFlow(input);
 }
 
+
+/**
+ * INTERNAL FLOW: This contains the actual logic for the operation.
+ * It is NOT exported and is only called by the wrapper function.
+ */
 const sendReminderEmailsFlow = ai.defineFlow(
     {
         name: 'sendReminderEmailsFlow',
@@ -50,10 +59,12 @@ const sendReminderEmailsFlow = ai.defineFlow(
             for (const doc of applicationsSnapshot.docs) {
                 const app = doc.data() as any;
                 
+                // Find pending forms or uploads
                 const incompleteItems = app.forms
                     ?.filter((form: any) => form.status === 'Pending')
                     .map((form: any) => form.name);
                 
+                // Only send if there are incomplete items and an email to send to
                 if (incompleteItems && incompleteItems.length > 0 && app.referrerEmail) {
                     await resendReminderEmail({
                         to: app.referrerEmail,
