@@ -108,7 +108,6 @@ const sendToMakeFlow = ai.defineFlow(
       });
 
       if (!response.ok) {
-        // Try to get more details from the response body
         const errorBody = await response.text();
         console.error(`[sendToMakeFlow] Webhook response not OK: ${response.status} ${response.statusText}`, errorBody);
         throw new Error(`Webhook failed with status ${response.status}: ${errorBody || response.statusText}`);
@@ -131,6 +130,7 @@ const sendToMakeFlow = ai.defineFlow(
 
 /**
  * Public function to be called from the client.
+ * This function correctly invokes the Genkit flow.
  */
 export async function sendTestToMake(input: z.infer<typeof TestWebhookInputSchema>): Promise<WebhookResponse> {
   console.log(`[sendTestToMake] Starting flow.`);
