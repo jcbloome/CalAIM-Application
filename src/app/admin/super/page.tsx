@@ -155,7 +155,7 @@ export default function SuperAdminPage() {
     const [webhookLog, setWebhookLog] = useState<string | null>(null);
 
     // New state for test email
-    const [testEmail, setTestEmail] = useState('');
+    const [testEmail, setTestEmail] = useState('jcbloome@gmail.com');
     const [isSendingTestEmail, setIsSendingTestEmail] = useState(false);
 
     // New: Fetch all applications on the client
