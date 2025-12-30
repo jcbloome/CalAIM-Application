@@ -6,10 +6,10 @@ import { useAdmin } from '@/hooks/use-admin';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Loader2, ShieldAlert, UserPlus, Send, Users, Mail, Save, Trash2, ShieldCheck, Bell } from 'lucide-react';
+import { Loader2, ShieldAlert, UserPlus, Send, Users, Mail, Save, Trash2, ShieldCheck, Bell, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { collection, doc, writeBatch, getDocs, setDoc, deleteDoc, getDoc, collectionGroup, query, type Query } from 'firebase/firestore';
+import { collection, doc, writeBatch, getDocs, setDoc, deleteDoc, getDoc, collectionGroup, query, type Query, serverTimestamp } from 'firebase/firestore';
 import { useFirestore, useUser, useCollection } from '@/firebase';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -153,6 +153,7 @@ export default function SuperAdminPage() {
     const [isAddingStaff, setIsAddingStaff] = useState(false);
     const [isSendingWebhook, setIsSendingWebhook] = useState(false);
     const [webhookLog, setWebhookLog] = useState<string | null>(null);
+    const [isCreatingTestApp, setIsCreatingTestApp] = useState(false);
 
     // New state for test email
     const [testEmail, setTestEmail] = useState('jcbloome@gmail.com');
@@ -428,6 +429,68 @@ export default function SuperAdminPage() {
         }
     };
 
+    const handleCreateTestApplication = async () => {
+        if (!firestore) return;
+        setIsCreatingTestApp(true);
+    
+        // A placeholder UID for the user who owns the test application.
+        // In a real scenario, you would get this after the user signs up.
+        // For this test, we can use a hardcoded or randomly generated one.
+        const testUserId = "test-user-for-jcbloome";
+    
+        try {
+            const batch = writeBatch(firestore);
+
+            // 1. Create a user document for the test user
+            const userDocRef = doc(firestore, 'users', testUserId);
+            batch.set(userDocRef, {
+                id: testUserId,
+                email: "jcbloome@gmail.com",
+                firstName: "JC",
+                lastName: "Bloome",
+                displayName: "JC Bloome",
+            });
+
+            // 2. Create the test application document
+            const appDocRef = doc(firestore, `users/${testUserId}/applications`, "test-application-123");
+            const testAppData: Partial<Application> = {
+                id: "test-application-123",
+                userId: testUserId,
+                memberFirstName: "Testy",
+                memberLastName: "McTesterson",
+                referrerEmail: "jcbloome@gmail.com",
+                referrerName: "JC Bloome",
+                status: 'In Progress',
+                pathway: 'SNF Transition',
+                healthPlan: 'Health Net',
+                lastUpdated: serverTimestamp(),
+                forms: [
+                    { name: 'CS Member Summary', status: 'Completed', type: 'online-form', href: '#' },
+                    { name: 'Waivers & Authorizations', status: 'Pending', type: 'online-form', href: '#' },
+                    { name: 'Proof of Income', status: 'Pending', type: 'Upload', href: '#' }
+                ]
+            };
+            batch.set(appDocRef, testAppData);
+    
+            await batch.commit();
+    
+            toast({
+                title: "Test Application Created",
+                description: "A dummy application for jcbloome@gmail.com has been added to Firestore.",
+                className: 'bg-green-100 text-green-900 border-green-200',
+            });
+    
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Creation Failed',
+                description: `Could not create test application: ${error.message}`
+            });
+        } finally {
+            setIsCreatingTestApp(false);
+        }
+    };
+
     const formatAndSetFirstName = (value: string) => setNewStaffFirstName(value.charAt(0).toUpperCase() + value.slice(1).toLowerCase());
     const formatAndSetLastName = (value: string) => setNewStaffLastName(value.charAt(0).toUpperCase() + value.slice(1).toLowerCase());
 
@@ -513,7 +576,7 @@ export default function SuperAdminPage() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5" />System Actions</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-6">
                             <div className="space-y-4">
                                 <h4 className="font-semibold">Make.com Webhook Test</h4>
                                 <p className="text-sm text-muted-foreground">This action sends a pre-defined sample application to the Make.com webhook URL specified in your environment variables.</p>
@@ -551,6 +614,13 @@ export default function SuperAdminPage() {
                                         </AlertDescription>
                                     </Alert>
                                 )}
+                            </div>
+                             <div className="space-y-4 pt-6 border-t">
+                                <h4 className="font-semibold">Create Test Application</h4>
+                                <p className="text-sm text-muted-foreground">This creates a sample application assigned to 'jcbloome@gmail.com' with pending forms, perfect for testing the reminder cron job.</p>
+                                <Button onClick={handleCreateTestApplication} disabled={isCreatingTestApp} className="w-full">
+                                    {isCreatingTestApp ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : <><PlusCircle className="mr-2 h-4 w-4" /> Create Test Application</>}
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
