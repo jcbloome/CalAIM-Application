@@ -16,19 +16,6 @@ import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AdminLoginPage() {
-  const [logs, setLogs] = useState<string[]>([]);
-
-  // Using React.useCallback to memoize the function, ensuring it's stable
-  const addLog = React.useCallback((message: string) => {
-    const timestampedMessage = `[${new Date().toISOString()}] ${message}`;
-    console.log(timestampedMessage); // Keep for server/browser console visibility
-    setLogs(prev => [...prev, timestampedMessage]);
-  }, []);
-
-  useEffect(() => {
-    addLog("AdminLoginPage: Component is mounting.");
-  }, [addLog]);
-
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -41,23 +28,18 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    addLog(`AdminLoginPage useEffect: Running. isUserLoading: ${isUserLoading}, user exists: ${!!user}`);
     if (!isUserLoading && user) {
-      addLog("AdminLoginPage useEffect: User is already logged in. Redirecting to /admin.");
       router.push('/admin');
     }
-    addLog("AdminLoginPage useEffect: Finished.");
-  }, [user, isUserLoading, router, addLog]);
+  }, [user, isUserLoading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    addLog("handleSignIn: Starting sign-in process.");
     setIsLoading(true);
     setError(null);
 
     if (!auth) {
       const errorMsg = "Firebase services are not available. Please try again later.";
-      addLog(`handleSignIn: Auth service not available.`);
       setError(errorMsg);
       toast({
         variant: 'destructive',
@@ -69,11 +51,8 @@ export default function AdminLoginPage() {
     }
 
     try {
-      addLog("handleSignIn: Setting persistence.");
       await setPersistence(auth, browserSessionPersistence);
-      addLog("handleSignIn: Persistence set. Calling signInWithEmailAndPassword.");
       await signInWithEmailAndPassword(auth, email, password);
-      addLog("handleSignIn: Sign-in successful.");
       toast({
         title: 'Successfully signed in!',
         description: 'Redirecting to your dashboard...',
@@ -88,17 +67,20 @@ export default function AdminLoginPage() {
       } else {
         errorMessage = `An unexpected error occurred: ${authError.message}`;
       }
-      addLog(`handleSignIn: Error - ${errorMessage}`);
       setError(errorMessage);
     } finally {
-      addLog("handleSignIn: Finished sign-in attempt.");
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    addLog("AdminLoginPage: Returning JSX.");
-  }, [addLog]);
+  if (isUserLoading || user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-4">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -170,16 +152,6 @@ export default function AdminLoginPage() {
                 </AlertDescription>
             </Alert>
           )}
-
-          <Alert variant="default" className="mt-6">
-            <AlertTitle>Live Diagnostic Log</AlertTitle>
-            <AlertDescription asChild>
-                <pre className="mt-2 h-48 overflow-y-auto rounded-md bg-muted p-2 font-mono text-xs whitespace-pre-wrap">
-                    {logs.join('\n')}
-                </pre>
-            </AlertDescription>
-          </Alert>
-
       </div>
     </main>
   );
