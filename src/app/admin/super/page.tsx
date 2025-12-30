@@ -29,7 +29,7 @@ import {
 
 // CLIENT-SIDE LOGIC - Replaces the need for server-side AI flows for UI data.
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { sendTestToMake } from '@/ai/flows/send-to-make-flow';
+import { triggerMakeWebhook } from '@/ai/flows/send-to-make-flow';
 import { sendReminderEmails } from '@/ai/flows/manage-reminders';
 
 
@@ -322,8 +322,13 @@ export default function SuperAdminPage() {
         setIsSendingWebhook(true);
         setWebhookLog(null);
         try {
-            const result = await sendTestToMake({ user: currentUser, data: { ...sampleApplicationData, userId: currentUser.uid } });
-            toast({ title: "Webhook Test Sent", description: result.message, className: 'bg-green-100 text-green-900 border-green-200' });
+            const result = await triggerMakeWebhook(currentUser.uid, { ...sampleApplicationData, userId: currentUser.uid });
+            if (result.success) {
+                toast({ title: "Webhook Test Sent", description: result.message, className: 'bg-green-100 text-green-900 border-green-200' });
+            } else {
+                 setWebhookLog(result.message);
+                 toast({ variant: 'destructive', title: 'Webhook Error', description: "See log on page for details." });
+            }
         } catch (error: any) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             setWebhookLog(errorMessage);
@@ -392,7 +397,7 @@ export default function SuperAdminPage() {
                         </CardContent>
                     </Card>
 
-                    <Card>
+                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5" />System Actions</CardTitle>
                         </CardHeader>
@@ -416,7 +421,7 @@ export default function SuperAdminPage() {
                     </Card>
                 </div>
                 
-                <Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5" />Current Staff Roles & Notifications</CardTitle>
                         <CardDescription>Manage roles and status email notifications for staff members.</CardDescription>
@@ -454,7 +459,7 @@ export default function SuperAdminPage() {
                                         </AlertDialog>
                                     </div>
                                     <div className="space-y-4 pt-3 border-t">
-                                         <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-2">
                                                 <ShieldCheck className={`h-4 w-4 ${staff.role === 'Super Admin' ? 'text-primary' : 'text-muted-foreground'}`}/>
                                                 <Label htmlFor={`superadmin-switch-${staff.uid}`} className="text-sm font-medium">Super Admin</Label>
@@ -482,6 +487,7 @@ export default function SuperAdminPage() {
                     )}
                 </Card>
             </div>
+            
         </div>
     );
 }
