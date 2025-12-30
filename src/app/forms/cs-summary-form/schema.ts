@@ -27,7 +27,7 @@ export const formSchema = z.object({
     memberFirstName: requiredString,
     memberLastName: requiredString,
     memberDob: dateSchema,
-    sex: z.enum(['Male', 'Female'], { required_error: " " }),
+    sex: z.enum(['Male', 'Female'], { errorMap: () => ({ message: ' ' }) }),
     memberAge: z.number({ required_error: ' '}).min(0).optional(),
     memberMediCalNum: z.string().regex(/^[9][0-9]{7}[A-Za-z]$/, { message: " " }),
     confirmMemberMediCalNum: requiredString,
@@ -61,7 +61,7 @@ export const formSchema = z.object({
     secondaryContactLanguage: optionalString,
 
     // Step 1 - Legal Rep
-    hasCapacity: z.enum(['Yes', 'No'], { required_error: ' ' }),
+    hasCapacity: z.enum(['Yes', 'No'], { errorMap: () => ({ message: ' ' }) }),
     hasLegalRep: z.enum(['Yes', 'No']).optional().nullable(),
     repFirstName: optionalString,
     repLastName: optionalString,
@@ -85,10 +85,10 @@ export const formSchema = z.object({
     customaryCounty: requiredString,
 
     // Step 3 - Health Plan & Pathway
-    healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { required_error: ' '}),
+    healthPlan: z.enum(['Kaiser', 'Health Net', 'Other'], { errorMap: () => ({ message: ' ' })}),
     existingHealthPlan: optionalString,
     switchingHealthPlan: z.enum(['Yes', 'No', 'N/A']).optional().nullable(),
-    pathway: z.enum(['SNF Transition', 'SNF Diversion'], { required_error: ' ' }),
+    pathway: z.enum(['SNF Transition', 'SNF Diversion'], { errorMap: () => ({ message: ' ' }) }),
     meetsPathwayCriteria: z.boolean().refine(val => val === true, {
       message: " ",
     }),
@@ -103,12 +103,12 @@ export const formSchema = z.object({
     ispLocationType: requiredString,
     ispAddress: requiredString,
     ispFacilityName: requiredString,
-    onALWWaitlist: z.enum(['Yes', 'No', 'Unknown'], { required_error: ' ' }),
+    onALWWaitlist: z.enum(['Yes', 'No', 'Unknown'], { errorMap: () => ({ message: ' ' }) }),
     monthlyIncome: requiredString,
     ackRoomAndBoard: z.boolean().refine(val => val === true, {
       message: " ",
     }),
-    hasPrefRCFE: z.enum(['Yes', 'No'], { required_error: ' ' }),
+    hasPrefRCFE: z.enum(['Yes', 'No'], { errorMap: () => ({ message: ' ' }) }),
     rcfeName: optionalString,
     rcfeAddress: optionalString,
     rcfeAdminName: optionalString,
