@@ -16,11 +16,22 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, doc, deleteDoc, Query, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 // Define a type for the application data coming from Firestore
@@ -84,12 +95,12 @@ const ApplicationsTable = ({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0 sm:p-6 sm:pt-0">
         <div className="w-full overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                {onSelectionChange && <TableHead className="w-[50px]"></TableHead>}
+                {onSelectionChange && <TableHead className="w-[50px] pl-4"></TableHead>}
                 <TableHead>Member / App ID</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Plan &amp; Pathway</TableHead>
@@ -108,7 +119,7 @@ const ApplicationsTable = ({
                 applications.map(app => (
                   <TableRow key={app.id}>
                     {onSelectionChange && (
-                      <TableCell>
+                      <TableCell className="pl-4">
                         <Checkbox
                           checked={selection?.includes(app.id)}
                           onCheckedChange={checked => onSelectionChange(app.id, !!checked)}
@@ -118,7 +129,7 @@ const ApplicationsTable = ({
                     )}
                     <TableCell className="font-medium">
                       <div>{`${app.memberFirstName} ${app.memberLastName}`}</div>
-                      <div className="text-xs text-muted-foreground font-mono truncate">{app.id}</div>
+                      <div className="text-xs text-muted-foreground font-mono truncate max-w-[120px] sm:max-w-xs">{app.id}</div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={getBadgeVariant(app.status)}>
@@ -193,12 +204,15 @@ export default function MyApplicationsPage() {
   };
   
   const handleDelete = async () => {
-    if (!user || !firestore) return;
-    for (const appId of selected) {
+    if (!user || !firestore || selected.length === 0) return;
+
+    const batch = doc(firestore).firestore.batch();
+    selected.forEach(appId => {
         const docRef = doc(firestore, `users/${user.uid}/applications`, appId);
-        await deleteDoc(docRef);
-    }
-    console.log('Deleting:', selected);
+        batch.delete(docRef);
+    });
+    
+    await batch.commit();
     setSelected([]);
   }
 
@@ -216,9 +230,25 @@ export default function MyApplicationsPage() {
                 </div>
                 <div className="flex items-center gap-2 self-stretch sm:self-center flex-wrap">
                     {selected.length > 0 && (
-                    <Button variant="destructive" onClick={handleDelete}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete ({selected.length})
-                    </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="destructive">
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete ({selected.length})
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete {selected.length} application(s).
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                     <Button asChild>
                     <Link href="/forms/cs-summary-form">

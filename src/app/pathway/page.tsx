@@ -348,7 +348,7 @@ function PathwayPageContent() {
     <>
       <Header />
       <main className="flex-grow bg-slate-50/50 py-8 sm:py-12">
-        <div className="container mx-auto max-w-3xl px-4 sm:px-6 space-y-8">
+        <div className="container mx-auto max-w-4xl px-4 sm:px-6 space-y-8">
             <Card className="shadow-sm">
                 <CardHeader>
                 <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
@@ -361,8 +361,8 @@ function PathwayPageContent() {
                 </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-                    <div className="truncate"><strong>Application ID:</strong> <span className="font-mono text-xs">{application.id}</span></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    <div className="truncate col-span-2 sm:col-span-1"><strong>Application ID:</strong> <span className="font-mono text-xs">{application.id}</span></div>
                     <div><strong>Status:</strong> <span className="font-semibold">{application.status}</span></div>
                 </div>
                 <div>
