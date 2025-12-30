@@ -80,11 +80,7 @@ function AdminHeader() {
               priority
             />
           </Link>
-
-        </div>
-
-        <div className="flex items-center gap-4">
-          <NavigationMenu className="hidden lg:flex">
+           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               {adminNavLinks.map(link => {
                 const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href));
@@ -111,7 +107,9 @@ function AdminHeader() {
               )}
             </NavigationMenuList>
           </NavigationMenu>
+        </div>
 
+        <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="rounded-full hidden lg:inline-flex">
@@ -143,22 +141,28 @@ function AdminHeader() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent>
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Admin Mobile Menu</SheetTitle>
-                    <SheetDescription>Navigation links for the admin dashboard, available on mobile.</SheetDescription>
+                  <SheetHeader>
+                     <Link href="/admin" className="mb-4">
+                        <Image
+                        src="/calaimlogopdf.png"
+                        alt="Connect CalAIM Logo"
+                        width={240}
+                        height={67}
+                        className="w-40 h-auto object-contain"
+                        priority
+                        />
+                    </Link>
                   </SheetHeader>
                   <nav className="flex flex-col gap-4 mt-8">
-                    {combinedNavLinks.map((link) => {
-                      if (link.super && !isSuperAdmin) return null;
-                      return (
+                    {combinedNavLinks.map((link) => (
                         <SheetClose asChild key={link.href}>
                           <Link href={link.href} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
                             <link.icon className="h-4 w-4" />
                             {link.label}
                           </Link>
                         </SheetClose>
-                      );
-                    })}
+                      )
+                    )}
                   </nav>
                   {/* User Actions for mobile */}
                    <div className="mt-auto border-t pt-6">
