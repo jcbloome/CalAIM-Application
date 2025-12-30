@@ -366,9 +366,9 @@ export default function SuperAdminPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 <div className="space-y-6">
-                    <Card className="border-t-4 border-blue-500">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-lg"><UserPlus className="h-5 w-5 text-blue-500" />Add New Staff</CardTitle>
+                            <CardTitle className="flex items-center gap-3 text-lg"><UserPlus className="h-5 w-5" />Add New Staff</CardTitle>
                         </CardHeader>
                         <CardContent>
                                 <form onSubmit={handleAddStaff} className="space-y-4">
@@ -382,9 +382,9 @@ export default function SuperAdminPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-t-4 border-orange-500">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5 text-orange-500" />Manual Email Reminders</CardTitle>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5" />Manual Email Reminders</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
@@ -392,9 +392,9 @@ export default function SuperAdminPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-t-4 border-green-500">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5 text-green-500" />System Actions</CardTitle>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5" />System Actions</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -416,9 +416,9 @@ export default function SuperAdminPage() {
                     </Card>
                 </div>
                 
-                <Card className="border-t-4 border-purple-500">
+                <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5 text-purple-500" />Current Staff Roles & Notifications</CardTitle>
+                        <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5" />Current Staff Roles & Notifications</CardTitle>
                         <CardDescription>Manage roles and status email notifications for staff members.</CardDescription>
                     </CardHeader>
                     <CardContent>

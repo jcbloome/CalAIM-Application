@@ -82,9 +82,10 @@ export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 
 
 // Define the Genkit flow. This is the core server-side logic.
-const sendToMakeFlowInternal = ai.defineFlow(
+// This is NOT exported and is only called by the wrapper function below.
+const sendToMakeFlow = ai.defineFlow(
   {
-    name: 'sendToMakeFlowInternal',
+    name: 'sendToMakeFlow', // Renamed to avoid conflicts
     inputSchema: SendToMakeInputSchema,
     outputSchema: WebhookResponseSchema,
   },
@@ -135,11 +136,11 @@ const sendToMakeFlowInternal = ai.defineFlow(
 
 /**
  * EXPORTED FUNCTION FOR CLIENT-SIDE USE.
- * This is the function that the frontend will call. It takes the same input as the flow
- * and simply invokes the Genkit flow. This is the correct pattern to avoid recursion.
+ * This is the async function that the frontend will call. It takes the same input
+ * and simply invokes the Genkit flow object. This is the correct pattern.
  */
 export async function sendTestToMake(input: SendToMakeInput): Promise<WebhookResponse> {
   console.log(`[sendTestToMake] Client-side trigger for sendToMakeFlow.`);
   // Correctly call the Genkit flow object.
-  return sendToMakeFlowInternal(input);
+  return sendToMakeFlow(input);
 }
