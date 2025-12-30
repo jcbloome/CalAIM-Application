@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
 
           {error && (
             <Alert variant="destructive" className="mt-4">
-                <AlertTitle>Live Error Log</AlertTitle>
+                <AlertTitle>Login Error</AlertTitle>
                 <AlertDescription className="font-mono text-xs break-all">
                     {error}
                 </AlertDescription>

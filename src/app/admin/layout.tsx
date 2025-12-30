@@ -200,6 +200,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { isAdmin, isSuperAdmin, isLoading, user } = useAdmin();
   const router = useRouter();
   const pathname = usePathname();
+  const auth = useAuth();
 
   useEffect(() => {
     // If auth is still loading, wait.
@@ -214,6 +215,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }
 
   }, [isLoading, user, pathname, router]);
+  
+  const handleSignOutAndLogin = async () => {
+    if (auth) {
+        await auth.signOut();
+    }
+    router.push('/admin/login');
+  };
 
   // Allow login page to render without the main layout or any auth checks.
   if (pathname === '/admin/login') {
@@ -254,8 +262,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>You do not have permission to view this page. Please log in with a staff account.</p>
-              <Button onClick={() => router.push('/admin/login')} className="mt-4">Return to Login</Button>
+              <p>You are logged in, but you do not have permission to view this page. Please sign out and log in with a staff account.</p>
+              <Button onClick={handleSignOutAndLogin} className="mt-4">Return to Admin Login</Button>
             </CardContent>
           </Card>
         </main>
