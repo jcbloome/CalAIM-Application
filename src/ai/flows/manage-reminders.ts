@@ -5,7 +5,7 @@
  * This function receives a list of applications from the client and sends emails.
  */
 import { sendReminderEmail } from '@/app/actions/send-email';
-import type { Application } from '@/lib/definitions';
+import type { Application, FormStatus } from '@/lib/definitions';
 import * as admin from 'firebase-admin';
 
 interface SendRemindersOutput {
@@ -26,10 +26,10 @@ export async function sendReminderEmails(applications: Application[]): Promise<S
         for (const app of applications) {
             // Find pending forms or uploads
             const incompleteItems = app.forms
-                ?.filter((form: any) => form.status === 'Pending')
-                .map((form: any) => form.name); // Corrected from form.name to form.name
+                ?.filter((item: FormStatus) => item.status === 'Pending')
+                .map((item: FormStatus) => item.name); // Corrected from form.name to item.name
             
-            // Fetch user data to get email and name, as it's more reliable than referrerEmail
+            // Fetch user data to get email and name
             let userEmail: string | undefined;
             let userName: string = 'there';
 
