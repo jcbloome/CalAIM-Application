@@ -214,7 +214,7 @@ export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
       <Card className="border-l-4 border-accent">
         <CardHeader>
           <CardTitle>Your Information (Person Filling Form)</CardTitle>
-           <CardDescription>This section shows the original submitter of the application and cannot be changed.</CardDescription>
+           <CardDescription>This section shows the original submitter of the application.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -264,7 +264,7 @@ export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
                 <FormItem>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <PhoneInput {...field} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
+                    <PhoneInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -279,7 +279,7 @@ export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
                 <FormItem>
                   <FormLabel>Relationship to Member</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
+                    <Input {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormDescription>e.g., Son, POA, Self, etc.</FormDescription>
                   <FormMessage />
@@ -293,7 +293,7 @@ export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
                 <FormItem>
                   <FormLabel>Agency</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value ?? ''} readOnly={!isAdminView} className={isAdminView ? "" : "bg-muted"} />
+                    <Input {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormDescription>If not applicable, leave blank.</FormDescription>
                   <FormMessage />
@@ -460,3 +460,5 @@ export default function Step1({ isAdminView }: { isAdminView?: boolean }) {
     </div>
   );
 }
+
+    
