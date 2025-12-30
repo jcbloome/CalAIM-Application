@@ -140,7 +140,7 @@ export default function WaiverFormPage() {
 
                 <div className="mt-4">
                   <label className="block text-xs uppercase font-bold text-slate-500 mb-1">
-                    If authorized representative, what is relationship to member?
+                    If authorized representative, what is relationship to member (if not A/R please put N/A)?
                   </label>
                   <div className="border-b border-slate-400 h-8"></div>
                 </div>
@@ -162,3 +162,5 @@ export default function WaiverFormPage() {
     </div>
   );
 }
+
+    

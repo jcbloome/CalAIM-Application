@@ -85,7 +85,7 @@ function WaiversFormComponent() {
     }, [application]);
 
     const isFormComplete = () => {
-        if (!signerType || !signerName || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
+        if (!signerType || !signerName || !signerRelationship || !focChoice || !ackHipaa || !ackLiability || !ackFoc || !ackRoomAndBoard) return false;
         return true;
     };
 
@@ -95,15 +95,6 @@ function WaiversFormComponent() {
                 variant: 'destructive',
                 title: 'Incomplete Form',
                 description: 'Please complete all acknowledgments, choices, and signature fields to continue.',
-            });
-            return;
-        }
-        
-        if (signerType === 'representative' && !signerRelationship) {
-             toast({
-                variant: 'destructive',
-                title: 'Incomplete Form',
-                description: 'Please specify the relationship to the member when signing as a representative.',
             });
             return;
         }
@@ -123,7 +114,7 @@ function WaiversFormComponent() {
             choice: focChoice,
             signerType,
             signerName,
-            signerRelationship: signerRelationship || null,
+            signerRelationship: signerRelationship,
             ackHipaa: ackHipaa,
             ackLiability: ackLiability,
             ackFoc: ackFoc,
@@ -321,8 +312,8 @@ function WaiversFormComponent() {
                                     </RadioGroup>
                                     
                                     <div className="space-y-2">
-                                        <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member?</Label>
-                                        <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator" disabled={isReadOnly} />
+                                        <Label htmlFor="signer-relationship">If authorized representative, what is relationship to member (if not A/R please put N/A)?</Label>
+                                        <Input id="signer-relationship" value={signerRelationship} onChange={e => setSignerRelationship(e.target.value)} placeholder="e.g., Son, Daughter, Conservator, or N/A" disabled={isReadOnly} />
                                     </div>
 
                                     <div className="space-y-2">
@@ -381,3 +372,5 @@ export default function WaiversPage() {
         </Suspense>
     );
 }
+
+    
