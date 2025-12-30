@@ -24,7 +24,7 @@ export async function sendReminderEmails(applications: Application[]): Promise<S
             // Find pending forms or uploads
             const incompleteItems = app.forms
                 ?.filter((form: any) => form.status === 'Pending')
-                .map((form: any) => form.name);
+                .map((form: any) => form.formName); // Corrected from form.name to form.formName
             
             // Only send if there are incomplete items and an email to send to
             if (incompleteItems && incompleteItems.length > 0 && app.referrerEmail) {
