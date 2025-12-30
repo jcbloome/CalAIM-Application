@@ -334,11 +334,15 @@ export default function SuperAdminPage() {
     };
 
     const handleSendReminders = async () => {
-        if (!currentUser) return;
         setIsSendingReminders(true);
         try {
-            const result = await sendReminderEmails({ user: currentUser });
-            toast({ title: 'Reminders Sent!', description: `Successfully sent ${result.sentCount} reminder emails.`, className: 'bg-green-100 text-green-900 border-green-200' });
+            // Directly call the simplified server action
+            const result = await sendReminderEmails();
+            if (result.success) {
+                toast({ title: 'Reminders Sent!', description: `Successfully sent ${result.sentCount} reminder emails.`, className: 'bg-green-100 text-green-900 border-green-200' });
+            } else {
+                throw new Error(result.message);
+            }
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Reminder Error', description: `Could not send reminders: ${error.message}` });
         } finally {
@@ -543,5 +547,7 @@ export default function SuperAdminPage() {
         </div>
     );
 }
+
+    
 
     

@@ -1,88 +1,60 @@
 
 'use server';
 /**
- * @fileOverview Server-side flows for managing and sending reminder emails.
- * - sendReminderEmails: A flow to find incomplete applications and send reminder emails.
+ * @fileOverview A simple server action for sending reminder emails.
+ * This file replaces the more complex Genkit flow to avoid recursion issues.
  */
-import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { sendReminderEmail as resendReminderEmail } from '@/app/actions/send-email';
+import { sendReminderEmail } from '@/app/actions/send-email';
 
-// ========== SEND REMINDER EMAILS FLOW ==========
-
-const SendRemindersInputSchema = z.object({
-    user: z.any().describe('The authenticated Firebase user object.'),
-});
-export type SendRemindersInput = z.infer<typeof SendRemindersInputSchema>;
-
-
-const SendRemindersOutputSchema = z.object({
-    success: z.boolean(),
-    sentCount: z.number(),
-    message: z.string(),
-});
-export type SendRemindersOutput = z.infer<typeof SendRemindersOutputSchema>;
-
-/**
- * EXPORTED FUNCTION: This is the public wrapper called by the UI.
- * It's only job is to invoke the internal Genkit flow.
- */
-export async function sendReminderEmails(input: SendRemindersInput): Promise<SendRemindersOutput> {
-    return sendReminderEmailsFlow(input);
+interface SendRemindersOutput {
+    success: boolean;
+    sentCount: number;
+    message: string;
 }
 
-
 /**
- * INTERNAL FLOW: This contains the actual logic for the operation.
- * It is NOT exported and is only called by the wrapper function.
+ * Finds incomplete applications and sends reminder emails directly.
+ * This is a standard Next.js Server Action, not a Genkit flow.
  */
-const sendReminderEmailsFlow = ai.defineFlow(
-    {
-        name: 'sendReminderEmailsFlow',
-        inputSchema: SendRemindersInputSchema,
-        outputSchema: SendRemindersOutputSchema,
-    },
-    async ({ user }) => {
-        if (!user || !user.uid) {
-            throw new Error("User authentication is required to perform this action.");
-        }
-        const firestore = admin.firestore();
+export async function sendReminderEmails(): Promise<SendRemindersOutput> {
+    const firestore = admin.firestore();
 
-        try {
-            const applicationsSnapshot = await firestore.collectionGroup('applications')
-                .where('status', 'in', ['In Progress', 'Requires Revision'])
-                .get();
+    try {
+        const applicationsSnapshot = await firestore.collectionGroup('applications')
+            .where('status', 'in', ['In Progress', 'Requires Revision'])
+            .get();
+        
+        let sentCount = 0;
+
+        for (const doc of applicationsSnapshot.docs) {
+            const app = doc.data() as any;
             
-            let sentCount = 0;
-
-            for (const doc of applicationsSnapshot.docs) {
-                const app = doc.data() as any;
-                
-                // Find pending forms or uploads
-                const incompleteItems = app.forms
-                    ?.filter((form: any) => form.status === 'Pending')
-                    .map((form: any) => form.name);
-                
-                // Only send if there are incomplete items and an email to send to
-                if (incompleteItems && incompleteItems.length > 0 && app.referrerEmail) {
-                    await resendReminderEmail({
-                        to: app.referrerEmail,
-                        subject: `Reminder: Action needed for CalAIM application for ${app.memberFirstName} ${app.memberLastName}`,
-                        referrerName: app.referrerName || 'there',
-                        memberName: `${app.memberFirstName} ${app.memberLastName}`,
-                        applicationId: app.id,
-                        incompleteItems,
-                    });
-                    sentCount++;
-                }
+            // Find pending forms or uploads
+            const incompleteItems = app.forms
+                ?.filter((form: any) => form.status === 'Pending')
+                .map((form: any) => form.name);
+            
+            // Only send if there are incomplete items and an email to send to
+            if (incompleteItems && incompleteItems.length > 0 && app.referrerEmail) {
+                await sendReminderEmail({
+                    to: app.referrerEmail,
+                    subject: `Reminder: Action needed for CalAIM application for ${app.memberFirstName} ${app.memberLastName}`,
+                    referrerName: app.referrerName || 'there',
+                    memberName: `${app.memberFirstName} ${app.memberLastName}`,
+                    applicationId: app.id,
+                    incompleteItems,
+                });
+                sentCount++;
             }
-            
-            return { success: true, sentCount, message: `Sent ${sentCount} reminder emails.` };
-
-        } catch (error: any) {
-            console.error('[sendReminderEmailsFlow] Error:', error);
-            throw new Error(`Failed to send reminders: ${error.message}`);
         }
+        
+        return { success: true, sentCount, message: `Sent ${sentCount} reminder emails.` };
+
+    } catch (error: any) {
+        console.error('[sendReminderEmails] Error:', error);
+        return { success: false, sentCount: 0, message: `Failed to send reminders: ${error.message}` };
     }
-);
+}
+
+    
