@@ -141,5 +141,5 @@ const sendToMakeFlow = ai.defineFlow(
 export async function sendTestToMake(input: SendToMakeInput): Promise<WebhookResponse> {
   console.log(`[sendTestToMake] Client-side trigger for sendToMakeFlow.`);
   // Correctly call the Genkit flow object.
-  return await sendToMakeFlow(input);
+  return sendToMakeFlow(input);
 }

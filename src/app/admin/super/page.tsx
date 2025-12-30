@@ -379,11 +379,11 @@ export default function SuperAdminPage() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="border-t-4 border-blue-500">
+                <Card className="lg:col-span-2 border-t-4 border-blue-500">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-3 text-lg"><Users className="h-5 w-5 text-blue-500" />Staff Management</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                          <div className="space-y-4">
                             <h4 className="font-semibold flex items-center gap-2"><UserPlus className="h-5 w-5" /> Add New Staff</h4>
                             <form onSubmit={handleAddStaff} className="space-y-4">
@@ -396,15 +396,15 @@ export default function SuperAdminPage() {
                             </form>
                         </div>
 
-                         <div className="space-y-4 pt-6 border-t">
+                         <div className="space-y-4">
                             <h4 className="font-semibold">Current Staff Roles</h4>
                              {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
                             : staffList.length > 0 ? (
                                 <div className="space-y-2 max-h-96 overflow-y-auto pr-2">{staffList.map((staff) => (
                                     <div key={staff.uid} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 border rounded-lg bg-background">
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-sm truncate">{staff.firstName} {staff.lastName}</p>
-                                            <p className="text-xs text-muted-foreground break-words">{staff.email}</p>
+                                            <p className="font-semibold text-sm">{staff.firstName} {staff.lastName}</p>
+                                            <p className="text-xs text-muted-foreground break-all">{staff.email}</p>
                                         </div>
                                         <div className="flex items-center gap-4 shrink-0">
                                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${staff.role === 'Super Admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>{staff.role}</span>
@@ -438,55 +438,57 @@ export default function SuperAdminPage() {
                     </CardContent>
                 </Card>
                 
-                <Card className="border-t-4 border-green-500">
-                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5 text-green-500" />System Actions &amp; Webhooks</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <h4 className="font-semibold">Make.com Webhook Test</h4>
-                            <p className="text-sm text-muted-foreground">This action sends a pre-defined sample application to the Make.com webhook URL specified in your environment variables. This is used to test the initial data intake from external forms.</p>
-                            <Button onClick={handleSendWebhookTest} disabled={isSendingWebhook} className="w-full">
-                                {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Test Data to Make.com'}
-                            </Button>
-                            {webhookLog && (
-                                <Alert variant="destructive" className="mt-4">
-                                    <AlertTitle>Live Error Log</AlertTitle>
-                                    <AlertDescription className="font-mono text-xs break-all">
-                                        {webhookLog}
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="space-y-6">
+                    <Card className="border-t-4 border-green-500">
+                         <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Send className="h-5 w-5 text-green-500" />System Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-4">
+                                <h4 className="font-semibold">Make.com Webhook Test</h4>
+                                <p className="text-sm text-muted-foreground">This action sends a pre-defined sample application to the Make.com webhook URL specified in your environment variables.</p>
+                                <Button onClick={handleSendWebhookTest} disabled={isSendingWebhook} className="w-full">
+                                    {isSendingWebhook ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Test Data to Make.com'}
+                                </Button>
+                                {webhookLog && (
+                                    <Alert variant="destructive" className="mt-4">
+                                        <AlertTitle>Live Error Log</AlertTitle>
+                                        <AlertDescription className="font-mono text-xs break-all">
+                                            {webhookLog}
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                 <Card className="border-t-4 border-orange-500">
-                     <CardHeader>
-                        <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5 text-orange-500" />Notifications &amp; Reminders</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                         <div className="space-y-4">
-                            <h4 className="font-semibold">Notification Recipient Settings</h4>
-                            <p className="text-sm text-muted-foreground">Select staff to be BCC'd on emails when an application status changes.</p>
-                             {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-                            : staffList.length > 0 ? (
-                                <div className="space-y-4">
-                                    <div className="space-y-2 max-h-60 overflow-y-auto p-1 border rounded-md">{staffList.map(staff => (
-                                        <div key={staff.uid} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted"><Checkbox id={`notif-${staff.uid}`} checked={notificationRecipients.includes(staff.uid)} onCheckedChange={(checked) => handleNotificationToggle(staff.uid, !!checked)} /><Label htmlFor={`notif-${staff.uid}`} className="flex flex-col cursor-pointer"><span>{staff.firstName} {staff.lastName}</span><span className="text-xs text-muted-foreground">{staff.email}</span></Label></div>
-                                    ))}</div>
-                                    <Button onClick={handleSaveNotifications} disabled={isSavingNotifications} className="w-full">{isSavingNotifications ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Notification Settings</>}</Button>
-                                </div>
-                            ) : <p className="text-center text-muted-foreground py-8">No staff members found to configure.</p>}
-                         </div>
-                        
-                         <div className="space-y-4 pt-6 border-t">
-                            <h4 className="font-semibold">Manual Email Reminders</h4>
-                            <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
-                            <Button onClick={handleSendReminders} disabled={isSendingReminders} className="w-full">{isSendingReminders ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : 'Send In-Progress Reminders'}</Button>
-                         </div>
-                    </CardContent>
-                </Card>
+                    <Card className="border-t-4 border-orange-500">
+                         <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-lg"><Mail className="h-5 w-5 text-orange-500" />Notifications &amp; Reminders</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                             <div className="space-y-4">
+                                <h4 className="font-semibold">Notification Recipient Settings</h4>
+                                <p className="text-sm text-muted-foreground">Select staff to be BCC'd on emails when an application status changes.</p>
+                                 {isLoadingStaff ? <div className="flex justify-center items-center h-24"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                                : staffList.length > 0 ? (
+                                    <div className="space-y-4">
+                                        <div className="space-y-2 max-h-60 overflow-y-auto p-1 border rounded-md">{staffList.map(staff => (
+                                            <div key={staff.uid} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted"><Checkbox id={`notif-${staff.uid}`} checked={notificationRecipients.includes(staff.uid)} onCheckedChange={(checked) => handleNotificationToggle(staff.uid, !!checked)} /><Label htmlFor={`notif-${staff.uid}`} className="flex flex-col cursor-pointer"><span>{staff.firstName} {staff.lastName}</span><span className="text-xs text-muted-foreground">{staff.email}</span></Label></div>
+                                        ))}</div>
+                                        <Button onClick={handleSaveNotifications} disabled={isSavingNotifications} className="w-full">{isSavingNotifications ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Notification Settings</>}</Button>
+                                    </div>
+                                ) : <p className="text-center text-muted-foreground py-8">No staff members to configure.</p>}
+                             </div>
+                            
+                             <div className="space-y-4 pt-6 border-t">
+                                <h4 className="font-semibold">Manual Email Reminders</h4>
+                                <p className="text-sm text-muted-foreground">Trigger reminder emails for all applications that are "In Progress" or "Requires Revision" and have pending items.</p>
+                                <Button onClick={handleSendReminders} disabled={isSendingReminders} className="w-full">{isSendingReminders ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : 'Send In-Progress Reminders'}</Button>
+                             </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
