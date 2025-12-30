@@ -6,7 +6,6 @@
  * Genkit flow from the exported function called by the UI.
  */
 import { ai } from '@/ai/genkit';
-import { run } from 'genkit';
 import { z } from 'zod';
 
 /**
@@ -29,11 +28,11 @@ const sendToMakeInternal = ai.defineFlow(
     // 1. Check for Config before trying anything
     const webhookUrl = process.env.MAKE_WEBHOOK_URL;
     
-    if (!webhookUrl) {
-      console.error("Backend Error: MAKE_WEBHOOK_URL is not defined.");
+    if (!webhookUrl || webhookUrl === 'YOUR_WEBHOOK_URL_HERE') {
+      console.error("Backend Error: MAKE_WEBHOOK_URL is not defined in .env file.");
       return { 
         success: false, 
-        message: "Configuration missing: Webhook URL not found in environment variables." 
+        message: "Configuration missing: Webhook URL not found in environment variables. Please set it in the .env file." 
       };
     }
 
@@ -43,7 +42,8 @@ const sendToMakeInternal = ai.defineFlow(
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input.data),
+        // Ensure userId is part of the payload being sent
+        body: JSON.stringify({ ...input.data, userId: input.userId }),
       });
 
       const responseBody = await response.text();
@@ -57,6 +57,10 @@ const sendToMakeInternal = ai.defineFlow(
       return { success: true, message: `Successfully sent test data. Response: ${responseBody}` };
     } catch (error: any) {
       console.error("Flow execution failed:", error.message);
+      // Ensure a helpful error message is returned if the URL is invalid
+      if (error.message.includes('fetch failed')) {
+          return { success: false, message: 'The request to the webhook failed. Please check if the URL is correct and accessible.' };
+      }
       return { success: false, message: error.message };
     }
   }
