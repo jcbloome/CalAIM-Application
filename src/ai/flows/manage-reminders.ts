@@ -4,6 +4,9 @@
  * @fileOverview A server action for sending reminder emails.
  * This function receives a list of applications from the client and sends emails.
  */
+// DO NOT MOVE THIS IMPORT. It must be the first line to initialize Firebase Admin.
+import '@/ai/firebase';
+
 import { sendReminderEmail } from '@/app/actions/send-email';
 import type { Application, FormStatus } from '@/lib/definitions';
 import * as admin from 'firebase-admin';

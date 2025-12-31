@@ -7,6 +7,8 @@
  * It takes a comprehensive JSON payload representing a CalAIM application, validates it,
  * and then creates or updates the corresponding application record in Firestore.
  */
+// DO NOT MOVE THIS IMPORT. It must be the first line to initialize Firebase Admin.
+import '@/ai/firebase';
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';

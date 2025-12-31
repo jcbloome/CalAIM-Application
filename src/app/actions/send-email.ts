@@ -1,6 +1,9 @@
 
 'use server';
 
+// DO NOT MOVE THIS IMPORT. It must be the first line to initialize Firebase Admin.
+import '@/ai/firebase';
+
 import { Resend } from 'resend';
 import ApplicationStatusEmail from '@/components/emails/ApplicationStatusEmail';
 import ReminderEmail from '@/components/emails/ReminderEmail';

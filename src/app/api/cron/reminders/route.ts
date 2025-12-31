@@ -5,15 +5,8 @@ import * as admin from 'firebase-admin';
 import { Application } from '@/lib/definitions';
 import { FormValues } from '@/app/forms/cs-summary-form/schema';
 
-// Ensure Firebase Admin is initialized, but only once.
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp();
-    console.log('[cron/reminders] Firebase Admin SDK initialized successfully.');
-  } catch (error: any) {
-    console.error('[cron/reminders] Firebase Admin SDK initialization error:', error.stack);
-  }
-}
+// DO NOT MOVE THIS IMPORT. It must be the first line to initialize Firebase Admin.
+import '@/ai/firebase';
 
 
 /**
